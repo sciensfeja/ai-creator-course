@@ -1,0 +1,1062 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Creator — Курс по ИИ для школьников</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #e4e6eb;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(120, 80, 255, 0.3);
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            color: #e4e6eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(120, 80, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Hero */
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #7850ff, #00c8ff, #ff50a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #a0a3b8;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .stat {
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00c8ff;
+        }
+
+        .stat-label {
+            color: #a0a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
+        section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* About */
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .about-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 200, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(120, 80, 255, 0.2);
+        }
+
+        .about-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modules */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .module-card {
+            background: linear-gradient(135deg, rgba(120, 80, 255, 0.1), rgba(0, 200, 255, 0.05));
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 1.5rem;
+            border-radius: 16px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #7850ff, #00c8ff);
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(120, 80, 255, 0.3);
+        }
+
+        .module-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .module-card h3 {
+            margin-bottom: 0.8rem;
+            color: #fff;
+        }
+
+        .module-card p {
+            color: #a0a3b8;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .lessons-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .lessons-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .lesson-link {
+            color: #00c8ff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .lesson-link:hover {
+            background: rgba(0, 200, 255, 0.1);
+            color: #7850ff;
+            transform: translateX(5px);
+        }
+
+        .lesson-link::before {
+            content: '▶';
+            font-size: 0.7rem;
+            color: #7850ff;
+        }
+
+        /* Lessons detail */
+        .lesson-detail {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            scroll-margin-top: 100px;
+        }
+
+        .lesson-detail h3 {
+            color: #00c8ff;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .lesson-detail .lesson-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            color: #a0a3b8;
+            font-size: 0.9rem;
+        }
+
+        .lesson-detail .lesson-meta span {
+            background: rgba(120, 80, 255, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .lesson-detail p {
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .lesson-detail ul {
+            margin-left: 1.5rem;
+            color: #c8cad8;
+        }
+
+        .lesson-detail ul li {
+            margin-bottom: 0.3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: #a0a3b8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            h2 { font-size: 1.5rem; }
+            .header-content { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="logo">🤖 AI Creator</div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<section class="hero">
+    <h1 data-i18n="hero_title">AI Creator: От Python до собственных нейросетей</h1>
+    <p data-i18n="hero_subtitle">Курс по искусственному интеллекту и программированию на Python для школьников 10 класса. Создай своё портфолио из 5 проектов и подготовься к поступлению в топовый вуз.</p>
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-number">120</div>
+            <div class="stat-label" data-i18n="stat_hours">часов обучения</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">6</div>
+            <div class="stat-label" data-i18n="stat_modules">модулей</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">5</div>
+            <div class="stat-label" data-i18n="stat_projects">проектов в портфолио</div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2 data-i18n="about_title">О курсе</h2>
+    <div class="about-grid">
+        <div class="about-card">
+            <div class="icon">🎯</div>
+            <h3 data-i18n="about_1_title">Практика с первого дня</h3>
+            <p data-i18n="about_1_text">80% времени — код и эксперименты. Никакой сухой теории.</p>
+        </div>
+        <div class="about-card">
+            <div class="icon">💻</div>
+            <h3 data-i18n="about_2_title">Современные инструменты</h3>
+            <p data-i18n="about_2_text">VS Code, PyTorch, Google Colab, GitHub — всё, что используют профи.</p>
+        </div>
+        <div class="about-card">
+            <div class="icon">🚀</div>
+            <h3 data-i18n="about_3_title">Реальные проекты</h3>
+            <p data-i18n="about_3_text">Боты, нейросети, компьютерное зрение — то, что можно показать друзьям.</p>
+        </div>
+        <div class="about-card">
+            <div class="icon">🎓</div>
+            <h3 data-i18n="about_4_title">Помощь при поступлении</h3>
+            <p data-i18n="about_4_text">Портфолио и хакатоны дают бонусы в топовые вузы.</p>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2 data-i18n="modules_title">Модули курса</h2>
+    <div class="modules-grid">
+
+        <!-- Module 1 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod1_num">Модуль 1</span>
+            <h3 data-i18n="mod1_title">Python и Данные: Фундамент</h3>
+            <p data-i18n="mod1_desc">Изучим Python и научимся работать с данными через прикладные задачи.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-1-1" class="lesson-link" data-i18n="mod1_l1">Урок 1.1: Синтаксис Python</a></li>
+                <li><a href="#lesson-1-2" class="lesson-link" data-i18n="mod1_l2">Урок 1.2: Основы ООП</a></li>
+                <li><a href="#lesson-1-3" class="lesson-link" data-i18n="mod1_l3">Урок 1.3: NumPy и матрицы</a></li>
+                <li><a href="#lesson-1-4" class="lesson-link" data-i18n="mod1_l4">Урок 1.4: Pandas и таблицы</a></li>
+                <li><a href="#lesson-1-5" class="lesson-link" data-i18n="mod1_l5">Урок 1.5: Визуализация данных</a></li>
+            </ul>
+        </div>
+
+        <!-- Module 2 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod2_num">Модуль 2</span>
+            <h3 data-i18n="mod2_title">Математика для ИИ и ML</h3>
+            <p data-i18n="mod2_desc">Поймём, как машина учится на данных без нейросетей.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-2-1" class="lesson-link" data-i18n="mod2_l1">Урок 2.1: Математический минимум</a></li>
+                <li><a href="#lesson-2-2" class="lesson-link" data-i18n="mod2_l2">Урок 2.2: Линейная регрессия</a></li>
+                <li><a href="#lesson-2-3" class="lesson-link" data-i18n="mod2_l3">Урок 2.3: Деревья решений</a></li>
+                <li><a href="#lesson-2-4" class="lesson-link" data-i18n="mod2_l4">Урок 2.4: Метрики качества</a></li>
+            </ul>
+        </div>
+
+        <!-- Module 3 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod3_num">Модуль 3</span>
+            <h3 data-i18n="mod3_title">Нейросети: Deep Learning</h3>
+            <p data-i18n="mod3_desc">Разберёмся, как работают искусственные нейроны и глубокие сети.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-3-1" class="lesson-link" data-i18n="mod3_l1">Урок 3.1: Перцептрон</a></li>
+                <li><a href="#lesson-3-2" class="lesson-link" data-i18n="mod3_l2">Урок 3.2: Функции активации</a></li>
+                <li><a href="#lesson-3-3" class="lesson-link" data-i18n="mod3_l3">Урок 3.3: Backpropagation</a></li>
+                <li><a href="#lesson-3-4" class="lesson-link" data-i18n="mod3_l4">Урок 3.4: PyTorch</a></li>
+                <li><a href="#lesson-3-5" class="lesson-link" data-i18n="mod3_l5">Урок 3.5: CNN и компьютерное зрение</a></li>
+            </ul>
+        </div>
+
+        <!-- Module 4 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod4_num">Модуль 4</span>
+            <h3 data-i18n="mod4_title">CV и NLP</h3>
+            <p data-i18n="mod4_desc">Создадим проекты, которые можно показать друзьям и выложить в соцсети.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-4-1" class="lesson-link" data-i18n="mod4_l1">Урок 4.1: Transfer Learning</a></li>
+                <li><a href="#lesson-4-2" class="lesson-link" data-i18n="mod4_l2">Урок 4.2: Токенизация и эмбеддинги</a></li>
+                <li><a href="#lesson-4-3" class="lesson-link" data-i18n="mod4_l3">Урок 4.3: Анализ тональности</a></li>
+            </ul>
+        </div>
+
+        <!-- Module 5 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod5_num">Модуль 5</span>
+            <h3 data-i18n="mod5_title">LLM и Генеративный ИИ</h3>
+            <p data-i18n="mod5_desc">Научимся работать с современными языковыми моделями.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-5-1" class="lesson-link" data-i18n="mod5_l1">Урок 5.1: Трансформеры и Attention</a></li>
+                <li><a href="#lesson-5-2" class="lesson-link" data-i18n="mod5_l2">Урок 5.2: Prompt Engineering</a></li>
+                <li><a href="#lesson-5-3" class="lesson-link" data-i18n="mod5_l3">Урок 5.3: Работа с API</a></li>
+                <li><a href="#lesson-5-4" class="lesson-link" data-i18n="mod5_l4">Урок 5.4: RAG</a></li>
+                <li><a href="#lesson-5-5" class="lesson-link" data-i18n="mod5_l5">Урок 5.5: Этика ИИ</a></li>
+            </ul>
+        </div>
+
+        <!-- Module 6 -->
+        <div class="module-card">
+            <span class="module-number" data-i18n="mod6_num">Модуль 6</span>
+            <h3 data-i18n="mod6_title">Финальный Хакатон</h3>
+            <p data-i18n="mod6_desc">Командная работа, защита проектов и презентация перед жюри.</p>
+            <ul class="lessons-list">
+                <li><a href="#lesson-6-1" class="lesson-link" data-i18n="mod6_l1">Урок 6.1: Git и GitHub</a></li>
+                <li><a href="#lesson-6-2" class="lesson-link" data-i18n="mod6_l2">Урок 6.2: Командная работа</a></li>
+                <li><a href="#lesson-6-3" class="lesson-link" data-i18n="mod6_l3">Урок 6.3: Защита проекта</a></li>
+            </ul>
+        </div>
+
+    </div>
+</section>
+
+<section>
+    <h2 data-i18n="lessons_title">Детальное описание уроков</h2>
+
+    <!-- Module 1 Lessons -->
+    <div class="lesson-detail" id="lesson-1-1">
+        <h3 data-i18n="l1_1_title">Урок 1.1: Синтаксис Python</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📗 Начальный</span>
+        </div>
+        <p data-i18n="l1_1_desc">Переменные, циклы, функции, структуры данных. Первые программы и знакомство с VS Code.</p>
+        <ul>
+            <li data-i18n="l1_1_p1">Переменные и типы данных</li>
+            <li data-i18n="l1_1_p2">Условия и циклы</li>
+            <li data-i18n="l1_1_p3">Функции и модули</li>
+            <li data-i18n="l1_1_p4">Списки, словари, множества</li>
+        </ul>
+    </div>
+
+    <div class="lesson-detail" id="lesson-1-2">
+        <h3 data-i18n="l1_2_title">Урок 1.2: Основы ООП</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📗 Начальный</span>
+        </div>
+        <p data-i18n="l1_2_desc">Классы и объекты на примере создания простой игры.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-1-3">
+        <h3 data-i18n="l1_3_title">Урок 1.3: NumPy и матрицы</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l1_3_desc">Векторы и матрицы. Связь с геометрией и будущей математикой нейросетей.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-1-4">
+        <h3 data-i18n="l1_4_title">Урок 1.4: Pandas и таблицы</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l1_4_desc">Работа с таблицами, загрузка CSV, фильтрация и группировка данных.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-1-5">
+        <h3 data-i18n="l1_5_title">Урок 1.5: Визуализация данных</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l1_5_desc">Matplotlib и Seaborn. Построение красивых графиков для проекта.</p>
+    </div>
+
+    <!-- Module 2 Lessons -->
+    <div class="lesson-detail" id="lesson-2-1">
+        <h3 data-i18n="l2_1_title">Урок 2.1: Математический минимум</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l2_1_desc">Производные, линейная алгебра и теория вероятностей «на пальцах».</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-2-2">
+        <h3 data-i18n="l2_2_title">Урок 2.2: Линейная регрессия</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l2_2_desc">Первый алгоритм ML. Scikit-Learn. Предсказание цен на жилье.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-2-3">
+        <h3 data-i18n="l2_3_title">Урок 2.3: Деревья решений</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l2_3_desc">Random Forest и классификация. Kaggle-соревнование «Титаник».</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-2-4">
+        <h3 data-i18n="l2_4_title">Урок 2.4: Метрики качества</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l2_4_desc">Accuracy, Precision, Recall, F1. Почему 99% точности — это не всегда хорошо.</p>
+    </div>
+
+    <!-- Module 3 Lessons -->
+    <div class="lesson-detail" id="lesson-3-1">
+        <h3 data-i18n="l3_1_title">Урок 3.1: Перцептрон</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l3_1_desc">Биологический нейрон vs искусственный. Первый нейрон на Python.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-3-2">
+        <h3 data-i18n="l3_2_title">Урок 3.2: Функции активации</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l3_2_desc">ReLU, Sigmoid, Softmax. Зачем они нужны и как работают.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-3-3">
+        <h3 data-i18n="l3_3_title">Урок 3.3: Backpropagation</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l3_3_desc">Как сеть учится? Обратное распространение ошибки на пальцах.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-3-4">
+        <h3 data-i18n="l3_4_title">Урок 3.4: PyTorch</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 4 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l3_4_desc">Знакомство с фреймворком. Тензоры, автодифференцирование, первая сеть.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-3-5">
+        <h3 data-i18n="l3_5_title">Урок 3.5: CNN и компьютерное зрение</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 4 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l3_5_desc">Сверточные сети. Распознавание MNIST и жестов через веб-камеру.</p>
+    </div>
+
+    <!-- Module 4 Lessons -->
+    <div class="lesson-detail" id="lesson-4-1">
+        <h3 data-i18n="l4_1_title">Урок 4.1: Transfer Learning</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l4_1_desc">Используем предобученные сети для распознавания своих объектов.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-4-2">
+        <h3 data-i18n="l4_2_title">Урок 4.2: Токенизация и эмбеддинги</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l4_2_desc">Как компьютер понимает смысл слов. Word2Vec.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-4-3">
+        <h3 data-i18n="l4_3_title">Урок 4.3: Анализ тональности</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📙 Продвинутый</span>
+        </div>
+        <p data-i18n="l4_3_desc">Telegram-бот, который анализирует комментарии и банит за токсичность.</p>
+    </div>
+
+    <!-- Module 5 Lessons -->
+    <div class="lesson-detail" id="lesson-5-1">
+        <h3 data-i18n="l5_1_title">Урок 5.1: Трансформеры и Attention</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📕 Экспертный</span>
+        </div>
+        <p data-i18n="l5_1_desc">Как работают большие языковые модели. Механизм внимания.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-5-2">
+        <h3 data-i18n="l5_2_title">Урок 5.2: Prompt Engineering</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l5_2_desc">Искусство правильно ставить задачу ИИ. Few-shot, chain-of-thought.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-5-3">
+        <h3 data-i18n="l5_3_title">Урок 5.3: Работа с API</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l5_3_desc">OpenAI, YandexGPT, локальные модели через Ollama.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-5-4">
+        <h3 data-i18n="l5_4_title">Урок 5.4: RAG</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 4 часа</span>
+            <span data-i18n="l_level">📕 Экспертный</span>
+        </div>
+        <p data-i18n="l5_4_desc">Retrieval-Augmented Generation. ИИ отвечает по вашим документам без галлюцинаций.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-5-5">
+        <h3 data-i18n="l5_5_title">Урок 5.5: Этика ИИ</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📗 Начальный</span>
+        </div>
+        <p data-i18n="l5_5_desc">Дипфейки, авторское право, предвзятость алгоритмов, влияние на рынок труда.</p>
+    </div>
+
+    <!-- Module 6 Lessons -->
+    <div class="lesson-detail" id="lesson-6-1">
+        <h3 data-i18n="l6_1_title">Урок 6.1: Git и GitHub</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l6_1_desc">Версионирование кода. Красивый README для портфолио.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-6-2">
+        <h3 data-i18n="l6_2_title">Урок 6.2: Командная работа</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 2 часа</span>
+            <span data-i18n="l_level">📘 Средний</span>
+        </div>
+        <p data-i18n="l6_2_desc">Разделение ролей: Data Scientist, ML Engineer, Product Manager.</p>
+    </div>
+
+    <div class="lesson-detail" id="lesson-6-3">
+        <h3 data-i18n="l6_3_title">Урок 6.3: Защита проекта</h3>
+        <div class="lesson-meta">
+            <span data-i18n="l_duration">⏱ 3 часа</span>
+            <span data-i18n="l_level">📕 Экспертный</span>
+        </div>
+        <p data-i18n="l6_3_desc">Питч перед жюри. Финальный хакатон и презентация ИИ-стартапа.</p>
+    </div>
+</section>
+
+<footer>
+    <p data-i18n="footer">© 2026 AI Creator. Курс по ИИ для школьников 10 класса.</p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            hero_title: "AI Creator: От Python до собственных нейросетей",
+            hero_subtitle: "Курс по искусственному интеллекту и программированию на Python для школьников 10 класса. Создай своё портфолио из 5 проектов и подготовься к поступлению в топовый вуз.",
+            stat_hours: "часов обучения",
+            stat_modules: "модулей",
+            stat_projects: "проектов в портфолио",
+            about_title: "О курсе",
+            about_1_title: "Практика с первого дня",
+            about_1_text: "80% времени — код и эксперименты. Никакой сухой теории.",
+            about_2_title: "Современные инструменты",
+            about_2_text: "VS Code, PyTorch, Google Colab, GitHub — всё, что используют профи.",
+            about_3_title: "Реальные проекты",
+            about_3_text: "Боты, нейросети, компьютерное зрение — то, что можно показать друзьям.",
+            about_4_title: "Помощь при поступлении",
+            about_4_text: "Портфолио и хакатоны дают бонусы в топовые вузы.",
+            modules_title: "Модули курса",
+            lessons_title: "Детальное описание уроков",
+            mod1_num: "Модуль 1", mod1_title: "Python и Данные: Фундамент", mod1_desc: "Изучим Python и научимся работать с данными через прикладные задачи.",
+            mod1_l1: "Урок 1.1: Синтаксис Python", mod1_l2: "Урок 1.2: Основы ООП", mod1_l3: "Урок 1.3: NumPy и матрицы", mod1_l4: "Урок 1.4: Pandas и таблицы", mod1_l5: "Урок 1.5: Визуализация данных",
+            mod2_num: "Модуль 2", mod2_title: "Математика для ИИ и ML", mod2_desc: "Поймём, как машина учится на данных без нейросетей.",
+            mod2_l1: "Урок 2.1: Математический минимум", mod2_l2: "Урок 2.2: Линейная регрессия", mod2_l3: "Урок 2.3: Деревья решений", mod2_l4: "Урок 2.4: Метрики качества",
+            mod3_num: "Модуль 3", mod3_title: "Нейросети: Deep Learning", mod3_desc: "Разберёмся, как работают искусственные нейроны и глубокие сети.",
+            mod3_l1: "Урок 3.1: Перцептрон", mod3_l2: "Урок 3.2: Функции активации", mod3_l3: "Урок 3.3: Backpropagation", mod3_l4: "Урок 3.4: PyTorch", mod3_l5: "Урок 3.5: CNN и компьютерное зрение",
+            mod4_num: "Модуль 4", mod4_title: "CV и NLP", mod4_desc: "Создадим проекты, которые можно показать друзьям и выложить в соцсети.",
+            mod4_l1: "Урок 4.1: Transfer Learning", mod4_l2: "Урок 4.2: Токенизация и эмбеддинги", mod4_l3: "Урок 4.3: Анализ тональности",
+            mod5_num: "Модуль 5", mod5_title: "LLM и Генеративный ИИ", mod5_desc: "Научимся работать с современными языковыми моделями.",
+            mod5_l1: "Урок 5.1: Трансформеры и Attention", mod5_l2: "Урок 5.2: Prompt Engineering", mod5_l3: "Урок 5.3: Работа с API", mod5_l4: "Урок 5.4: RAG", mod5_l5: "Урок 5.5: Этика ИИ",
+            mod6_num: "Модуль 6", mod6_title: "Финальный Хакатон", mod6_desc: "Командная работа, защита проектов и презентация перед жюри.",
+            mod6_l1: "Урок 6.1: Git и GitHub", mod6_l2: "Урок 6.2: Командная работа", mod6_l3: "Урок 6.3: Защита проекта",
+            l_duration: "⏱ Длительность", l_level: "📗 Уровень",
+            l1_1_title: "Урок 1.1: Синтаксис Python", l1_1_desc: "Переменные, циклы, функции, структуры данных. Первые программы и знакомство с VS Code.",
+            l1_1_p1: "Переменные и типы данных", l1_1_p2: "Условия и циклы", l1_1_p3: "Функции и модули", l1_1_p4: "Списки, словари, множества",
+            l1_2_title: "Урок 1.2: Основы ООП", l1_2_desc: "Классы и объекты на примере создания простой игры.",
+            l1_3_title: "Урок 1.3: NumPy и матрицы", l1_3_desc: "Векторы и матрицы. Связь с геометрией и будущей математикой нейросетей.",
+            l1_4_title: "Урок 1.4: Pandas и таблицы", l1_4_desc: "Работа с таблицами, загрузка CSV, фильтрация и группировка данных.",
+            l1_5_title: "Урок 1.5: Визуализация данных", l1_5_desc: "Matplotlib и Seaborn. Построение красивых графиков для проекта.",
+            l2_1_title: "Урок 2.1: Математический минимум", l2_1_desc: "Производные, линейная алгебра и теория вероятностей «на пальцах».",
+            l2_2_title: "Урок 2.2: Линейная регрессия", l2_2_desc: "Первый алгоритм ML. Scikit-Learn. Предсказание цен на жилье.",
+            l2_3_title: "Урок 2.3: Деревья решений", l2_3_desc: "Random Forest и классификация. Kaggle-соревнование «Титаник».",
+            l2_4_title: "Урок 2.4: Метрики качества", l2_4_desc: "Accuracy, Precision, Recall, F1. Почему 99% точности — это не всегда хорошо.",
+            l3_1_title: "Урок 3.1: Перцептрон", l3_1_desc: "Биологический нейрон vs искусственный. Первый нейрон на Python.",
+            l3_2_title: "Урок 3.2: Функции активации", l3_2_desc: "ReLU, Sigmoid, Softmax. Зачем они нужны и как работают.",
+            l3_3_title: "Урок 3.3: Backpropagation", l3_3_desc: "Как сеть учится? Обратное распространение ошибки на пальцах.",
+            l3_4_title: "Урок 3.4: PyTorch", l3_4_desc: "Знакомство с фреймворком. Тензоры, автодифференцирование, первая сеть.",
+            l3_5_title: "Урок 3.5: CNN и компьютерное зрение", l3_5_desc: "Сверточные сети. Распознавание MNIST и жестов через веб-камеру.",
+            l4_1_title: "Урок 4.1: Transfer Learning", l4_1_desc: "Используем предобученные сети для распознавания своих объектов.",
+            l4_2_title: "Урок 4.2: Токенизация и эмбеддинги", l4_2_desc: "Как компьютер понимает смысл слов. Word2Vec.",
+            l4_3_title: "Урок 4.3: Анализ тональности", l4_3_desc: "Telegram-бот, который анализирует комментарии и банит за токсичность.",
+            l5_1_title: "Урок 5.1: Трансформеры и Attention", l5_1_desc: "Как работают большие языковые модели. Механизм внимания.",
+            l5_2_title: "Урок 5.2: Prompt Engineering", l5_2_desc: "Искусство правильно ставить задачу ИИ. Few-shot, chain-of-thought.",
+            l5_3_title: "Урок 5.3: Работа с API", l5_3_desc: "OpenAI, YandexGPT, локальные модели через Ollama.",
+            l5_4_title: "Урок 5.4: RAG", l5_4_desc: "Retrieval-Augmented Generation. ИИ отвечает по вашим документам без галлюцинаций.",
+            l5_5_title: "Урок 5.5: Этика ИИ", l5_5_desc: "Дипфейки, авторское право, предвзятость алгоритмов, влияние на рынок труда.",
+            l6_1_title: "Урок 6.1: Git и GitHub", l6_1_desc: "Версионирование кода. Красивый README для портфолио.",
+            l6_2_title: "Урок 6.2: Командная работа", l6_2_desc: "Разделение ролей: Data Scientist, ML Engineer, Product Manager.",
+            l6_3_title: "Урок 6.3: Защита проекта", l6_3_desc: "Питч перед жюри. Финальный хакатон и презентация ИИ-стартапа.",
+            footer: "© 2026 AI Creator. Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            hero_title: "AI Creator: From Python to Your Own Neural Networks",
+            hero_subtitle: "An AI and Python programming course for 10th grade students. Build a portfolio of 5 projects and prepare for admission to a top university.",
+            stat_hours: "hours of learning",
+            stat_modules: "modules",
+            stat_projects: "portfolio projects",
+            about_title: "About the Course",
+            about_1_title: "Practice from day one",
+            about_1_text: "80% of time is code and experiments. No dry theory.",
+            about_2_title: "Modern tools",
+            about_2_text: "VS Code, PyTorch, Google Colab, GitHub — everything pros use.",
+            about_3_title: "Real projects",
+            about_3_text: "Bots, neural networks, computer vision — things you can show to friends.",
+            about_4_title: "University admission help",
+            about_4_text: "Portfolio and hackathons give bonuses to top universities.",
+            modules_title: "Course Modules",
+            lessons_title: "Detailed Lesson Descriptions",
+            mod1_num: "Module 1", mod1_title: "Python & Data: Foundations", mod1_desc: "Learn Python and work with data through practical tasks.",
+            mod1_l1: "Lesson 1.1: Python Syntax", mod1_l2: "Lesson 1.2: OOP Basics", mod1_l3: "Lesson 1.3: NumPy & Matrices", mod1_l4: "Lesson 1.4: Pandas & Tables", mod1_l5: "Lesson 1.5: Data Visualization",
+            mod2_num: "Module 2", mod2_title: "Math for AI & ML", mod2_desc: "Understand how a machine learns from data without neural networks.",
+            mod2_l1: "Lesson 2.1: Math Essentials", mod2_l2: "Lesson 2.2: Linear Regression", mod2_l3: "Lesson 2.3: Decision Trees", mod2_l4: "Lesson 2.4: Quality Metrics",
+            mod3_num: "Module 3", mod3_title: "Neural Networks: Deep Learning", mod3_desc: "Understand how artificial neurons and deep networks work.",
+            mod3_l1: "Lesson 3.1: Perceptron", mod3_l2: "Lesson 3.2: Activation Functions", mod3_l3: "Lesson 3.3: Backpropagation", mod3_l4: "Lesson 3.4: PyTorch", mod3_l5: "Lesson 3.5: CNN & Computer Vision",
+            mod4_num: "Module 4", mod4_title: "CV & NLP", mod4_desc: "Create projects you can show to friends and post on social media.",
+            mod4_l1: "Lesson 4.1: Transfer Learning", mod4_l2: "Lesson 4.2: Tokenization & Embeddings", mod4_l3: "Lesson 4.3: Sentiment Analysis",
+            mod5_num: "Module 5", mod5_title: "LLMs & Generative AI", mod5_desc: "Learn to work with modern language models.",
+            mod5_l1: "Lesson 5.1: Transformers & Attention", mod5_l2: "Lesson 5.2: Prompt Engineering", mod5_l3: "Lesson 5.3: Working with APIs", mod5_l4: "Lesson 5.4: RAG", mod5_l5: "Lesson 5.5: AI Ethics",
+            mod6_num: "Module 6", mod6_title: "Final Hackathon", mod6_desc: "Teamwork, project defense and presentation to the jury.",
+            mod6_l1: "Lesson 6.1: Git & GitHub", mod6_l2: "Lesson 6.2: Teamwork", mod6_l3: "Lesson 6.3: Project Defense",
+            l_duration: "⏱ Duration", l_level: "📗 Level",
+            l1_1_title: "Lesson 1.1: Python Syntax", l1_1_desc: "Variables, loops, functions, data structures. First programs and VS Code intro.",
+            l1_1_p1: "Variables and data types", l1_1_p2: "Conditions and loops", l1_1_p3: "Functions and modules", l1_1_p4: "Lists, dictionaries, sets",
+            l1_2_title: "Lesson 1.2: OOP Basics", l1_2_desc: "Classes and objects through building a simple game.",
+            l1_3_title: "Lesson 1.3: NumPy & Matrices", l1_3_desc: "Vectors and matrices. Connection to geometry and future neural network math.",
+            l1_4_title: "Lesson 1.4: Pandas & Tables", l1_4_desc: "Working with tables, loading CSV, filtering and grouping data.",
+            l1_5_title: "Lesson 1.5: Data Visualization", l1_5_desc: "Matplotlib and Seaborn. Building beautiful charts for the project.",
+            l2_1_title: "Lesson 2.1: Math Essentials", l2_1_desc: "Derivatives, linear algebra and probability theory explained simply.",
+            l2_2_title: "Lesson 2.2: Linear Regression", l2_2_desc: "First ML algorithm. Scikit-Learn. Housing price prediction.",
+            l2_3_title: "Lesson 2.3: Decision Trees", l2_3_desc: "Random Forest and classification. Kaggle Titanic competition.",
+            l2_4_title: "Lesson 2.4: Quality Metrics", l2_4_desc: "Accuracy, Precision, Recall, F1. Why 99% accuracy isn't always good.",
+            l3_1_title: "Lesson 3.1: Perceptron", l3_1_desc: "Biological neuron vs artificial. First neuron in Python.",
+            l3_2_title: "Lesson 3.2: Activation Functions", l3_2_desc: "ReLU, Sigmoid, Softmax. Why they're needed and how they work.",
+            l3_3_title: "Lesson 3.3: Backpropagation", l3_3_desc: "How does the network learn? Backpropagation explained simply.",
+            l3_4_title: "Lesson 3.4: PyTorch", l3_4_desc: "Framework intro. Tensors, autodiff, first network.",
+            l3_5_title: "Lesson 3.5: CNN & Computer Vision", l3_5_desc: "Convolutional networks. MNIST recognition and webcam gestures.",
+            l4_1_title: "Lesson 4.1: Transfer Learning", l4_1_desc: "Using pretrained networks to recognize your own objects.",
+            l4_2_title: "Lesson 4.2: Tokenization & Embeddings", l4_2_desc: "How a computer understands word meaning. Word2Vec.",
+            l4_3_title: "Lesson 4.3: Sentiment Analysis", l4_3_desc: "Telegram bot that analyzes comments and bans for toxicity.",
+            l5_1_title: "Lesson 5.1: Transformers & Attention", l5_1_desc: "How large language models work. Attention mechanism.",
+            l5_2_title: "Lesson 5.2: Prompt Engineering", l5_2_desc: "The art of asking AI correctly. Few-shot, chain-of-thought.",
+            l5_3_title: "Lesson 5.3: Working with APIs", l5_3_desc: "OpenAI, YandexGPT, local models via Ollama.",
+            l5_4_title: "Lesson 5.4: RAG", l5_4_desc: "Retrieval-Augmented Generation. AI answers from your docs without hallucinations.",
+            l5_5_title: "Lesson 5.5: AI Ethics", l5_5_desc: "Deepfakes, copyright, algorithmic bias, labor market impact.",
+            l6_1_title: "Lesson 6.1: Git & GitHub", l6_1_desc: "Code versioning. Beautiful README for your portfolio.",
+            l6_2_title: "Lesson 6.2: Teamwork", l6_2_desc: "Role distribution: Data Scientist, ML Engineer, Product Manager.",
+            l6_3_title: "Lesson 6.3: Project Defense", l6_3_desc: "Pitch to the jury. Final hackathon and AI startup presentation.",
+            footer: "© 2026 AI Creator. AI course for 10th grade students."
+        },
+        es: {
+            hero_title: "AI Creator: De Python a tus propias redes neuronales",
+            hero_subtitle: "Curso de inteligencia artificial y programación en Python para estudiantes de 10º grado. Construye un portafolio de 5 proyectos y prepárate para ingresar a una universidad de primer nivel.",
+            stat_hours: "horas de aprendizaje",
+            stat_modules: "módulos",
+            stat_projects: "proyectos en el portafolio",
+            about_title: "Sobre el curso",
+            about_1_title: "Práctica desde el primer día",
+            about_1_text: "80% del tiempo es código y experimentos. Nada de teoría seca.",
+            about_2_title: "Herramientas modernas",
+            about_2_text: "VS Code, PyTorch, Google Colab, GitHub — todo lo que usan los profesionales.",
+            about_3_title: "Proyectos reales",
+            about_3_text: "Bots, redes neuronales, visión por computadora — cosas que puedes mostrar a tus amigos.",
+            about_4_title: "Ayuda para la admisión universitaria",
+            about_4_text: "El portafolio y los hackatones dan bonificaciones en las mejores universidades.",
+            modules_title: "Módulos del curso",
+            lessons_title: "Descripción detallada de las lecciones",
+            mod1_num: "Módulo 1", mod1_title: "Python y Datos: Fundamentos", mod1_desc: "Aprende Python y trabaja con datos a través de tareas prácticas.",
+            mod1_l1: "Lección 1.1: Sintaxis de Python", mod1_l2: "Lección 1.2: Fundamentos de OOP", mod1_l3: "Lección 1.3: NumPy y matrices", mod1_l4: "Lección 1.4: Pandas y tablas", mod1_l5: "Lección 1.5: Visualización de datos",
+            mod2_num: "Módulo 2", mod2_title: "Matemáticas para IA y ML", mod2_desc: "Entiende cómo una máquina aprende de los datos sin redes neuronales.",
+            mod2_l1: "Lección 2.1: Matemáticas esenciales", mod2_l2: "Lección 2.2: Regresión lineal", mod2_l3: "Lección 2.3: Árboles de decisión", mod2_l4: "Lección 2.4: Métricas de calidad",
+            mod3_num: "Módulo 3", mod3_title: "Redes Neuronales: Deep Learning", mod3_desc: "Comprende cómo funcionan las neuronas artificiales y las redes profundas.",
+            mod3_l1: "Lección 3.1: Perceptrón", mod3_l2: "Lección 3.2: Funciones de activación", mod3_l3: "Lección 3.3: Backpropagation", mod3_l4: "Lección 3.4: PyTorch", mod3_l5: "Lección 3.5: CNN y visión por computadora",
+            mod4_num: "Módulo 4", mod4_title: "CV y NLP", mod4_desc: "Crea proyectos que puedas mostrar a tus amigos y publicar en redes sociales.",
+            mod4_l1: "Lección 4.1: Transfer Learning", mod4_l2: "Lección 4.2: Tokenización y embeddings", mod4_l3: "Lección 4.3: Análisis de sentimiento",
+            mod5_num: "Módulo 5", mod5_title: "LLMs e IA Generativa", mod5_desc: "Aprende a trabajar con modelos de lenguaje modernos.",
+            mod5_l1: "Lección 5.1: Transformers y Attention", mod5_l2: "Lección 5.2: Prompt Engineering", mod5_l3: "Lección 5.3: Trabajo con APIs", mod5_l4: "Lección 5.4: RAG", mod5_l5: "Lección 5.5: Ética de la IA",
+            mod6_num: "Módulo 6", mod6_title: "Hackatón Final", mod6_desc: "Trabajo en equipo, defensa de proyectos y presentación ante el jurado.",
+            mod6_l1: "Lección 6.1: Git y GitHub", mod6_l2: "Lección 6.2: Trabajo en equipo", mod6_l3: "Lección 6.3: Defensa del proyecto",
+            l_duration: "⏱ Duración", l_level: "📗 Nivel",
+            l1_1_title: "Lección 1.1: Sintaxis de Python", l1_1_desc: "Variables, bucles, funciones, estructuras de datos. Primeros programas e introducción a VS Code.",
+            l1_1_p1: "Variables y tipos de datos", l1_1_p2: "Condiciones y bucles", l1_1_p3: "Funciones y módulos", l1_1_p4: "Listas, diccionarios, conjuntos",
+            l1_2_title: "Lección 1.2: Fundamentos de OOP", l1_2_desc: "Clases y objetos construyendo un juego simple.",
+            l1_3_title: "Lección 1.3: NumPy y matrices", l1_3_desc: "Vectores y matrices. Conexión con geometría y matemáticas futuras de redes neuronales.",
+            l1_4_title: "Lección 1.4: Pandas y tablas", l1_4_desc: "Trabajar con tablas, cargar CSV, filtrar y agrupar datos.",
+            l1_5_title: "Lección 1.5: Visualización de datos", l1_5_desc: "Matplotlib y Seaborn. Construir gráficos hermosos para el proyecto.",
+            l2_1_title: "Lección 2.1: Matemáticas esenciales", l2_1_desc: "Derivadas, álgebra lineal y teoría de probabilidad explicadas simplemente.",
+            l2_2_title: "Lección 2.2: Regresión lineal", l2_2_desc: "Primer algoritmo de ML. Scikit-Learn. Predicción de precios de viviendas.",
+            l2_3_title: "Lección 2.3: Árboles de decisión", l2_3_desc: "Random Forest y clasificación. Competencia Kaggle Titanic.",
+            l2_4_title: "Lección 2.4: Métricas de calidad", l2_4_desc: "Accuracy, Precision, Recall, F1. Por qué 99% de precisión no siempre es bueno.",
+            l3_1_title: "Lección 3.1: Perceptrón", l3_1_desc: "Neurona biológica vs artificial. Primera neurona en Python.",
+            l3_2_title: "Lección 3.2: Funciones de activación", l3_2_desc: "ReLU, Sigmoid, Softmax. Por qué se necesitan y cómo funcionan.",
+            l3_3_title: "Lección 3.3: Backpropagation", l3_3_desc: "¿Cómo aprende la red? Backpropagation explicado simplemente.",
+            l3_4_title: "Lección 3.4: PyTorch", l3_4_desc: "Introducción al framework. Tensores, autodiff, primera red.",
+            l3_5_title: "Lección 3.5: CNN y visión por computadora", l3_5_desc: "Redes convolucionales. Reconocimiento de MNIST y gestos por webcam.",
+            l4_1_title: "Lección 4.1: Transfer Learning", l4_1_desc: "Usar redes preentrenadas para reconocer tus propios objetos.",
+            l4_2_title: "Lección 4.2: Tokenización y embeddings", l4_2_desc: "Cómo una computadora entiende el significado de las palabras. Word2Vec.",
+            l4_3_title: "Lección 4.3: Análisis de sentimiento", l4_3_desc: "Bot de Telegram que analiza comentarios y banea por toxicidad.",
+            l5_1_title: "Lección 5.1: Transformers y Attention", l5_1_desc: "Cómo funcionan los grandes modelos de lenguaje. Mecanismo de atención.",
+            l5_2_title: "Lección 5.2: Prompt Engineering", l5_2_desc: "El arte de preguntar correctamente a la IA. Few-shot, chain-of-thought.",
+            l5_3_title: "Lección 5.3: Trabajo con APIs", l5_3_desc: "OpenAI, YandexGPT, modelos locales vía Ollama.",
+            l5_4_title: "Lección 5.4: RAG", l5_4_desc: "Retrieval-Augmented Generation. La IA responde desde tus documentos sin alucinaciones.",
+            l5_5_title: "Lección 5.5: Ética de la IA", l5_5_desc: "Deepfakes, derechos de autor, sesgo algorítmico, impacto en el mercado laboral.",
+            l6_1_title: "Lección 6.1: Git y GitHub", l6_1_desc: "Versionado de código. README hermoso para tu portafolio.",
+            l6_2_title: "Lección 6.2: Trabajo en equipo", l6_2_desc: "Distribución de roles: Data Scientist, ML Engineer, Product Manager.",
+            l6_3_title: "Lección 6.3: Defensa del proyecto", l6_3_desc: "Pitch ante el jurado. Hackatón final y presentación de startup de IA.",
+            footer: "© 2026 AI Creator. Curso de IA para estudiantes de 10º grado."
+        },
+        de: {
+            hero_title: "AI Creator: Von Python zu eigenen neuronalen Netzen",
+            hero_subtitle: "KI- und Python-Programmierkurs für Schüler der 10. Klasse. Erstelle ein Portfolio aus 5 Projekten und bereite dich auf die Zulassung zu einer Top-Universität vor.",
+            stat_hours: "Lernstunden",
+            stat_modules: "Module",
+            stat_projects: "Portfolio-Projekte",
+            about_title: "Über den Kurs",
+            about_1_title: "Praxis vom ersten Tag an",
+            about_1_text: "80% der Zeit sind Code und Experimente. Keine trockene Theorie.",
+            about_2_title: "Moderne Werkzeuge",
+            about_2_text: "VS Code, PyTorch, Google Colab, GitHub — alles, was Profis nutzen.",
+            about_3_title: "Echte Projekte",
+            about_3_text: "Bots, neuronale Netze, Computer Vision — Dinge, die du Freunden zeigen kannst.",
+            about_4_title: "Hilfe bei der Universitätszulassung",
+            about_4_text: "Portfolio und Hackathons geben Boni an Top-Universitäten.",
+            modules_title: "Kursmodule",
+            lessons_title: "Detaillierte Lektionsbeschreibungen",
+            mod1_num: "Modul 1", mod1_title: "Python & Daten: Grundlagen", mod1_desc: "Lerne Python und arbeite mit Daten durch praktische Aufgaben.",
+            mod1_l1: "Lektion 1.1: Python-Syntax", mod1_l2: "Lektion 1.2: OOP-Grundlagen", mod1_l3: "Lektion 1.3: NumPy & Matrizen", mod1_l4: "Lektion 1.4: Pandas & Tabellen", mod1_l5: "Lektion 1.5: Datenvisualisierung",
+            mod2_num: "Modul 2", mod2_title: "Mathematik für KI & ML", mod2_desc: "Verstehe, wie eine Maschine aus Daten ohne neuronale Netze lernt.",
+            mod2_l1: "Lektion 2.1: Mathematik-Grundlagen", mod2_l2: "Lektion 2.2: Lineare Regression", mod2_l3: "Lektion 2.3: Entscheidungsbäume", mod2_l4: "Lektion 2.4: Qualitätsmetriken",
+            mod3_num: "Modul 3", mod3_title: "Neuronale Netze: Deep Learning", mod3_desc: "Verstehe, wie künstliche Neuronen und tiefe Netze funktionieren.",
+            mod3_l1: "Lektion 3.1: Perzeptron", mod3_l2: "Lektion 3.2: Aktivierungsfunktionen", mod3_l3: "Lektion 3.3: Backpropagation", mod3_l4: "Lektion 3.4: PyTorch", mod3_l5: "Lektion 3.5: CNN & Computer Vision",
+            mod4_num: "Modul 4", mod4_title: "CV & NLP", mod4_desc: "Erstelle Projekte, die du Freunden zeigen und in sozialen Medien posten kannst.",
+            mod4_l1: "Lektion 4.1: Transfer Learning", mod4_l2: "Lektion 4.2: Tokenisierung & Embeddings", mod4_l3: "Lektion 4.3: Sentiment-Analyse",
+            mod5_num: "Modul 5", mod5_title: "LLMs & Generative KI", mod5_desc: "Lerne, mit modernen Sprachmodellen zu arbeiten.",
+            mod5_l1: "Lektion 5.1: Transformer & Attention", mod5_l2: "Lektion 5.2: Prompt Engineering", mod5_l3: "Lektion 5.3: Arbeit mit APIs", mod5_l4: "Lektion 5.4: RAG", mod5_l5: "Lektion 5.5: KI-Ethik",
+            mod6_num: "Modul 6", mod6_title: "Abschluss-Hackathon", mod6_desc: "Teamarbeit, Projektverteidigung und Präsentation vor der Jury.",
+            mod6_l1: "Lektion 6.1: Git & GitHub", mod6_l2: "Lektion 6.2: Teamarbeit", mod6_l3: "Lektion 6.3: Projektverteidigung",
+            l_duration: "⏱ Dauer", l_level: "📗 Niveau",
+            l1_1_title: "Lektion 1.1: Python-Syntax", l1_1_desc: "Variablen, Schleifen, Funktionen, Datenstrukturen. Erste Programme und VS Code-Einführung.",
+            l1_1_p1: "Variablen und Datentypen", l1_1_p2: "Bedingungen und Schleifen", l1_1_p3: "Funktionen und Module", l1_1_p4: "Listen, Wörterbücher, Mengen",
+            l1_2_title: "Lektion 1.2: OOP-Grundlagen", l1_2_desc: "Klassen und Objekte durch den Bau eines einfachen Spiels.",
+            l1_3_title: "Lektion 1.3: NumPy & Matrizen", l1_3_desc: "Vektoren und Matrizen. Verbindung zur Geometrie und zukünftiger NN-Mathematik.",
+            l1_4_title: "Lektion 1.4: Pandas & Tabellen", l1_4_desc: "Arbeiten mit Tabellen, CSV laden, Daten filtern und gruppieren.",
+            l1_5_title: "Lektion 1.5: Datenvisualisierung", l1_5_desc: "Matplotlib und Seaborn. Schöne Diagramme für das Projekt erstellen.",
+            l2_1_title: "Lektion 2.1: Mathematik-Grundlagen", l2_1_desc: "Ableitungen, lineare Algebra und Wahrscheinlichkeitstheorie einfach erklärt.",
+            l2_2_title: "Lektion 2.2: Lineare Regression", l2_2_desc: "Erster ML-Algorithmus. Scikit-Learn. Vorhersage von Immobilienpreisen.",
+            l2_3_title: "Lektion 2.3: Entscheidungsbäume", l2_3_desc: "Random Forest und Klassifikation. Kaggle Titanic-Wettbewerb.",
+            l2_4_title: "Lektion 2.4: Qualitätsmetriken", l2_4_desc: "Accuracy, Precision, Recall, F1. Warum 99% Genauigkeit nicht immer gut ist.",
+            l3_1_title: "Lektion 3.1: Perzeptron", l3_1_desc: "Biologisches vs künstliches Neuron. Erstes Neuron in Python.",
+            l3_2_title: "Lektion 3.2: Aktivierungsfunktionen", l3_2_desc: "ReLU, Sigmoid, Softmax. Warum sie gebraucht werden und wie sie funktionieren.",
+            l3_3_title: "Lektion 3.3: Backpropagation", l3_3_desc: "Wie lernt das Netz? Backpropagation einfach erklärt.",
+            l3_4_title: "Lektion 3.4: PyTorch", l3_4_desc: "Framework-Einführung. Tensoren, Autodiff, erstes Netz.",
+            l3_5_title: "Lektion 3.5: CNN & Computer Vision", l3_5_desc: "Faltungsnetze. MNIST-Erkennung und Webcam-Gesten.",
+            l4_1_title: "Lektion 4.1: Transfer Learning", l4_1_desc: "Vortrainierte Netze nutzen, um eigene Objekte zu erkennen.",
+            l4_2_title: "Lektion 4.2: Tokenisierung & Embeddings", l4_2_desc: "Wie ein Computer die Bedeutung von Wörtern versteht. Word2Vec.",
+            l4_3_title: "Lektion 4.3: Sentiment-Analyse", l4_3_desc: "Telegram-Bot, der Kommentare analysiert und wegen Toxizität bannt.",
+            l5_1_title: "Lektion 5.1: Transformer & Attention", l5_1_desc: "Wie große Sprachmodelle funktionieren. Aufmerksamkeitsmechanismus.",
+            l5_2_title: "Lektion 5.2: Prompt Engineering", l5_2_desc: "Die Kunst, KI richtig zu fragen. Few-shot, chain-of-thought.",
+            l5_3_title: "Lektion 5.3: Arbeit mit APIs", l5_3_desc: "OpenAI, YandexGPT, lokale Modelle über Ollama.",
+            l5_4_title: "Lektion 5.4: RAG", l5_4_desc: "Retrieval-Augmented Generation. KI antwortet aus deinen Dokumenten ohne Halluzinationen.",
+            l5_5_title: "Lektion 5.5: KI-Ethik", l5_5_desc: "Deepfakes, Urheberrecht, algorithmische Voreingenommenheit, Auswirkungen auf den Arbeitsmarkt.",
+            l6_1_title: "Lektion 6.1: Git & GitHub", l6_1_desc: "Code-Versionierung. Schöne README für dein Portfolio.",
+            l6_2_title: "Lektion 6.2: Teamarbeit", l6_2_desc: "Rollenverteilung: Data Scientist, ML Engineer, Product Manager.",
+            l6_3_title: "Lektion 6.3: Projektverteidigung", l6_3_desc: "Pitch vor der Jury. Abschluss-Hackathon und KI-Startup-Präsentation.",
+            footer: "© 2026 AI Creator. KI-Kurs für Schüler der 10. Klasse."
+        },
+        kk: {
+            hero_title: "AI Creator: Python-нан өз нейрондық желілеріңізге дейін",
+            hero_subtitle: "10-сынып оқушыларына арналған жасанды интеллект және Python бағдарламалау курсы. 5 жобадан портфолио жасап, үздік университетке түсуге дайындал.",
+            stat_hours: "оқу сағаттары",
+            stat_modules: "модульдер",
+            stat_projects: "портфолио жобалары",
+            about_title: "Курс туралы",
+            about_1_title: "Бірінші күннен бастап тәжірибе",
+            about_1_text: "Уақыттың 80%-ы код пен эксперименттер. Құрғақ теория жоқ.",
+            about_2_title: "Заманауи құралдар",
+            about_2_text: "VS Code, PyTorch, Google Colab, GitHub — кәсіпқойлар қолданатын барлық нәрсе.",
+            about_3_title: "Нақты жобалар",
+            about_3_text: "Боттар, нейрондық желілер, компьютерлік көру — достарыңа көрсетуге болатын нәрселер.",
+            about_4_title: "Университетке түсуге көмек",
+            about_4_text: "Портфолио мен хакатондар үздік университеттерге бонус береді.",
+            modules_title: "Курс модульдері",
+            lessons_title: "Сабақтардың толық сипаттамасы",
+            mod1_num: "1-модуль", mod1_title: "Python және Деректер: Негіздер", mod1_desc: "Python үйреніп, практикалық тапсырмалар арқылы деректермен жұмыс істе.",
+            mod1_l1: "1.1 Сабақ: Python синтаксисі", mod1_l2: "1.2 Сабақ: ООП негіздері", mod1_l3: "1.3 Сабақ: NumPy және матрицалар", mod1_l4: "1.4 Сабақ: Pandas және кестелер", mod1_l5: "1.5 Сабақ: Деректерді визуализациялау",
+            mod2_num: "2-модуль", mod2_title: "ЖИ және ML үшін математика", mod2_desc: "Машина нейрондық желілерсіз деректерден қалай үйренетінін түсін.",
+            mod2_l1: "2.1 Сабақ: Математикалық минимум", mod2_l2: "2.2 Сабақ: Сызықтық регрессия", mod2_l3: "2.3 Сабақ: Шешім ағаштары", mod2_l4: "2.4 Сабақ: Сапа метрикалары",
+            mod3_num: "3-модуль", mod3_title: "Нейрондық желілер: Deep Learning", mod3_desc: "Жасанды нейрондар мен терең желілер қалай жұмыс істейтінін түсін.",
+            mod3_l1: "3.1 Сабақ: Перцептрон", mod3_l2: "3.2 Сабақ: Белсендіру функциялары", mod3_l3: "3.3 Сабақ: Backpropagation", mod3_l4: "3.4 Сабақ: PyTorch", mod3_l5: "3.5 Сабақ: CNN және компьютерлік көру",
+            mod4_num: "4-модуль", mod4_title: "CV және NLP", mod4_desc: "Достарыңа көрсетіп, әлеуметтік желілерге жариялай алатын жобалар жаса.",
+            mod4_l1: "4.1 Сабақ: Transfer Learning", mod4_l2: "4.2 Сабақ: Токенизация және эмбеддингтер", mod4_l3: "4.3 Сабақ: Тонус талдау",
+            mod5_num: "5-модуль", mod5_title: "LLM және Генеративті ЖИ", mod5_desc: "Заманауи тілдік модельдермен жұмыс істеуді үйрен.",
+            mod5_l1: "5.1 Сабақ: Трансформерлер және Attention", mod5_l2: "5.2 Сабақ: Prompt Engineering", mod5_l3: "5.3 Сабақ: API-мен жұмыс", mod5_l4: "5.4 Сабақ: RAG", mod5_l5: "5.5 Сабақ: ЖИ этикасы",
+            mod6_num: "6-модуль", mod6_title: "Қорытынды Хакатон", mod6_desc: "Командалық жұмыс, жобаларды қорғау және қазылар алдында презентация.",
+            mod6_l1: "6.1 Сабақ: Git және GitHub", mod6_l2: "6.2 Сабақ: Командада жұмыс", mod6_l3: "6.3 Сабақ: Жобаны қорғау",
+            l_duration: "⏱ Ұзақтығы", l_level: "📗 Деңгей",
+            l1_1_title: "1.1 Сабақ: Python синтаксисі", l1_1_desc: "Айнымалылар, циклдер, функциялар, деректер құрылымдары. Алғашқы бағдарламалар және VS Code кіріспесі.",
+            l1_1_p1: "Айнымалылар және деректер түрлері", l1_1_p2: "Шарттар және циклдер", l1_1_p3: "Функциялар және модульдер", l1_1_p4: "Тізімдер, сөздіктер, жиындар",
+            l1_2_title: "1.2 Сабақ: ООП негіздері", l1_2_desc: "Қарапайым ойын жасау арқылы кластар мен объектілер.",
+            l1_3_title: "1.3 Сабақ: NumPy және матрицалар", l1_3_desc: "Векторлар мен матрицалар. Геометриямен және болашақ нейрондық желі математикасымен байланыс.",
+            l1_4_title: "1.4 Сабақ: Pandas және кестелер", l1_4_desc: "Кестелермен жұмыс, CSV жүктеу, деректерді сүзгілеу және топтастыру.",
+            l1_5_title: "1.5 Сабақ: Деректерді визуализациялау", l1_5_desc: "Matplotlib және Seaborn. Жоба үшін әдеми графиктер құру.",
+            l2_1_title: "2.1 Сабақ: Математикалық минимум", l2_1_desc: "Туындылар, сызықтық алгебра және ықтималдық теориясы қарапайым тілмен.",
+            l2_2_title: "2.2 Сабақ: Сызықтық регрессия", l2_2_desc: "Бірінші ML алгоритмі. Scikit-Learn. Тұрғын үй бағасын болжау.",
+            l2_3_title: "2.3 Сабақ: Шешім ағаштары", l2_3_desc: "Random Forest және жіктеу. Kaggle Titanic жарысы.",
+            l2_4_title: "2.4 Сабақ: Сапа метрикалары", l2_4_desc: "Accuracy, Precision, Recall, F1. Неліктен 99% дәлдік әрдайым жақсы емес.",
+            l3_1_title: "3.1 Сабақ: Перцептрон", l3_1_desc: "Биологиялық нейрон vs жасанды. Python-дағы бірінші нейрон.",
+            l3_2_title: "3.2 Сабақ: Белсендіру функциялары", l3_2_desc: "ReLU, Sigmoid, Softmax. Неліктен қажет және қалай жұмыс істейді.",
+            l3_3_title: "3.3 Сабақ: Backpropagation", l3_3_desc: "Желі қалай үйренеді? Backpropagation қарапайым тілмен.",
+            l3_4_title: "3.4 Сабақ: PyTorch", l3_4_desc: "Фреймворкпен танысу. Тензорлар, autodiff, бірінші желі.",
+            l3_5_title: "3.5 Сабақ: CNN және компьютерлік көру", l3_5_desc: "Конволюциялық желілер. MNIST тану және веб-камера жесттері.",
+            l4_1_title: "4.1 Сабақ: Transfer Learning", l4_1_desc: "Өз объектілеріңді тану үшін алдын ала оқытылған желілерді пайдалану.",
+            l4_2_title: "4.2 Сабақ: Токенизация және эмбеддингтер", l4_2_desc: "Компьютер сөздердің мағынасын қалай түсінеді. Word2Vec.",
+            l4_3_title: "4.3 Сабақ: Тонус талдау", l4_3_desc: "Пікірлерді талдап, уыттылық үшін банлайтын Telegram-бот.",
+            l5_1_title: "5.1 Сабақ: Трансформерлер және Attention", l5_1_desc: "Үлкен тілдік модельдер қалай жұмыс істейді. Назар аудару механизмі.",
+            l5_2_title: "5.2 Сабақ: Prompt Engineering", l5_2_desc: "ЖИ-ге дұрыс сұрақ қою өнері. Few-shot, chain-of-thought.",
+            l5_3_title: "5.3 Сабақ: API-мен жұмыс", l5_3_desc: "OpenAI, YandexGPT, Ollama арқылы жергілікті модельдер.",
+            l5_4_title: "5.4 Сабақ: RAG", l5_4_desc: "Retrieval-Augmented Generation. ЖИ галлюцинациясыз құжаттарыңнан жауап береді.",
+            l5_5_title: "5.5 Сабақ: ЖИ этикасы", l5_5_desc: "Дипфейктер, авторлық құқық, алгоритмдік біржақтылық, еңбек нарығына әсері.",
+            l6_1_title: "6.1 Сабақ: Git және GitHub", l6_1_desc: "Кодты нұсқалау. Портфолио үшін әдемі README.",
+            l6_2_title: "6.2 Сабақ: Командада жұмыс", l6_2_desc: "Рөлдерді бөлу: Data Scientist, ML Engineer, Product Manager.",
+            l6_3_title: "6.3 Сабақ: Жобаны қорғау", l6_3_desc: "Қазылар алдында питч. Қорытынды хакатон және ЖИ-стартап презентациясы.",
+            footer: "© 2026 AI Creator. 10-сынып оқушыларына арналған ЖИ курсы."
+        }
+    };
+
+    // Переключение языка
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Обновляем язык HTML
+            document.documentElement.lang = lang;
+            
+            // Переводим все элементы с data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+        });
+    });
+
+    // Плавная прокрутка к урокам
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
+
