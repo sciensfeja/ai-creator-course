@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 0: Установка VS Code — AI Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #e4e6eb;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(120, 80, 255, 0.3);
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            color: #e4e6eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(120, 80, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Lesson container */
+        .lesson-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Lesson header */
+        .lesson-header {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .lesson-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #7850ff, #00c8ff, #ff50a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .lesson-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .meta-tag {
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Content blocks */
+        .content-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-block h2 {
+            color: #00c8ff;
+            margin-bottom: 1rem;
+            font-size: 1.6rem;
+        }
+
+        .content-block h3 {
+            color: #7850ff;
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .content-block p {
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .content-block ul, .content-block ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .content-block li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Goals list */
+        .goals-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .goals-list li {
+            padding: 0.8rem 1rem;
+            background: rgba(0, 200, 255, 0.05);
+            border-left: 3px solid #00c8ff;
+            margin-bottom: 0.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .goals-list li::before {
+            content: '🎯 ';
+        }
+
+        /* Steps */
+        .step {
+            background: rgba(120, 80, 255, 0.05);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4);
+        }
+
+        .step h3 {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-size: 1.3rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #0d1117;
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+        }
+
+        code {
+            color: #00c8ff;
+            background: rgba(0, 200, 255, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e4e6eb;
+        }
+
+        /* Info boxes */
+        .info-box {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.tip {
+            background: rgba(0, 200, 100, 0.08);
+            border-color: #00c864;
+        }
+
+        .info-box.warning {
+            background: rgba(255, 180, 0, 0.08);
+            border-color: #ffb400;
+        }
+
+        .info-box.danger {
+            background: rgba(255, 80, 80, 0.08);
+            border-color: #ff5050;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Hotkeys */
+        .hotkey {
+            display: inline-block;
+            background: #1a1f3a;
+            border: 1px solid rgba(120, 80, 255, 0.4);
+            border-bottom: 3px solid rgba(120, 80, 255, 0.6);
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #00c8ff;
+            margin: 0 0.2rem;
+        }
+
+        /* Homework */
+        .homework {
+            background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1));
+            border: 1px solid rgba(255, 80, 160, 0.3);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .homework h2 {
+            color: #ff50a0;
+        }
+
+        .homework ol {
+            margin-left: 1.5rem;
+        }
+
+        .homework li {
+            margin-bottom: 0.8rem;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem 1.5rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            color: #e4e6eb;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(120, 80, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3);
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2));
+            border-color: #00c8ff;
+        }
+
+        .nav-btn-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a0a3b8;
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-btn-title {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: #a0a3b8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .lesson-header h1 { font-size: 1.8rem; }
+            .lesson-container { padding: 1rem; }
+            .content-block { padding: 1.5rem; }
+            .header-content { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <!-- Заголовок урока -->
+    <div class="lesson-header">
+        <span class="lesson-badge" data-i18n="badge">УРОК 0 • ПОДГОТОВИТЕЛЬНЫЙ</span>
+        <h1 data-i18n="title">Установка и настройка VS Code</h1>
+        <p style="color: #a0a3b8; max-width: 600px; margin: 0 auto;" data-i18n="subtitle">
+            Прежде чем создавать нейросети, нужно подготовить рабочее место. Этот урок — ваш пропуск в мир профессиональной разработки.
+        </p>
+        <div class="lesson-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 1.5 часа</span>
+            <span class="meta-tag" data-i18n="level">📗 Для начинающих</span>
+            <span class="meta-tag" data-i18n="tools">🛠 VS Code + Python</span>
+        </div>
+    </div>
+
+    <!-- Цели урока -->
+    <div class="content-block">
+        <h2 data-i18n="goals_title">🎯 Цели урока</h2>
+        <ul class="goals-list">
+            <li data-i18n="goal_1">Установить Visual Studio Code — главный инструмент разработчика</li>
+            <li data-i18n="goal_2">Установить Python и настроить окружение</li>
+            <li data-i18n="goal_3">Поставить нужные расширения (Python, Jupyter)</li>
+            <li data-i18n="goal_4">Написать первую программу и запустить её</li>
+            <li data-i18n="goal_5">Познакомиться с интерфейсом и горячими клавишами</li>
+        </ul>
+    </div>
+
+    <!-- Зачем VS Code -->
+    <div class="content-block">
+        <h2 data-i18n="why_title">💡 Почему именно VS Code?</h2>
+        <p data-i18n="why_text_1">
+            Возможно, вы слышали про PyCharm, IDLE или даже Jupyter Notebook как отдельное приложение. Почему мы выбираем VS Code?
+        </p>
+        <ul>
+            <li data-i18n="why_1"><strong>Это стандарт индустрии.</strong> В 2026 году более 70% разработчиков в мире используют VS Code.</li>
+            <li data-i18n="why_2"><strong>Всё в одном месте.</strong> Код, терминал, отладчик, Git, Jupyter-ноутбуки — не нужно переключаться между окнами.</li>
+            <li data-i18n="why_3"><strong>Умные подсказки.</strong> Автодополнение, проверка ошибок, AI-помощники (Copilot) — пишут код за вас.</li>
+            <li data-i18n="why_4"><strong>Бесплатный и лёгкий.</strong> Работает даже на слабых школьных компьютерах.</li>
+        </ul>
+        <div class="info-box tip">
+            <strong data-i18n="why_tip_title">💡 Интересный факт</strong>
+            <span data-i18n="why_tip_text">VS Code написан самой Microsoft, но при этом имеет открытый исходный код. Его используют не только для Python, но и для JavaScript, Rust, Go, C++ и десятков других языков.</span>
+        </div>
+    </div>
+
+    <!-- Шаг 1 -->
+    <div class="step">
+        <div class="step-number">1</div>
+        <h3 data-i18n="step1_title">📥 Установка VS Code</h3>
+        <p data-i18n="step1_p1">Перейдите на официальный сайт:</p>
+        <pre><code>https://code.visualstudio.com</code></pre>
+        <p data-i18n="step1_p2">Сайт автоматически определит вашу операционную систему. Нажмите большую синюю кнопку <strong>Download</strong>.</p>
+        <h3 data-i18n="step1_inst_title">Во время установки (Windows):</h3>
+        <ul>
+            <li data-i18n="step1_i1">✅ Поставьте галочку <strong>«Add to PATH»</strong> — это важно!</li>
+            <li data-i18n="step1_i2">✅ Поставьте галочку <strong>«Add "Open with Code" to file context menu»</strong></li>
+            <li data-i18n="step1_i3">✅ Поставьте галочку <strong>«Add "Open with Code" to directory context menu»</strong></li>
+            <li data-i18n="step1_i4">Остальное можно оставить по умолчанию</li>
+        </ul>
+        <div class="info-box warning">
+            <strong data-i18n="step1_warn_title">⚠️ Важно для macOS</strong>
+            <span data-i18n="step1_warn_text">После установки перетащите VS Code в папку «Программы». Иначе macOS будет ругаться на «повреждённое приложение».</span>
+        </div>
+    </div>
+
+    <!-- Шаг 2 -->
+    <div class="step">
+        <div class="step-number">2</div>
+        <h3 data-i18n="step2_title">🐍 Установка Python</h3>
+        <p data-i18n="step2_p1">VS Code — это редактор, а Python — это язык, на котором мы будем писать. Установим его:</p>
+        <pre><code>https://www.python.org/downloads/</code></pre>
+        <p data-i18n="step2_p2">Нажмите <strong>«Download Python 3.12»</strong> (или новее).</p>
+        <h3 data-i18n="step2_inst_title">КРИТИЧЕСКИ ВАЖНО при установке:</h3>
+        <div class="info-box danger">
+            <strong data-i18n="step2_danger_title">🚨 Не пропустите!</strong>
+            <span data-i18n="step2_danger_text">В самом первом окне установщика обязательно поставьте галочку <strong>«Add python.exe to PATH»</strong> (внизу окна). Без этого Python не будет работать из терминала.</span>
+        </div>
+        <p data-i18n="step2_p3">Затем нажмите <strong>«Install Now»</strong> и дождитесь окончания.</p>
+        <h3 data-i18n="step2_check_title">Проверка установки</h3>
+        <p data-i18n="step2_p4">Откройте терминал (в Windows — <strong>Win + R</strong>, введите <code>cmd</code>, нажмите Enter) и напишите:</p>
+        <pre><code>python --version</code></pre>
+        <p data-i18n="step2_p5">Должно появиться что-то вроде <code>Python 3.12.x</code>. Если видите ошибку — значит, не поставили галочку PATH. Переустановите Python.</p>
+    </div>
+
+    <!-- Шаг 3 -->
+    <div class="step">
+        <div class="step-number">3</div>
+        <h3 data-i18n="step3_title">🧩 Установка расширений</h3>
+        <p data-i18n="step3_p1">Расширения — это «суперсилы» для VS Code. Установим три обязательных:</p>
+        <ol>
+            <li data-i18n="step3_i1">Откройте VS Code</li>
+            <li data-i18n="step3_i2">Нажмите <span class="hotkey">Ctrl</span> + <span class="hotkey">Shift</span> + <span class="hotkey">X</span> (или иконка квадратиков слева)</li>
+            <li data-i18n="step3_i3">В поиске введите названия и нажмите <strong>Install</strong>:</li>
+        </ol>
+        <ul>
+            <li>🐍 <strong>Python</strong> (от Microsoft) — поддержка языка Python</li>
+            <li>📓 <strong>Jupyter</strong> (от Microsoft) — для работы с ноутбуками</li>
+            <li>✨ <strong>Pylance</strong> (от Microsoft) — умные подсказки кода</li>
+        </ul>
+        <div class="info-box tip">
+            <strong data-i18n="step3_tip_title">💡 Бонусное расширение</strong>
+            <span data-i18n="step3_tip_text">Если хотите AI-помощника — установите <strong>GitHub Copilot</strong> или <strong>Codeium</strong>. Для школьников есть бесплатная лицензия через GitHub Education.</span>
+        </div>
+    </div>
+
+    <!-- Шаг 4 -->
+    <div class="step">
+        <div class="step-number">4</div>
+        <h3 data-i18n="step4_title">🚀 Первая программа: Hello, AI!</h3>
+        <p data-i18n="step4_p1">Традиция в программировании — первая программа всегда выводит приветствие. Сделаем это:</p>
+        <ol>
+            <li data-i18n="step4_i1">В VS Code нажмите <strong>File → Open Folder</strong> и создайте новую папку <code>ai-course</code></li>
+            <li data-i18n="step4_i2">В этой папке создайте файл <code>hello.py</code> (правой кнопкой по папке → New File)</li>
+            <li data-i18n="step4_i3">Напишите в нём код:</li>
+        </ol>
+        <pre><code>print("Hello, AI! 🤖")
+print("Я начинаю свой путь в мире нейросетей")
+print(2 + 2 * 2)</code></pre>
+        <ol start="4">
+            <li data-i18n="step4_i4">Запустите программу: нажмите ▶️ в правом верхнем углу ИЛИ <span class="hotkey">F5</span> ИЛИ в терминале:</li>
+        </ol>
+        <pre><code>python hello.py</code></pre>
+        <p data-i18n="step4_p2">Если видите в терминале:</p>
+        <pre><code>Hello, AI! 🤖
+Я начинаю свой путь в мире нейросетей
+6</code></pre>
+        <p data-i18n="step4_p3">🎉 <strong>Поздравляю! Вы — программист!</strong></p>
+    </div>
+
+    <!-- Знакомство с интерфейсом -->
+    <div class="content-block">
+        <h2 data-i18n="ui_title">🖥 Знакомство с интерфейсом</h2>
+        <p data-i18n="ui_text">VS Code состоит из 5 основных зон:</p>
+        <ul>
+            <li><strong data-i18n="ui_1_t">Activity Bar</strong> <span data-i18n="ui_1_d">— узкая полоска слева с иконками (файлы, поиск, Git, расширения)</span></li>
+            <li><strong data-i18n="ui_2_t">Side Bar</strong> <span data-i18n="ui_2_d">— панель с деревом файлов и инструментами</span></li>
+            <li><strong data-i18n="ui_3_t">Editor</strong> <span data-i18n="ui_3_d">— центральная часть, где вы пишете код</span></li>
+            <li><strong data-i18n="ui_4_t">Panel</strong> <span data-i18n="ui_4_d">— нижняя панель с терминалом и ошибками</span></li>
+            <li><strong data-i18n="ui_5_t">Status Bar</strong> <span data-i18n="ui_5_d">— самая нижняя полоска с информацией о файле</span></li>
+        </ul>
+        <div class="info-box tip">
+            <strong data-i18n="ui_tip_title">💡 Совет</strong>
+            <span data-i18n="ui_tip_text">Скрыть/показать терминал: <span class="hotkey">Ctrl</span> + <span class="hotkey">`</span> (кнопка с буквой Ё). Это самая используемая комбинация!</span>
+        </div>
+    </div>
+
+    <!-- Горячие клавиши -->
+    <div class="content-block">
+        <h2 data-i18n="hotkeys_title">⌨️ Горячие клавиши, которые нужно знать</h2>
+        <p data-i18n="hotkeys_text">Профессионалы не используют мышь. Попробуйте сразу привыкать:</p>
+        <ul>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">S</span> — <span data-i18n="hk_1">сохранить файл</span></li>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">`</span> — <span data-i18n="hk_2">открыть/закрыть терминал</span></li>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">Shift</span> + <span class="hotkey">P</span> — <span data-i18n="hk_3">палитра команд (главный инструмент!)</span></li>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">P</span> — <span data-i18n="hk_4">быстрый поиск файла</span></li>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">D</span> — <span data-i18n="hk_5">выделить следующее такое же слово</span></li>
+            <li><span class="hotkey">Alt</span> + <span class="hotkey">↑/↓</span> — <span data-i18n="hk_6">переместить строку вверх/вниз</span></li>
+            <li><span class="hotkey">Ctrl</span> + <span class="hotkey">/</span> — <span data-i18n="hk_7">закомментировать строку</span></li>
+            <li><span class="hotkey">F5</span> — <span data-i18n="hk_8">запустить программу</span></li>
+        </ul>
+    </div>
+
+    <!-- Частые проблемы -->
+    <div class="content-block">
+        <h2 data-i18n="problems_title">🚨 Частые проблемы и их решения</h2>
+        
+        <h3 data-i18n="prob1_title">«python» не является внутренней или внешней командой</h3>
+        <p data-i18n="prob1_text">При установке Python не поставили галочку «Add to PATH». Решение: переустановите Python, выбрав «Modify» и поставив галочку.</p>
+
+        <h3 data-i18n="prob2_title">VS Code не видит Python</h3>
+        <p data-i18n="prob2_text">Нажмите <span class="hotkey">Ctrl</span> + <span class="hotkey">Shift</span> + <span class="hotkey">P</span>, введите «Python: Select Interpreter» и выберите установленную версию.</p>
+
+        <h3 data-i18n="prob3_title">Код не запускается при нажатии F5</h3>
+        <p data-i18n="prob3_text">Убедитесь, что установлено расширение Python. Также проверьте, что файл сохранён (перед именем файла нет точки).</p>
+
+        <h3 data-i18n="prob4_title">Кракозябры вместо русских букв</h3>
+        <p data-i18n="prob4_text">В правом нижнем углу нажмите на кодировку (обычно UTF-8) и выберите «Save with Encoding» → UTF-8.</p>
+    </div>
+
+    <!-- Домашнее задание -->
+    <div class="homework">
+        <h2 data-i18n="hw_title">🏠 Домашнее задание</h2>
+        <p data-i18n="hw_intro">Закрепим материал. Выполните 3 задания:</p>
+        <ol>
+            <li>
+                <strong data-i18n="hw1_title">«Визитка»:</strong>
+                <span data-i18n="hw1_text">Создайте файл <code>about_me.py</code>, который выводит на экран: ваше имя, возраст, город и 3 ваших хобби. Каждое — с новой строки.</span>
+            </li>
+            <li>
+                <strong data-i18n="hw2_title">«Калькулятор»:</strong>
+                <span data-i18n="hw2_text">Напишите программу, которая считает: сколько секунд вы уже прожили (примерно). Подсказка: <code>15 лет × 365 дней × 24 часа × 60 минут × 60 секунд</code>.</span>
+            </li>
+            <li>
+                <strong data-i18n="hw3_title">«Исследователь»:</strong>
+                <span data-i18n="hw3_text">Найдите и установите в VS Code одно расширение по вашему интересу (тема, игра, язык программирования). Напишите в комментариях к коду, что оно делает.</span>
+            </li>
+        </ol>
+        <div class="info-box tip">
+            <strong data-i18n="hw_bonus_title">⭐ Бонусное задание</strong>
+            <span data-i18n="hw_bonus_text">Сделайте скриншот вашей работающей программы и отправьте учителю. Первые 3 приславших получат «AI-коины» 🪙</span>
+        </div>
+    </div>
+
+    <!-- Итоги -->
+    <div class="content-block">
+        <h2 data-i18n="summary_title">📌 Итоги урока</h2>
+        <p data-i18n="summary_text">Сегодня вы:</p>
+        <ul>
+            <li data-i18n="sum_1">✅ Установили VS Code — главный инструмент разработчика</li>
+            <li data-i18n="sum_2">✅ Настроили Python — язык, на котором пишет весь AI-мир</li>
+            <li data-i18n="sum_3">✅ Поставили расширения для работы с Jupyter и Python</li>
+            <li data-i18n="sum_4">✅ Написали и запустили первую программу</li>
+            <li data-i18n="sum_5">✅ Выучили 8 горячих клавиш</li>
+        </ul>
+        <p data-i18n="summary_final">На следующем уроке мы напишем первую игру на Python и познакомимся с переменными, циклами и функциями. Готовьтесь! 🚀</p>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav-buttons">
+        <a href="index.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Назад к курсу</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">Главная страница</span>
+        </a>
+        <a href="lesson-1-1.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий урок →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">1.1 Синтаксис Python</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p data-i18n="footer">© 2026 AI Creator. Курс по ИИ для школьников 10 класса.</p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "УРОК 0 • ПОДГОТОВИТЕЛЬНЫЙ",
+            title: "Установка и настройка VS Code",
+            subtitle: "Прежде чем создавать нейросети, нужно подготовить рабочее место. Этот урок — ваш пропуск в мир профессиональной разработки.",
+            duration: "⏱ 1.5 часа", level: "📗 Для начинающих", tools: "🛠 VS Code + Python",
+            goals_title: "🎯 Цели урока",
+            goal_1: "Установить Visual Studio Code — главный инструмент разработчика",
+            goal_2: "Установить Python и настроить окружение",
+            goal_3: "Поставить нужные расширения (Python, Jupyter)",
+            goal_4: "Написать первую программу и запустить её",
+            goal_5: "Познакомиться с интерфейсом и горячими клавишами",
+            why_title: "💡 Почему именно VS Code?",
+            why_text_1: "Возможно, вы слышали про PyCharm, IDLE или даже Jupyter Notebook как отдельное приложение. Почему мы выбираем VS Code?",
+            why_1: "<strong>Это стандарт индустрии.</strong> В 2026 году более 70% разработчиков в мире используют VS Code.",
+            why_2: "<strong>Всё в одном месте.</strong> Код, терминал, отладчик, Git, Jupyter-ноутбуки — не нужно переключаться между окнами.",
+            why_3: "<strong>Умные подсказки.</strong> Автодополнение, проверка ошибок, AI-помощники (Copilot) — пишут код за вас.",
+            why_4: "<strong>Бесплатный и лёгкий.</strong> Работает даже на слабых школьных компьютерах.",
+            why_tip_title: "💡 Интересный факт",
+            why_tip_text: "VS Code написан самой Microsoft, но при этом имеет открытый исходный код. Его используют не только для Python, но и для JavaScript, Rust, Go, C++ и десятков других языков.",
+            step1_title: "📥 Установка VS Code",
+            step1_p1: "Перейдите на официальный сайт:",
+            step1_p2: "Сайт автоматически определит вашу операционную систему. Нажмите большую синюю кнопку <strong>Download</strong>.",
+            step1_inst_title: "Во время установки (Windows):",
+            step1_i1: "✅ Поставьте галочку <strong>«Add to PATH»</strong> — это важно!",
+            step1_i2: "✅ Поставьте галочку <strong>«Add \"Open with Code\" to file context menu»</strong>",
+            step1_i3: "✅ Поставьте галочку <strong>«Add \"Open with Code\" to directory context menu»</strong>",
+            step1_i4: "Остальное можно оставить по умолчанию",
+            step1_warn_title: "⚠️ Важно для macOS",
+            step1_warn_text: "После установки перетащите VS Code в папку «Программы». Иначе macOS будет ругаться на «повреждённое приложение».",
+            step2_title: "🐍 Установка Python",
+            step2_p1: "VS Code — это редактор, а Python — это язык, на котором мы будем писать. Установим его:",
+            step2_p2: "Нажмите <strong>«Download Python 3.12»</strong> (или новее).",
+            step2_inst_title: "КРИТИЧЕСКИ ВАЖНО при установке:",
+            step2_danger_title: "🚨 Не пропустите!",
+            step2_danger_text: "В самом первом окне установщика обязательно поставьте галочку <strong>«Add python.exe to PATH»</strong> (внизу окна). Без этого Python не будет работать из терминала.",
+            step2_p3: "Затем нажмите <strong>«Install Now»</strong> и дождитесь окончания.",
+            step2_check_title: "Проверка установки",
+            step2_p4: "Откройте терминал (в Windows — <strong>Win + R</strong>, введите <code>cmd</code>, нажмите Enter) и напишите:",
+            step2_p5: "Должно появиться что-то вроде <code>Python 3.12.x</code>. Если видите ошибку — значит, не поставили галочку PATH. Переустановите Python.",
+            step3_title: "🧩 Установка расширений",
+            step3_p1: "Расширения — это «суперсилы» для VS Code. Установим три обязательных:",
+            step3_i1: "Откройте VS Code",
+            step3_i2: "Нажмите <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">X</span> (или иконка квадратиков слева)",
+            step3_i3: "В поиске введите названия и нажмите <strong>Install</strong>:",
+            step3_tip_title: "💡 Бонусное расширение",
+            step3_tip_text: "Если хотите AI-помощника — установите <strong>GitHub Copilot</strong> или <strong>Codeium</strong>. Для школьников есть бесплатная лицензия через GitHub Education.",
+            step4_title: "🚀 Первая программа: Hello, AI!",
+            step4_p1: "Традиция в программировании — первая программа всегда выводит приветствие. Сделаем это:",
+            step4_i1: "В VS Code нажмите <strong>File → Open Folder</strong> и создайте новую папку <code>ai-course</code>",
+            step4_i2: "В этой папке создайте файл <code>hello.py</code> (правой кнопкой по папке → New File)",
+            step4_i3: "Напишите в нём код:",
+            step4_i4: "Запустите программу: нажмите ▶️ в правом верхнем углу ИЛИ <span class=\"hotkey\">F5</span> ИЛИ в терминале:",
+            step4_p2: "Если видите в терминале:",
+            step4_p3: "🎉 <strong>Поздравляю! Вы — программист!</strong>",
+            ui_title: "🖥 Знакомство с интерфейсом",
+            ui_text: "VS Code состоит из 5 основных зон:",
+            ui_1_t: "Activity Bar", ui_1_d: "— узкая полоска слева с иконками (файлы, поиск, Git, расширения)",
+            ui_2_t: "Side Bar", ui_2_d: "— панель с деревом файлов и инструментами",
+            ui_3_t: "Editor", ui_3_d: "— центральная часть, где вы пишете код",
+            ui_4_t: "Panel", ui_4_d: "— нижняя панель с терминалом и ошибками",
+            ui_5_t: "Status Bar", ui_5_d: "— самая нижняя полоска с информацией о файле",
+            ui_tip_title: "💡 Совет",
+            ui_tip_text: "Скрыть/показать терминал: <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">`</span> (кнопка с буквой Ё). Это самая используемая комбинация!",
+            hotkeys_title: "⌨️ Горячие клавиши, которые нужно знать",
+            hotkeys_text: "Профессионалы не используют мышь. Попробуйте сразу привыкать:",
+            hk_1: "сохранить файл", hk_2: "открыть/закрыть терминал", hk_3: "палитра команд (главный инструмент!)",
+            hk_4: "быстрый поиск файла", hk_5: "выделить следующее такое же слово",
+            hk_6: "переместить строку вверх/вниз", hk_7: "закомментировать строку", hk_8: "запустить программу",
+            problems_title: "🚨 Частые проблемы и их решения",
+            prob1_title: "«python» не является внутренней или внешней командой",
+            prob1_text: "При установке Python не поставили галочку «Add to PATH». Решение: переустановите Python, выбрав «Modify» и поставив галочку.",
+            prob2_title: "VS Code не видит Python",
+            prob2_text: "Нажмите <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">P</span>, введите «Python: Select Interpreter» и выберите установленную версию.",
+            prob3_title: "Код не запускается при нажатии F5",
+            prob3_text: "Убедитесь, что установлено расширение Python. Также проверьте, что файл сохранён (перед именем файла нет точки).",
+            prob4_title: "Кракозябры вместо русских букв",
+            prob4_text: "В правом нижнем углу нажмите на кодировку (обычно UTF-8) и выберите «Save with Encoding» → UTF-8.",
+            hw_title: "🏠 Домашнее задание",
+            hw_intro: "Закрепим материал. Выполните 3 задания:",
+            hw1_title: "«Визитка»:", hw1_text: "Создайте файл <code>about_me.py</code>, который выводит на экран: ваше имя, возраст, город и 3 ваших хобби. Каждое — с новой строки.",
+            hw2_title: "«Калькулятор»:", hw2_text: "Напишите программу, которая считает: сколько секунд вы уже прожили (примерно). Подсказка: <code>15 лет × 365 дней × 24 часа × 60 минут × 60 секунд</code>.",
+            hw3_title: "«Исследователь»:", hw3_text: "Найдите и установите в VS Code одно расширение по вашему интересу (тема, игра, язык программирования). Напишите в комментариях к коду, что оно делает.",
+            hw_bonus_title: "⭐ Бонусное задание",
+            hw_bonus_text: "Сделайте скриншот вашей работающей программы и отправьте учителю. Первые 3 приславших получат «AI-коины» 🪙",
+            summary_title: "📌 Итоги урока",
+            summary_text: "Сегодня вы:",
+            sum_1: "✅ Установили VS Code — главный инструмент разработчика",
+            sum_2: "✅ Настроили Python — язык, на котором пишет весь AI-мир",
+            sum_3: "✅ Поставили расширения для работы с Jupyter и Python",
+            sum_4: "✅ Написали и запустили первую программу",
+            sum_5: "✅ Выучили 8 горячих клавиш",
+            summary_final: "На следующем уроке мы напишем первую игру на Python и познакомимся с переменными, циклами и функциями. Готовьтесь! 🚀",
+            nav_back: "← Назад к курсу", nav_back_title: "Главная страница",
+            nav_next: "Следующий урок →", nav_next_title: "1.1 Синтаксис Python",
+            footer: "© 2026 AI Creator. Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "LESSON 0 • PREPARATORY",
+            title: "Installing and Setting Up VS Code",
+            subtitle: "Before creating neural networks, you need to set up your workspace. This lesson is your pass to the world of professional development.",
+            duration: "⏱ 1.5 hours", level: "📗 For beginners", tools: "🛠 VS Code + Python",
+            goals_title: "🎯 Lesson goals",
+            goal_1: "Install Visual Studio Code — the developer's main tool",
+            goal_2: "Install Python and configure the environment",
+            goal_3: "Install required extensions (Python, Jupyter)",
+            goal_4: "Write your first program and run it",
+            goal_5: "Get familiar with the interface and hotkeys",
+            why_title: "💡 Why VS Code?",
+            why_text_1: "You may have heard of PyCharm, IDLE or even Jupyter Notebook as a separate app. Why do we choose VS Code?",
+            why_1: "<strong>It's the industry standard.</strong> In 2026, over 70% of developers worldwide use VS Code.",
+            why_2: "<strong>Everything in one place.</strong> Code, terminal, debugger, Git, Jupyter notebooks — no need to switch between windows.",
+            why_3: "<strong>Smart hints.</strong> Autocomplete, error checking, AI assistants (Copilot) — they write code for you.",
+            why_4: "<strong>Free and lightweight.</strong> Works even on weak school computers.",
+            why_tip_title: "💡 Fun fact",
+            why_tip_text: "VS Code is made by Microsoft itself, but has open source code. It's used not only for Python, but also for JavaScript, Rust, Go, C++ and dozens of other languages.",
+            step1_title: "📥 Installing VS Code",
+            step1_p1: "Go to the official website:",
+            step1_p2: "The site will automatically detect your OS. Click the big blue <strong>Download</strong> button.",
+            step1_inst_title: "During installation (Windows):",
+            step1_i1: "✅ Check <strong>«Add to PATH»</strong> — this is important!",
+            step1_i2: "✅ Check <strong>«Add \"Open with Code\" to file context menu»</strong>",
+            step1_i3: "✅ Check <strong>«Add \"Open with Code\" to directory context menu»</strong>",
+            step1_i4: "The rest can be left as default",
+            step1_warn_title: "⚠️ Important for macOS",
+            step1_warn_text: "After installation, drag VS Code to the Applications folder. Otherwise macOS will complain about a «damaged app».",
+            step2_title: "🐍 Installing Python",
+            step2_p1: "VS Code is the editor, Python is the language we'll write in. Let's install it:",
+            step2_p2: "Click <strong>«Download Python 3.12»</strong> (or newer).",
+            step2_inst_title: "CRITICALLY IMPORTANT during installation:",
+            step2_danger_title: "🚨 Don't miss this!",
+            step2_danger_text: "In the very first installer window, be sure to check <strong>«Add python.exe to PATH»</strong> (at the bottom). Without this, Python won't work from the terminal.",
+            step2_p3: "Then click <strong>«Install Now»</strong> and wait for it to finish.",
+            step2_check_title: "Checking the installation",
+            step2_p4: "Open a terminal (on Windows — <strong>Win + R</strong>, type <code>cmd</code>, press Enter) and type:",
+            step2_p5: "You should see something like <code>Python 3.12.x</code>. If you see an error — you didn't check the PATH box. Reinstall Python.",
+            step3_title: "🧩 Installing extensions",
+            step3_p1: "Extensions are «superpowers» for VS Code. Let's install three required ones:",
+            step3_i1: "Open VS Code",
+            step3_i2: "Press <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">X</span> (or the squares icon on the left)",
+            step3_i3: "In the search, type the names and click <strong>Install</strong>:",
+            step3_tip_title: "💡 Bonus extension",
+            step3_tip_text: "If you want an AI assistant — install <strong>GitHub Copilot</strong> or <strong>Codeium</strong>. Students get a free license through GitHub Education.",
+            step4_title: "🚀 First program: Hello, AI!",
+            step4_p1: "A tradition in programming — the first program always prints a greeting. Let's do it:",
+            step4_i1: "In VS Code, click <strong>File → Open Folder</strong> and create a new folder <code>ai-course</code>",
+            step4_i2: "In this folder, create a file <code>hello.py</code> (right-click the folder → New File)",
+            step4_i3: "Write this code in it:",
+            step4_i4: "Run the program: click ▶️ in the top right OR <span class=\"hotkey\">F5</span> OR in the terminal:",
+            step4_p2: "If you see in the terminal:",
+            step4_p3: "🎉 <strong>Congratulations! You're a programmer!</strong>",
+            ui_title: "🖥 Getting to know the interface",
+            ui_text: "VS Code has 5 main areas:",
+            ui_1_t: "Activity Bar", ui_1_d: "— narrow strip on the left with icons (files, search, Git, extensions)",
+            ui_2_t: "Side Bar", ui_2_d: "— panel with file tree and tools",
+            ui_3_t: "Editor", ui_3_d: "— central part where you write code",
+            ui_4_t: "Panel", ui_4_d: "— bottom panel with terminal and errors",
+            ui_5_t: "Status Bar", ui_5_d: "— very bottom strip with file info",
+            ui_tip_title: "💡 Tip",
+            ui_tip_text: "Hide/show terminal: <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">`</span> (the key with `). This is the most used combination!",
+            hotkeys_title: "⌨️ Hotkeys you need to know",
+            hotkeys_text: "Professionals don't use the mouse. Try to get used to it right away:",
+            hk_1: "save file", hk_2: "open/close terminal", hk_3: "command palette (main tool!)",
+            hk_4: "quick file search", hk_5: "select next same word",
+            hk_6: "move line up/down", hk_7: "comment out line", hk_8: "run program",
+            problems_title: "🚨 Common problems and solutions",
+            prob1_title: "«python» is not recognized as an internal or external command",
+            prob1_text: "You didn't check «Add to PATH» when installing Python. Solution: reinstall Python, choose «Modify» and check the box.",
+            prob2_title: "VS Code doesn't see Python",
+            prob2_text: "Press <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">P</span>, type «Python: Select Interpreter» and choose the installed version.",
+            prob3_title: "Code doesn't run when pressing F5",
+            prob3_text: "Make sure the Python extension is installed. Also check that the file is saved (no dot before the file name).",
+            prob4_title: "Garbled characters instead of letters",
+            prob4_text: "In the bottom right corner, click the encoding (usually UTF-8) and select «Save with Encoding» → UTF-8.",
+            hw_title: "🏠 Homework",
+            hw_intro: "Let's consolidate. Complete 3 tasks:",
+            hw1_title: "«Business card»:", hw1_text: "Create a file <code>about_me.py</code> that displays: your name, age, city and 3 of your hobbies. Each on a new line.",
+            hw2_title: "«Calculator»:", hw2_text: "Write a program that calculates: how many seconds you've been alive (approximately). Hint: <code>15 years × 365 days × 24 hours × 60 minutes × 60 seconds</code>.",
+            hw3_title: "«Explorer»:", hw3_text: "Find and install in VS Code one extension on your topic of interest (topic, game, programming language). Write in code comments what it does.",
+            hw_bonus_title: "⭐ Bonus task",
+            hw_bonus_text: "Take a screenshot of your working program and send it to the teacher. The first 3 to send will receive «AI-coins» 🪙",
+            summary_title: "📌 Lesson summary",
+            summary_text: "Today you:",
+            sum_1: "✅ Installed VS Code — the developer's main tool",
+            sum_2: "✅ Set up Python — the language the whole AI world writes in",
+            sum_3: "✅ Installed extensions for working with Jupyter and Python",
+            sum_4: "✅ Wrote and ran your first program",
+            sum_5: "✅ Learned 8 hotkeys",
+            summary_final: "In the next lesson we'll write our first Python game and get to know variables, loops and functions. Get ready! 🚀",
+            nav_back: "← Back to course", nav_back_title: "Main page",
+            nav_next: "Next lesson →", nav_next_title: "1.1 Python Syntax",
+            footer: "© 2026 AI Creator. AI course for 10th grade students."
+        },
+        es: {
+            badge: "LECCIÓN 0 • PREPARATORIA",
+            title: "Instalación y configuración de VS Code",
+            subtitle: "Antes de crear redes neuronales, necesitas preparar tu espacio de trabajo. Esta lección es tu pase al mundo del desarrollo profesional.",
+            duration: "⏱ 1.5 horas", level: "📗 Para principiantes", tools: "🛠 VS Code + Python",
+            goals_title: "🎯 Objetivos de la lección",
+            goal_1: "Instalar Visual Studio Code — la herramienta principal del desarrollador",
+            goal_2: "Instalar Python y configurar el entorno",
+            goal_3: "Instalar las extensiones necesarias (Python, Jupyter)",
+            goal_4: "Escribir tu primer programa y ejecutarlo",
+            goal_5: "Familiarizarse con la interfaz y las teclas rápidas",
+            why_title: "💡 ¿Por qué VS Code?",
+            why_text_1: "Puede que hayas oído hablar de PyCharm, IDLE o incluso Jupyter Notebook como aplicación separada. ¿Por qué elegimos VS Code?",
+            why_1: "<strong>Es el estándar de la industria.</strong> En 2026, más del 70% de los desarrolladores en el mundo usan VS Code.",
+            why_2: "<strong>Todo en un solo lugar.</strong> Código, terminal, depurador, Git, cuadernos Jupyter — no necesitas cambiar entre ventanas.",
+            why_3: "<strong>Sugerencias inteligentes.</strong> Autocompletado, verificación de errores, asistentes de IA (Copilot) — escriben código por ti.",
+            why_4: "<strong>Gratis y ligero.</strong> Funciona incluso en computadoras escolares débiles.",
+            why_tip_title: "💡 Dato curioso",
+            why_tip_text: "VS Code está hecho por Microsoft, pero tiene código abierto. Se usa no solo para Python, sino también para JavaScript, Rust, Go, C++ y docenas de otros lenguajes.",
+            step1_title: "📥 Instalando VS Code",
+            step1_p1: "Ve al sitio web oficial:",
+            step1_p2: "El sitio detectará automáticamente tu sistema operativo. Haz clic en el gran botón azul <strong>Download</strong>.",
+            step1_inst_title: "Durante la instalación (Windows):",
+            step1_i1: "✅ Marca <strong>«Add to PATH»</strong> — ¡esto es importante!",
+            step1_i2: "✅ Marca <strong>«Add \"Open with Code\" to file context menu»</strong>",
+            step1_i3: "✅ Marca <strong>«Add \"Open with Code\" to directory context menu»</strong>",
+            step1_i4: "Lo demás se puede dejar por defecto",
+            step1_warn_title: "⚠️ Importante para macOS",
+            step1_warn_text: "Después de la instalación, arrastra VS Code a la carpeta «Aplicaciones». Si no, macOS se quejará de una «aplicación dañada».",
+            step2_title: "🐍 Instalando Python",
+            step2_p1: "VS Code es el editor, Python es el lenguaje en el que escribiremos. Vamos a instalarlo:",
+            step2_p2: "Haz clic en <strong>«Download Python 3.12»</strong> (o más nuevo).",
+            step2_inst_title: "CRÍTICAMENTE IMPORTANTE durante la instalación:",
+            step2_danger_title: "🚨 ¡No te lo pierdas!",
+            step2_danger_text: "En la primera ventana del instalador, asegúrate de marcar <strong>«Add python.exe to PATH»</strong> (abajo). Sin esto, Python no funcionará desde la terminal.",
+            step2_p3: "Luego haz clic en <strong>«Install Now»</strong> y espera a que termine.",
+            step2_check_title: "Verificando la instalación",
+            step2_p4: "Abre una terminal (en Windows — <strong>Win + R</strong>, escribe <code>cmd</code>, presiona Enter) y escribe:",
+            step2_p5: "Deberías ver algo como <code>Python 3.12.x</code>. Si ves un error — no marcaste la casilla PATH. Reinstala Python.",
+            step3_title: "🧩 Instalando extensiones",
+            step3_p1: "Las extensiones son «superpoderes» para VS Code. Instalemos tres obligatorias:",
+            step3_i1: "Abre VS Code",
+            step3_i2: "Presiona <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">X</span> (o el icono de cuadrados a la izquierda)",
+            step3_i3: "En la búsqueda, escribe los nombres y haz clic en <strong>Install</strong>:",
+            step3_tip_title: "💡 Extensión bonus",
+            step3_tip_text: "Si quieres un asistente de IA — instala <strong>GitHub Copilot</strong> o <strong>Codeium</strong>. Los estudiantes obtienen una licencia gratuita a través de GitHub Education.",
+            step4_title: "🚀 Primer programa: ¡Hello, AI!",
+            step4_p1: "Una tradición en programación — el primer programa siempre imprime un saludo. Hagámoslo:",
+            step4_i1: "En VS Code, haz clic en <strong>File → Open Folder</strong> y crea una nueva carpeta <code>ai-course</code>",
+            step4_i2: "En esta carpeta, crea un archivo <code>hello.py</code> (clic derecho en la carpeta → New File)",
+            step4_i3: "Escribe este código en él:",
+            step4_i4: "Ejecuta el programa: haz clic en ▶️ arriba a la derecha O <span class=\"hotkey\">F5</span> O en la terminal:",
+            step4_p2: "Si ves en la terminal:",
+            step4_p3: "🎉 <strong>¡Felicidades! ¡Eres programador!</strong>",
+            ui_title: "🖥 Conociendo la interfaz",
+            ui_text: "VS Code tiene 5 áreas principales:",
+            ui_1_t: "Activity Bar", ui_1_d: "— franja estrecha a la izquierda con iconos (archivos, búsqueda, Git, extensiones)",
+            ui_2_t: "Side Bar", ui_2_d: "— panel con árbol de archivos y herramientas",
+            ui_3_t: "Editor", ui_3_d: "— parte central donde escribes código",
+            ui_4_t: "Panel", ui_4_d: "— panel inferior con terminal y errores",
+            ui_5_t: "Status Bar", ui_5_d: "— franja inferior con información del archivo",
+            ui_tip_title: "💡 Consejo",
+            ui_tip_text: "Ocultar/mostrar terminal: <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">`</span>. ¡Esta es la combinación más usada!",
+            hotkeys_title: "⌨️ Teclas rápidas que necesitas saber",
+            hotkeys_text: "Los profesionales no usan el ratón. Intenta acostumbrarte de inmediato:",
+            hk_1: "guardar archivo", hk_2: "abrir/cerrar terminal", hk_3: "paleta de comandos (¡herramienta principal!)",
+            hk_4: "búsqueda rápida de archivos", hk_5: "seleccionar siguiente palabra igual",
+            hk_6: "mover línea arriba/abajo", hk_7: "comentar línea", hk_8: "ejecutar programa",
+            problems_title: "🚨 Problemas comunes y soluciones",
+            prob1_title: "«python» no se reconoce como un comando interno o externo",
+            prob1_text: "No marcaste «Add to PATH» al instalar Python. Solución: reinstala Python, elige «Modify» y marca la casilla.",
+            prob2_title: "VS Code no ve Python",
+            prob2_text: "Presiona <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">P</span>, escribe «Python: Select Interpreter» y elige la versión instalada.",
+            prob3_title: "El código no se ejecuta al presionar F5",
+            prob3_text: "Asegúrate de que la extensión Python esté instalada. También verifica que el archivo esté guardado (sin punto antes del nombre).",
+            prob4_title: "Caracteres extraños en lugar de letras",
+            prob4_text: "En la esquina inferior derecha, haz clic en la codificación (normalmente UTF-8) y selecciona «Save with Encoding» → UTF-8.",
+            hw_title: "🏠 Tarea",
+            hw_intro: "Consolidemos. Completa 3 tareas:",
+            hw1_title: "«Tarjeta de presentación»:", hw1_text: "Crea un archivo <code>about_me.py</code> que muestre: tu nombre, edad, ciudad y 3 de tus aficiones. Cada uno en una nueva línea.",
+            hw2_title: "«Calculadora»:", hw2_text: "Escribe un programa que calcule: cuántos segundos has vivido (aproximadamente). Pista: <code>15 años × 365 días × 24 horas × 60 minutos × 60 segundos</code>.",
+            hw3_title: "«Explorador»:", hw3_text: "Encuentra e instala en VS Code una extensión sobre tu tema de interés (tema, juego, lenguaje de programación). Escribe en comentarios del código qué hace.",
+            hw_bonus_title: "⭐ Tarea bonus",
+            hw_bonus_text: "Toma una captura de pantalla de tu programa funcionando y envíala al profesor. Los primeros 3 en enviar recibirán «AI-coins» 🪙",
+            summary_title: "📌 Resumen de la lección",
+            summary_text: "Hoy tú:",
+            sum_1: "✅ Instalaste VS Code — la herramienta principal del desarrollador",
+            sum_2: "✅ Configuraste Python — el lenguaje en el que escribe todo el mundo de la IA",
+            sum_3: "✅ Instalaste extensiones para trabajar con Jupyter y Python",
+            sum_4: "✅ Escribiste y ejecutaste tu primer programa",
+            sum_5: "✅ Aprendiste 8 teclas rápidas",
+            summary_final: "En la próxima lección escribiremos nuestro primer juego en Python y conoceremos variables, bucles y funciones. ¡Prepárate! 🚀",
+            nav_back: "← Volver al curso", nav_back_title: "Página principal",
+            nav_next: "Siguiente lección →", nav_next_title: "1.1 Sintaxis de Python",
+            footer: "© 2026 AI Creator. Curso de IA para estudiantes de 10º grado."
+        },
+        de: {
+            badge: "LEKTION 0 • VORBEREITEND",
+            title: "VS Code installieren und einrichten",
+            subtitle: "Bevor du neuronale Netze erstellst, musst du deinen Arbeitsbereich vorbereiten. Diese Lektion ist dein Pass in die Welt der professionellen Entwicklung.",
+            duration: "⏱ 1,5 Stunden", level: "📗 Für Anfänger", tools: "🛠 VS Code + Python",
+            goals_title: "🎯 Lernziele",
+            goal_1: "Visual Studio Code installieren — das Hauptwerkzeug des Entwicklers",
+            goal_2: "Python installieren und die Umgebung konfigurieren",
+            goal_3: "Benötigte Erweiterungen installieren (Python, Jupyter)",
+            goal_4: "Dein erstes Programm schreiben und ausführen",
+            goal_5: "Mit der Oberfläche und Tastenkombinationen vertraut machen",
+            why_title: "💡 Warum VS Code?",
+            why_text_1: "Vielleicht hast du von PyCharm, IDLE oder sogar Jupyter Notebook als separate App gehört. Warum wählen wir VS Code?",
+            why_1: "<strong>Es ist der Industriestandard.</strong> 2026 nutzen über 70% der Entwickler weltweit VS Code.",
+            why_2: "<strong>Alles an einem Ort.</strong> Code, Terminal, Debugger, Git, Jupyter-Notebooks — kein Wechsel zwischen Fenstern.",
+            why_3: "<strong>Smarte Hinweise.</strong> Autovervollständigung, Fehlerprüfung, KI-Assistenten (Copilot) — sie schreiben Code für dich.",
+            why_4: "<strong>Kostenlos und leicht.</strong> Funktioniert sogar auf schwachen Schulcomputern.",
+            why_tip_title: "💡 Interessante Tatsache",
+            why_tip_text: "VS Code wird von Microsoft selbst gemacht, hat aber offenen Quellcode. Es wird nicht nur für Python, sondern auch für JavaScript, Rust, Go, C++ und Dutzende anderer Sprachen verwendet.",
+            step1_title: "📥 VS Code installieren",
+            step1_p1: "Gehe zur offiziellen Website:",
+            step1_p2: "Die Website erkennt automatisch dein Betriebssystem. Klicke auf den großen blauen Button <strong>Download</strong>.",
+            step1_inst_title: "Während der Installation (Windows):",
+            step1_i1: "✅ Setze den Haken bei <strong>«Add to PATH»</strong> — das ist wichtig!",
+            step1_i2: "✅ Setze den Haken bei <strong>«Add \"Open with Code\" to file context menu»</strong>",
+            step1_i3: "✅ Setze den Haken bei <strong>«Add \"Open with Code\" to directory context menu»</strong>",
+            step1_i4: "Den Rest kannst du auf Standard lassen",
+            step1_warn_title: "⚠️ Wichtig für macOS",
+            step1_warn_text: "Ziehe nach der Installation VS Code in den Ordner «Programme». Sonst beschwert sich macOS über eine «beschädigte App».",
+            step2_title: "🐍 Python installieren",
+            step2_p1: "VS Code ist der Editor, Python ist die Sprache, in der wir schreiben. Installieren wir es:",
+            step2_p2: "Klicke auf <strong>«Download Python 3.12»</strong> (oder neuer).",
+            step2_inst_title: "KRITISCH WICHTIG bei der Installation:",
+            step2_danger_title: "🚨 Nicht verpassen!",
+            step2_danger_text: "Im allerersten Installer-Fenster setze unbedingt den Haken bei <strong>«Add python.exe to PATH»</strong> (unten). Ohne das funktioniert Python nicht aus dem Terminal.",
+            step2_p3: "Dann klicke auf <strong>«Install Now»</strong> und warte, bis es fertig ist.",
+            step2_check_title: "Installation überprüfen",
+            step2_p4: "Öffne ein Terminal (unter Windows — <strong>Win + R</strong>, tippe <code>cmd</code>, drücke Enter) und tippe:",
+            step2_p5: "Du solltest so etwas wie <code>Python 3.12.x</code> sehen. Wenn du einen Fehler siehst — du hast das PATH-Kästchen nicht gesetzt. Installiere Python neu.",
+            step3_title: "🧩 Erweiterungen installieren",
+            step3_p1: "Erweiterungen sind «Superkräfte» für VS Code. Installieren wir drei erforderliche:",
+            step3_i1: "Öffne VS Code",
+            step3_i2: "Drücke <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">X</span> (oder das Quadrate-Symbol links)",
+            step3_i3: "Tippe in der Suche die Namen ein und klicke auf <strong>Install</strong>:",
+            step3_tip_title: "💡 Bonus-Erweiterung",
+            step3_tip_text: "Wenn du einen KI-Assistenten möchtest — installiere <strong>GitHub Copilot</strong> oder <strong>Codeium</strong>. Schüler bekommen eine kostenlose Lizenz über GitHub Education.",
+            step4_title: "🚀 Erstes Programm: Hello, AI!",
+            step4_p1: "Eine Tradition in der Programmierung — das erste Programm gibt immer eine Begrüßung aus. Machen wir das:",
+            step4_i1: "In VS Code klicke auf <strong>File → Open Folder</strong> und erstelle einen neuen Ordner <code>ai-course</code>",
+            step4_i2: "In diesem Ordner erstelle eine Datei <code>hello.py</code> (Rechtsklick auf den Ordner → New File)",
+            step4_i3: "Schreibe diesen Code hinein:",
+            step4_i4: "Führe das Programm aus: klicke auf ▶️ oben rechts ODER <span class=\"hotkey\">F5</span> ODER im Terminal:",
+            step4_p2: "Wenn du im Terminal siehst:",
+            step4_p3: "🎉 <strong>Glückwunsch! Du bist Programmierer!</strong>",
+            ui_title: "🖥 Die Oberfläche kennenlernen",
+            ui_text: "VS Code hat 5 Hauptbereiche:",
+            ui_1_t: "Activity Bar", ui_1_d: "— schmaler Streifen links mit Symbolen (Dateien, Suche, Git, Erweiterungen)",
+            ui_2_t: "Side Bar", ui_2_d: "— Bereich mit Dateibaum und Werkzeugen",
+            ui_3_t: "Editor", ui_3_d: "— zentraler Teil, wo du Code schreibst",
+            ui_4_t: "Panel", ui_4_d: "— unteres Panel mit Terminal und Fehlern",
+            ui_5_t: "Status Bar", ui_5_d: "— unterster Streifen mit Dateiinformationen",
+            ui_tip_title: "💡 Tipp",
+            ui_tip_text: "Terminal aus/einblenden: <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">`</span>. Das ist die meistgenutzte Kombination!",
+            hotkeys_title: "⌨️ Tastenkombinationen, die du kennen musst",
+            hotkeys_text: "Profis benutzen keine Maus. Versuche, dich sofort daran zu gewöhnen:",
+            hk_1: "Datei speichern", hk_2: "Terminal öffnen/schließen", hk_3: "Befehlspalette (Hauptwerkzeug!)",
+            hk_4: "schnelle Dateisuche", hk_5: "nächstes gleiches Wort auswählen",
+            hk_6: "Zeile nach oben/unten verschieben", hk_7: "Zeile auskommentieren", hk_8: "Programm ausführen",
+            problems_title: "🚨 Häufige Probleme und Lösungen",
+            prob1_title: "«python» wird nicht als interner oder externer Befehl erkannt",
+            prob1_text: "Du hast «Add to PATH» bei der Python-Installation nicht gesetzt. Lösung: installiere Python neu, wähle «Modify» und setze den Haken.",
+            prob2_title: "VS Code sieht Python nicht",
+            prob2_text: "Drücke <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">P</span>, tippe «Python: Select Interpreter» und wähle die installierte Version.",
+            prob3_title: "Code läuft nicht beim Drücken von F5",
+            prob3_text: "Stelle sicher, dass die Python-Erweiterung installiert ist. Prüfe auch, ob die Datei gespeichert ist (kein Punkt vor dem Dateinamen).",
+            prob4_title: "Kauderwelsch statt Buchstaben",
+            prob4_text: "Klicke unten rechts auf die Kodierung (normalerweise UTF-8) und wähle «Save with Encoding» → UTF-8.",
+            hw_title: "🏠 Hausaufgabe",
+            hw_intro: "Lass uns festigen. Erledige 3 Aufgaben:",
+            hw1_title: "«Visitenkarte»:", hw1_text: "Erstelle eine Datei <code>about_me.py</code>, die anzeigt: dein Name, Alter, Stadt und 3 deiner Hobbys. Jedes in einer neuen Zeile.",
+            hw2_title: "«Rechner»:", hw2_text: "Schreibe ein Programm, das berechnet: wie viele Sekunden du schon lebst (ungefähr). Hinweis: <code>15 Jahre × 365 Tage × 24 Stunden × 60 Minuten × 60 Sekunden</code>.",
+            hw3_title: "«Entdecker»:", hw3_text: "Finde und installiere in VS Code eine Erweiterung zu deinem Interessengebiet (Thema, Spiel, Programmiersprache). Schreibe in Code-Kommentaren, was sie macht.",
+            hw_bonus_title: "⭐ Bonusaufgabe",
+            hw_bonus_text: "Mache einen Screenshot deines laufenden Programms und schicke ihn dem Lehrer. Die ersten 3 Einsender erhalten «AI-Coins» 🪙",
+            summary_title: "📌 Lektionszusammenfassung",
+            summary_text: "Heute hast du:",
+            sum_1: "✅ VS Code installiert — das Hauptwerkzeug des Entwicklers",
+            sum_2: "✅ Python eingerichtet — die Sprache, in der die ganze KI-Welt schreibt",
+            sum_3: "✅ Erweiterungen für die Arbeit mit Jupyter und Python installiert",
+            sum_4: "✅ Dein erstes Programm geschrieben und ausgeführt",
+            sum_5: "✅ 8 Tastenkombinationen gelernt",
+            summary_final: "In der nächsten Lektion schreiben wir unser erstes Python-Spiel und lernen Variablen, Schleifen und Funktionen kennen. Mach dich bereit! 🚀",
+            nav_back: "← Zurück zum Kurs", nav_back_title: "Hauptseite",
+            nav_next: "Nächste Lektion →", nav_next_title: "1.1 Python-Syntax",
+            footer: "© 2026 AI Creator. KI-Kurs für Schüler der 10. Klasse."
+        },
+        kk: {
+            badge: "0-САБАҚ • ДАЙЫНДЫҚ",
+            title: "VS Code орнату және баптау",
+            subtitle: "Нейрондық желілерді жасамас бұрын, жұмыс орныңды дайындау керек. Бұл сабақ — кәсіби әлемге билетің.",
+            duration: "⏱ 1,5 сағат", level: "📗 Бастаушылар үшін", tools: "🛠 VS Code + Python",
+            goals_title: "🎯 Сабақ мақсаттары",
+            goal_1: "Visual Studio Code орнату — әзірлеушінің негізгі құралы",
+            goal_2: "Python орнату және ортаны баптау",
+            goal_3: "Қажетті кеңейтімдерді орнату (Python, Jupyter)",
+            goal_4: "Бірінші бағдарламаны жазып, іске қосу",
+            goal_5: "Интерфейс пен ыстық пернелермен танысу",
+            why_title: "💡 Неліктен VS Code?",
+            why_text_1: "PyCharm, IDLE немесе Jupyter Notebook туралы естіген боларсың. Неліктен VS Code таңдаймыз?",
+            why_1: "<strong>Бұл индустрия стандарты.</strong> 2026 жылы әлемдегі әзірлеушілердің 70%-дан астамы VS Code пайдаланады.",
+            why_2: "<strong>Бәрі бір жерде.</strong> Код, терминал, жөндеуші, Git, Jupyter блокноттары — терезелер арасында ауысудың қажеті жоқ.",
+            why_3: "<strong>Ақылды кеңестер.</strong> Автотолтыру, қателерді тексеру, AI көмекшілері (Copilot) — олар сен үшін код жазады.",
+            why_4: "<strong>Тегін және жеңіл.</strong> Әлсіз мектеп компьютерлерінде де жұмыс істейді.",
+            why_tip_title: "💡 Қызықты факт",
+            why_tip_text: "VS Code Microsoft-тың өзінде жасалған, бірақ ашық бастапқы коды бар. Ол тек Python үшін емес, JavaScript, Rust, Go, C++ және ондаған басқа тілдер үшін қолданылады.",
+            step1_title: "📥 VS Code орнату",
+            step1_p1: "Ресми сайтқа өт:",
+            step1_p2: "Сайт операциялық жүйеңді автоматты түрде анықтайды. Үлкен көк <strong>Download</strong> батырмасын бас.",
+            step1_inst_title: "Орнату кезінде (Windows):",
+            step1_i1: "✅ <strong>«Add to PATH»</strong> құсбелгісін қой — бұл маңызды!",
+            step1_i2: "✅ <strong>«Add \"Open with Code\" to file context menu»</strong> құсбелгісін қой",
+            step1_i3: "✅ <strong>«Add \"Open with Code\" to directory context menu»</strong> құсбелгісін қой",
+            step1_i4: "Қалғанын әдепкі күйінде қалтыруға болады",
+            step1_warn_title: "⚠️ macOS үшін маңызды",
+            step1_warn_text: "Орнатқаннан кейін VS Code-ты «Қолданбалар» қалтасына сүйре. Әйтпесе macOS «зақымдалған қолданба» деп шағымданады.",
+            step2_title: "🐍 Python орнату",
+            step2_p1: "VS Code — бұл редактор, Python — біз жазатын тіл. Оны орнатайық:",
+            step2_p2: "<strong>«Download Python 3.12»</strong> (немесе жаңарақ) батырмасын бас.",
+            step2_inst_title: "Орнату кезінде ӨТЕ МАҢЫЗДЫ:",
+            step2_danger_title: "🚨 жіберіп алма!",
+            step2_danger_text: "Орнатушының бірінші терезесінде міндетті түрде <strong>«Add python.exe to PATH»</strong> (төменде) құсбелгісін қой. Ол болмаса, Python терминалдан жұмыс істемейді.",
+            step2_p3: "Содан кейін <strong>«Install Now»</strong> басып, аяқталуын күт.",
+            step2_check_title: "Орнатуды тексеру",
+            step2_p4: "Терминалды аш (Windows-та — <strong>Win + R</strong>, <code>cmd</code> жаз, Enter бас) және жаз:",
+            step2_p5: "<code>Python 3.12.x</code> сияқты нәрсе көрінуі керек. Қате көрсең — PATH құсбелгісін қоймадың. Python-ды қайта орнат.",
+            step3_title: "🧩 Кеңейтімдерді орнату",
+            step3_p1: "Кеңейтімдер — VS Code үшін «суперкүштер». Үш міндеттісін орнатайық:",
+            step3_i1: "VS Code аш",
+            step3_i2: "<span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">X</span> бас (немесе сол жақтағы шаршылар белгішесі)",
+            step3_i3: "Іздеуге атауларын жазып, <strong>Install</strong> бас:",
+            step3_tip_title: "💡 Бонус кеңейтім",
+            step3_tip_text: "AI көмекшіні қаласаң — <strong>GitHub Copilot</strong> немесе <strong>Codeium</strong> орнат. Оқушылар GitHub Education арқылы тегін лицензия алады.",
+            step4_title: "🚀 Бірінші бағдарлама: Hello, AI!",
+            step4_p1: "Бағдарламалаудағы дәстүр — бірінші бағдарлама әрқашан сәлемдеме шығарады. Жасайық:",
+            step4_i1: "VS Code-та <strong>File → Open Folder</strong> басып, <code>ai-course</code> жаңа қалтасын жаса",
+            step4_i2: "Осы қалтада <code>hello.py</code> файлын жаса (қалтаға оң жақ батырма → New File)",
+            step4_i3: "Осы кодты жаз:",
+            step4_i4: "Бағдарламаны іске қос: оң жақ жоғарыда ▶️ бас НЕМЕСЕ <span class=\"hotkey\">F5</span> НЕМЕСЕ терминалда:",
+            step4_p2: "Терминалда мынаны көрсең:",
+            step4_p3: "🎉 <strong>Құттықтаймын! Сен — бағдарламашысың!</strong>",
+            ui_title: "🖥 Интерфейспен танысу",
+            ui_text: "VS Code 5 негізгі аймақтан тұрады:",
+            ui_1_t: "Activity Bar", ui_1_d: "— сол жақтағы белгішелері бар тар жолақ (файлдар, іздеу, Git, кеңейтімдер)",
+            ui_2_t: "Side Bar", ui_2_d: "— файл ағашы мен құралдары бар панель",
+            ui_3_t: "Editor", ui_3_d: "— код жазатын орталық бөлік",
+            ui_4_t: "Panel", ui_4_d: "— терминал мен қателері бар төменгі панель",
+            ui_5_t: "Status Bar", ui_5_d: "— файл ақпараты бар ең төменгі жолақ",
+            ui_tip_title: "💡 Кеңес",
+            ui_tip_text: "Терминалды жасыру/көрсету: <span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">`</span>. Бұл ең көп қолданылатын комбинация!",
+            hotkeys_title: "⌨️ Білу керек ыстық пернелер",
+            hotkeys_text: "Кәсіпқойлар тышқанды пайдаланбайды. Бірден үйренуге тырыс:",
+            hk_1: "файлды сақтау", hk_2: "терминалды ашу/жабу", hk_3: "команда палитрасы (негізгі құрал!)",
+            hk_4: "файлды жылдам іздеу", hk_5: "келесі дәл осындай сөзді таңдау",
+            hk_6: "жолды жоғары/төмен жылжыту", hk_7: "жолға түсініктеме жазу", hk_8: "бағдарламаны іске қосу",
+            problems_title: "🚨 Жиі кездесетін мәселелер және шешімдер",
+            prob1_title: "«python» ішкі немесе сыртқы команда ретінде танылмады",
+            prob1_text: "Python орнату кезінде «Add to PATH» құсбелгісін қоймадың. Шешім: Python-ды қайта орнат, «Modify» таңдап, құсбелгіні қой.",
+            prob2_title: "VS Code Python-ды көрмейді",
+            prob2_text: "<span class=\"hotkey\">Ctrl</span> + <span class=\"hotkey\">Shift</span> + <span class=\"hotkey\">P</span> бас, «Python: Select Interpreter» жазып, орнатылған нұсқаны таңда.",
+            prob3_title: "F5 басқанда код іске қосылмайды",
+            prob3_text: "Python кеңейтімі орнатылғанын тексер. Сондай-ақ файлдың сақталғанын тексер (файл атының алдында нүкте жоқ).",
+            prob4_title: "Әріптердің орнына түсініксіз таңбалар",
+            prob4_text: "Оң жақ төменгі бұрышта кодтауды бас (әдетте UTF-8) және «Save with Encoding» → UTF-8 таңда.",
+            hw_title: "🏠 Үй тапсырмасы",
+            hw_intro: "Бекітейік. 3 тапсырманы орында:",
+            hw1_title: "«Визитка»:", hw1_text: "<code>about_me.py</code> файлын жаса, ол көрсетеді: атың, жасың, қалаң және 3 хоббиің. Әрқайсысы жаңа жолда.",
+            hw2_title: "«Калькулятор»:", hw2_text: "Бағдарлама жаз, ол есептейді: сен шамамен қанша секунд өмір сүрдің. Кеңес: <code>15 жыл × 365 күн × 24 сағат × 60 минут × 60 секунд</code>.",
+            hw3_title: "«Зерттеуші»:", hw3_text: "VS Code-та қызығушылығың тақырыбы бойынша бір кеңейтімді тап және орнат. Код түсініктемелерінде ол не істейтінін жаз.",
+            hw_bonus_title: "⭐ Бонус тапсырма",
+            hw_bonus_text: "Жұмыс істеп тұрған бағдарламаңның скриншотын жасап, мұғалімге жібер. Алғашқы 3 жіберуші «AI-теңгелер» алады 🪙",
+            summary_title: "📌 Сабақ қорытындысы",
+            summary_text: "Бүгін сен:",
+            sum_1: "✅ VS Code орнаттың — әзірлеушінің негізгі құралы",
+            sum_2: "✅ Python баптадың — бүкіл AI-әлем жазатын тіл",
+            sum_3: "✅ Jupyter және Python-мен жұмыс істеу үшін кеңейтімдер орнаттың",
+            sum_4: "✅ Бірінші бағдарламаңды жазып, іске қостың",
+            sum_5: "✅ 8 ыстық пернені үйрендің",
+            summary_final: "Келесі сабақта Python-да алғашқы ойынымызды жазамыз және айнымалылар, циклдер және функциялармен танысамыз. Дайындал! 🚀",
+            nav_back: "← Курсқа қайту", nav_back_title: "Басты бет",
+            nav_next: "Келесі сабақ →", nav_next_title: "1.1 Python синтаксисі",
+            footer: "© 2026 AI Creator. 10-сынып оқушыларына арналған ЖИ курсы."
+        }
+    };
+
+    // Переключение языка
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    // Поддержка HTML внутри переводов
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
