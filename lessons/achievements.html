@@ -590,6 +590,7 @@
 </footer>
 
 <script>
+  <script>
     // ==========================================
     // 🏆 СИСТЕМА АЧИВОК
     // ==========================================
@@ -698,6 +699,74 @@
             section: 'Урок 1.1: Первый ИИ-бот'
         },
 
+        // Урок 1.2: Создаём свою игру
+        {
+            id: 'lesson1_2_architect',
+            name: 'Архитектор',
+            desc: 'Создал свой первый класс в Python',
+            icon: '🏗️',
+            rarity: 'common',
+            xp: 50,
+            coins: 15,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_2_gamedesigner',
+            name: 'Геймдизайнер',
+            desc: 'Создал 3 разных игровых персонажа с уникальными статами',
+            icon: '🎮',
+            rarity: 'common',
+            xp: 80,
+            coins: 25,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_2_fighter',
+            name: 'Боец',
+            desc: 'Реализовал метод атаки и устроил первую битву',
+            icon: '⚔️',
+            rarity: 'rare',
+            xp: 100,
+            coins: 30,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_2_tamer',
+            name: 'Укротитель',
+            desc: 'Создал своего виртуального питомца',
+            icon: '🐾',
+            rarity: 'rare',
+            xp: 100,
+            coins: 40,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_2_geneticist',
+            name: 'Генетик',
+            desc: 'Создал класс-наследник с уникальными скиллами',
+            icon: '🧬',
+            rarity: 'epic',
+            xp: 120,
+            coins: 50,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_2_universe_creator',
+            name: 'Создатель Вселенной',
+            desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием',
+            icon: '👑',
+            rarity: 'legendary',
+            xp: 200,
+            coins: 100,
+            lesson: 1.2,
+            section: 'Урок 1.2: Создаём свою игру'
+        },
+
         // Общие ачивки
         {
             id: 'polyglot',
@@ -743,84 +812,15 @@
             lesson: 'general',
             section: 'Общие достижения'
         }
-        // Найдите в achievements.html массив ACHIEVEMENTS и добавьте:
-
-// Урок 1.2: Создаём свою игру
-{
-    id: 'lesson1_2_architect',
-    name: 'Архитектор',
-    desc: 'Создал свой первый класс в Python',
-    icon: '🏗️',
-    rarity: 'common',
-    xp: 50,
-    coins: 15,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
-{
-    id: 'lesson1_2_gamedesigner',
-    name: 'Геймдизайнер',
-    desc: 'Создал 3 разных игровых персонажа с уникальными статами',
-    icon: '🎮',
-    rarity: 'common',
-    xp: 80,
-    coins: 25,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
-{
-    id: 'lesson1_2_fighter',
-    name: 'Боец',
-    desc: 'Реализовал метод атаки и устроил первую битву',
-    icon: '⚔️',
-    rarity: 'rare',
-    xp: 100,
-    coins: 30,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
-{
-    id: 'lesson1_2_tamer',
-    name: 'Укротитель',
-    desc: 'Создал своего виртуального питомца',
-    icon: '🐾',
-    rarity: 'rare',
-    xp: 100,
-    coins: 40,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
-{
-    id: 'lesson1_2_geneticist',
-    name: 'Генетик',
-    desc: 'Создал класс-наследник с уникальными скиллами',
-    icon: '🧬',
-    rarity: 'epic',
-    xp: 120,
-    coins: 50,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
-{
-    id: 'lesson1_2_universe_creator',
-    name: 'Создатель Вселенной',
-    desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием',
-    icon: '👑',
-    rarity: 'legendary',
-    xp: 200,
-    coins: 100,
-    lesson: 1.2,
-    section: 'Урок 1.2: Создаём свою игру'
-},
     ];
 
     // Ранги
     const RANKS = [
         { name: '🌱 Новичок', minXP: 0, color: '#a0a3b8' },
-        { name: '⚔️ Ученик', minXP: 200, color: '#00c8ff' },
-        { name: '🛡️ Адепт', minXP: 500, color: '#7850ff' },
-        { name: '🔮 Мастер', minXP: 1000, color: '#ff50a0' },
-        { name: '👑 Легенда', minXP: 2000, color: '#ffb400' }
+        { name: '⚔️ Ученик', minXP: 300, color: '#00c8ff' },
+        { name: '🛡️ Адепт', minXP: 800, color: '#7850ff' },
+        { name: '🔮 Мастер', minXP: 1500, color: '#ff50a0' },
+        { name: '👑 Легенда', minXP: 2500, color: '#ffb400' }
     ];
 
     // Загрузка прогресса из localStorage
@@ -831,6 +831,8 @@
     const unlockParam = urlParams.get('unlock');
     if (unlockParam && !unlockedIds.includes(unlockParam)) {
         unlockAchievement(unlockParam);
+        // Убираем параметр из URL, чтобы не спамить уведомления при обновлении
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     // Разблокировать ачивку
@@ -888,7 +890,7 @@
         
         if (next) {
             const progressInRank = ((totalXP - current.minXP) / (next.minXP - current.minXP)) * 100;
-            document.getElementById('rank-fill').style.width = `${progressInRank}%`;
+            document.getElementById('rank-fill').style.width = `${Math.min(progressInRank, 100)}%`;
             document.getElementById('rank-text').textContent = 
                 `До следующего ранга: ${totalXP} / ${next.minXP} XP`;
         } else {
@@ -1004,6 +1006,5 @@
     renderAchievements();
     updateStats();
 </script>
-
 </body>
 </html>
