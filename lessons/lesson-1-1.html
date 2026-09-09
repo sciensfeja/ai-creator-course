@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 1.1: Первый ИИ-бот — AI Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #e4e6eb;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(255, 80, 160, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(120, 80, 255, 0.3);
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            color: #e4e6eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(120, 80, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Lesson container */
+        .lesson-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Quest header */
+        .quest-header {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quest-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff50a0, #7850ff);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); }
+        }
+
+        .quest-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quest-header .subtitle {
+            color: #a0a3b8;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .quest-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .meta-tag {
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-levels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: #a0a3b8;
+        }
+
+        /* Level blocks */
+        .level {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #7850ff, #00c8ff);
+        }
+
+        .level.boss::before {
+            background: linear-gradient(90deg, #ff50a0, #ff8800);
+            height: 5px;
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .level-number {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4);
+        }
+
+        .level.boss .level-number {
+            background: linear-gradient(135deg, #ff50a0, #ff8800);
+            box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4);
+            animation: bossGlow 2s infinite;
+        }
+
+        @keyframes bossGlow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); }
+        }
+
+        .level-info h2 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .level-info .level-subtitle {
+            color: #a0a3b8;
+            font-size: 0.95rem;
+        }
+
+        .level-xp {
+            margin-left: auto;
+            background: rgba(255, 180, 0, 0.15);
+            border: 1px solid rgba(255, 180, 0, 0.4);
+            color: #ffb400;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .level p {
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .level h3 {
+            color: #00c8ff;
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .level ul, .level ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .level li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Memes and fun boxes */
+        .meme-box {
+            background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1));
+            border: 2px dashed rgba(255, 80, 160, 0.4);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-style: italic;
+            color: #ff9ec8;
+        }
+
+        .meme-box .meme-emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Info boxes */
+        .info-box {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.tip {
+            background: rgba(0, 200, 100, 0.08);
+            border-color: #00c864;
+        }
+
+        .info-box.warning {
+            background: rgba(255, 180, 0, 0.08);
+            border-color: #ffb400;
+        }
+
+        .info-box.danger {
+            background: rgba(255, 80, 80, 0.08);
+            border-color: #ff5050;
+        }
+
+        .info-box.lore {
+            background: rgba(120, 80, 255, 0.08);
+            border-color: #7850ff;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #0d1117;
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        pre::before {
+            content: 'PYTHON';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(120, 80, 255, 0.3);
+            color: #a0a3b8;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            border-radius: 0 8px 0 8px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        code {
+            color: #00c8ff;
+            background: rgba(0, 200, 255, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e4e6eb;
+        }
+
+        /* Game analogies */
+        .game-analogy {
+            background: rgba(0, 200, 255, 0.05);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .game-analogy .game-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .game-analogy .game-text strong {
+            color: #00c8ff;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Mini-boss */
+        .mini-boss {
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
+            border: 2px solid rgba(255, 180, 0, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .mini-boss-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .mini-boss-header .boss-icon {
+            font-size: 1.8rem;
+        }
+
+        .mini-boss-header h3 {
+            color: #ffb400;
+            margin: 0;
+        }
+
+        .mini-boss .reward {
+            display: inline-block;
+            background: rgba(255, 180, 0, 0.2);
+            border: 1px solid rgba(255, 180, 0, 0.5);
+            color: #ffb400;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Achievements */
+        .achievements {
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(120, 80, 255, 0.1));
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .achievements h2 {
+            color: #ffb400;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .achievement {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .achievement:hover {
+            transform: translateY(-3px);
+            border-color: #ffb400;
+            box-shadow: 0 5px 20px rgba(255, 180, 0, 0.3);
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.85rem;
+            color: #a0a3b8;
+        }
+
+        /* Side quests (homework) */
+        .side-quests {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .side-quests h2 {
+            color: #7850ff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .quest-card {
+            background: rgba(120, 80, 255, 0.05);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+
+        .quest-difficulty {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .quest-card.easy .quest-difficulty {
+            background: rgba(0, 200, 100, 0.2);
+            color: #00c864;
+        }
+
+        .quest-card.medium .quest-difficulty {
+            background: rgba(255, 180, 0, 0.2);
+            color: #ffb400;
+        }
+
+        .quest-card.hard .quest-difficulty {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff5050;
+        }
+
+        .quest-card h3 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .quest-card p {
+            color: #c8cad8;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-reward {
+            color: #ffb400;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem 1.5rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            color: #e4e6eb;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(120, 80, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3);
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2));
+            border-color: #00c8ff;
+        }
+
+        .nav-btn-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a0a3b8;
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-btn-title {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: #a0a3b8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .quest-header h1 { font-size: 2rem; }
+            .lesson-container { padding: 1rem; }
+            .level { padding: 1.5rem; }
+            .header-content { flex-direction: column; }
+            .level-header { flex-direction: column; align-items: flex-start; }
+            .level-xp { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <!-- Quest Header -->
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 1.1 • МОДУЛЬ 1</span>
+        <h1 data-i18n="title">Первый ИИ-бот</h1>
+        <p class="subtitle" data-i18n="subtitle">
+            Добро пожаловать, Игрок 1! 🎯 Сегодня ты не просто учишь Python — ты создаёшь своего первого ИИ-бота. К концу квеста он будет здороваться, определять настроение и отвечать на вопросы. Готов? Press START.
+        </p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 2 часа</span>
+            <span class="meta-tag" data-i18n="level">📗 Уровень 1</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +500 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +100 AI-коинов</span>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 1 / 9</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 11%;"></div>
+        </div>
+        <div class="progress-levels">
+            <span>🏁 Start</span>
+            <span>⚔️ Mini-boss</span>
+            <span>🔥 Boss</span>
+            <span>🏆 Finish</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Intro -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🎬 Пролог: Зачем нам Python?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Мотивация и погружение в лор</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+20 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">
+            Представь: ты зашёл в чат, написал «Привет, как дела?» — и тебе отвечает <strong>не человек</strong>. Это ChatGPT, Алиса, Gemini. Они написаны на <strong>Python</strong>. И сегодня ты научишься делать своего мини-ChatGPT.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎮</div>
+            <div class="game-text">
+                <strong data-i18n="l1_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l1_analogy_text">Python — это как <strong>английский язык в мире IT</strong>. Как латиница в фэнтези-играх: на нём говорят все NPC, от маленьких скриптов до огромных нейросетей. Выучишь Python — сможешь «разговаривать» с любым ИИ.</span>
+            </div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🤔💭</span>
+            <span data-i18n="l1_meme">«Я думал, ИИ — это магия. Оказалось, это просто много-много if-ов» — каждый, кто начал учить Python</span>
+        </div>
+
+        <h3 data-i18n="l1_quest_title">🎯 Цель квеста</h3>
+        <p data-i18n="l1_quest_text">К концу урока у тебя будет <strong>работающий ИИ-бот</strong>, который:</p>
+        <ul>
+            <li data-i18n="l1_q1">👋 Здоровается и представляется</li>
+            <li data-i18n="l1_q2">💬 Спрашивает, как у тебя дела</li>
+            <li data-i18n="l1_q3">🧠 Определяет твоё настроение по ключевым словам</li>
+            <li data-i18n="l1_q4">😄 Адекватно отвечает (поддерживает / шутит / утешает)</li>
+        </ul>
+    </div>
+
+    <!-- LEVEL 2: Variables -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🎒 Инвентарь: Переменные</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Учимся хранить данные</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+40 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">
+            В любой RPG у героя есть <strong>инвентарь</strong> — рюкзак, где лежат мечи, зелья, золото. В Python роль инвентаря играют <strong>переменные</strong>. Это такие «коробочки с подписями», куда можно положить что угодно.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">⚔️</div>
+            <div class="game-text">
+                <strong data-i18n="l2_analogy_title">Сравни с игрой</strong>
+                <span data-i18n="l2_analogy_text">В Minecraft ты кладёшь алмазы в ячейку с подписью <code>diamonds</code>. В Python — то же самое, только вместо алмазов — числа, текст, True/False. А вместо ячеек — переменные.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l2_code_title">📝 Создаём свой инвентарь</h3>
+        <pre><code># Мой персонаж в игре "AI Creator"
+hero_name = "Алия"          # Имя героя
+hero_level = 10             # Уровень
+hero_hp = 100.0             # Здоровье (может быть дробным)
+has_magic_sword = True      # Есть ли магический меч?
+
+print("Герой:", hero_name)
+print("Уровень:", hero_level)
+print("HP:", hero_hp)
+print("Магический меч:", has_magic_sword)</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l2_tip_title">💡 Правило naming-а (как в Genshin)</strong>
+            <span data-i18n="l2_tip_text">Называй переменные понятно. <code>x = 5</code> — плохо (кто такой x?). <code>hero_hp = 100</code> — хорошо (сразу ясно, что это HP героя). Как с никами в играх: <code>player1</code> скучно, а <code>DragonSlayer2009</code> — уже интереснее 😄</span>
+        </div>
+
+        <div class="mini-boss">
+            <div class="mini-boss-header">
+                <span class="boss-icon">⚔️</span>
+                <h3 data-i18n="l2_miniboss_title">Мини-босс: «Создай персонажа»</h3>
+            </div>
+            <p data-i18n="l2_miniboss_text">Создай 5 переменных о своём игровом персонаже: имя, класс (воин/маг/лучник), уровень, сила, есть ли питомец. Выведи их все на экран.</p>
+            <span class="reward" data-i18n="l2_miniboss_reward">🏆 Награда: +30 XP, +10 AI-коинов</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Types -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🧪 Классы предметов: Типы данных</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Что может лежать в инвентаре</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+40 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">
+            В играх предметы делятся на <strong>классы</strong>: оружие, броня, зелья, квестовые вещи. Нельзя надеть зелье как шлем. В Python точно так же: у каждого значения есть <strong>тип</strong>. И нельзя, например, сложить число с текстом.
+        </p>
+
+        <h3 data-i18n="l3_types_title">4 главных типа данных (как 4 стихии в играх)</h3>
+        <ul>
+            <li><strong>🔥 int (целое число)</strong> — <code>10</code>, <code>-5</code>, <code>2026</code>. Как количество золота.</li>
+            <li><strong>💧 float (дробное число)</strong> — <code>3.14</code>, <code>99.5</code>. Как HP, может быть нецелым.</li>
+            <li><strong>🌪 str (строка, текст)</strong> — <code>"Привет"</code>, <code>"Gandalf"</code>. Как имя NPC.</li>
+            <li><strong>⚡ bool (True/False)</strong> — только два значения. Как переключатель: жив/мёртв, есть квест/нет квеста.</li>
+        </ul>
+
+        <div class="game-analogy">
+            <div class="game-icon">🧙</div>
+            <div class="game-text">
+                <strong data-i18n="l3_analogy_title">AI-контекст</strong>
+                <span data-i18n="l3_analogy_text">Нейросети видят мир именно в этих типах! <code>int</code> — количество пикселей, <code>float</code> — вес синапса, <code>str</code> — текст сообщения, <code>bool</code> — спам/не спам. Так что типы данных — это <strong>алфавит, на котором говорит ИИ</strong>.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l3_check_title">🔍 Проверяем тип предмета</h3>
+        <pre><code>gold = 1000
+hp = 99.5
+name = "Gandalf"
+is_alive = True
+
+print(type(gold))      # &lt;class 'int'&gt;
+print(type(hp))        # &lt;class 'float'&gt;
+print(type(name))      # &lt;class 'str'&gt;
+print(type(is_alive))  # &lt;class 'bool'&gt;</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">💀</span>
+            <span data-i18n="l3_meme">«Я пытался сложить "5" + 5 и получил ошибку. Оказалось, Python не настолько умный, чтобы догадаться, что "5" — это тоже число»</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Input/Output -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">💬 Диалог с NPC: input() и print()</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Учим бота общаться</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+50 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">
+            В играх есть <strong>диалоговые окна</strong>: NPC задаёт вопрос, ты выбираешь ответ. В Python эту магию делают две функции:
+        </p>
+        <ul>
+            <li><strong>print()</strong> — NPC говорит тебе (вывод на экран)</li>
+            <li><strong>input()</strong> — NPC слушает тебя (ввод с клавиатуры)</li>
+        </ul>
+
+        <h3 data-i18n="l4_code_title">📝 Первая диалоговая сцена</h3>
+        <pre><code>print("🤖 Привет, путник! Как тебя зовут?")
+name = input()  # Ждём, пока игрок введёт имя
+
+print("🤖 Рад знакомству, " + name + "!")
+print("🤖 Сколько тебе лет?")
+age = input()
+
+# Красивый вывод через f-строку (магия Python!)
+print(f"🤖 Круто, {name}! В {age} лет уже спасаешь мир? Респект! 🔥")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l4_warn_title">⚠️ Ловушка для новичков!</strong>
+            <span data-i18n="l4_warn_text"><code>input()</code> всегда возвращает <strong>строку</strong>, даже если ты ввёл число. Хочешь использовать возраст в математике? Превращай в число: <code>age = int(input())</code>. Это как в играх: чтобы купить предмет, золото должно быть числом, а не текстом «сто».</span>
+        </div>
+
+        <div class="mini-boss">
+            <div class="mini-boss-header">
+                <span class="boss-icon">⚔️</span>
+                <h3 data-i18n="l4_miniboss_title">Мини-босс: «Знакомство»</h3>
+            </div>
+            <p data-i18n="l4_miniboss_text">Напиши программу-знакомство: она спрашивает имя, возраст и любимый жанр игр (RPG/шутер/стратегия). В конце красиво выводит: «Привет, [имя]! Тебе [возраст] лет, и ты любишь [жанр]. Через 10 лет тебе будет [возраст+10]!»</p>
+            <span class="reward" data-i18n="l4_miniboss_reward">🏆 Награда: +40 XP, +15 AI-коинов</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: Conditions (mini-boss) -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">5</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">🌳 Ветвление сюжета: if / elif / else</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Первый классификатор ИИ</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l5_p1">
+            Помнишь игры с <strong>выбором реплик</strong>? (Detroit: Become Human, Mass Effect, Witcher). Ты выбираешь ответ — и сюжет идёт по-разному. В Python за это отвечают условия <code>if / elif / else</code>.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎭</div>
+            <div class="game-text">
+                <strong data-i18n="l5_analogy_title">Это и есть ИИ!</strong>
+                <span data-i18n="l5_analogy_text">Любой ИИ-классификатор — это на самом деле <strong>очень много if-ов</strong>. Определяет, кот на фото или собака? if пикселей в ушах много → кот. Спам в почте? if слово «казино» → спам. Позже мы заменим if-ы на нейросети, но суть останется та же.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 ИИ-классификатор настроения</h3>
+        <pre><code>print("🤖 Как у тебя дела? Напиши честно:")
+mood = input().lower()  # .lower() — превращаем в нижний регистр
+
+if "отлично" in mood or "супер" in mood or "класс" in mood:
+    print("🤖 😄 Круто! Заряжайся этой энергией на весь день!")
+elif "норм" in mood or "ок" in mood or "сойдёт" in mood:
+    print("🤖 😌 Норм — это уже хорошо. Но можно лучше!")
+elif "плохо" in mood or "грустно" in mood or "устал" in mood:
+    print("🤖 🫂 Держись! Всё проходит. Хочешь, расскажу шутку?")
+else:
+    print("🤖 🤔 Хм, не понял тебя. Напиши проще?")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l5_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l5_lore_text">То, что ты только что написал — это <strong>rule-based chatbot</strong> (чат-бот на правилах). Именно так работали первые «говорящие» программы в 1960-х! Самый известный — ELIZA, которая притворялась психотерапевтом. Твой бот — её правнук 😎</span>
+        </div>
+
+        <div class="mini-boss">
+            <div class="mini-boss-header">
+                <span class="boss-icon">⚔️</span>
+                <h3 data-i18n="l5_miniboss_title">Мини-босс: «Распределитель в Хогвартс»</h3>
+            </div>
+            <p data-i18n="l5_miniboss_text">Напиши программу, которая спрашивает 2 вопроса (например, «Ты любишь приключения?» и «Ты ценишь ум?»), и по ответам распределяет пользователя в один из 4 факультетов (или 4 класса в твоей любимой игре).</p>
+            <span class="reward" data-i18n="l5_miniboss_reward">🏆 Награда: +50 XP, +20 AI-коинов</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 6: Loops -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">6</div>
+            <div class="level-info">
+                <h2 data-i18n="l6_title">🔄 Гриндилка: Циклы for и while</h2>
+                <div class="level-subtitle" data-i18n="l6_sub">Обрабатываем датасеты</div>
+            </div>
+            <div class="level-xp" data-i18n="l6_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l6_p1">
+            В играх есть <strong>гринд</strong> — когда ты убиваешь 100 одинаковых мобов ради лута. Скучно? Зато эффективно. Циклы в Python — это <strong>легальный гринд</strong>: одна и та же операция много раз, но без скуки.
+        </p>
+
+        <h3 data-i18n="l6_for_title">🔁 for — когда знаем, сколько раз гриндить</h3>
+        <pre><code># Обрабатываем "датасет" из имён игроков
+players = ["Алия", "Болат", "Дима", "Ева"]
+
+for player in players:
+    print(f"👋 Привет, {player}! Добро пожаловать в AI Creator!")
+
+# Классический гринд: 10 раз
+for i in range(10):
+    print(f"⚔️ Убил моба #{i+1}. Лут +100 XP")</code></pre>
+
+        <h3 data-i18n="l6_while_title">🔁 while — когда гриндим, пока не достигнем цели</h3>
+        <pre><code># Бот учится угадывать число
+import random
+secret = random.randint(1, 10)  # Загаданное число от 1 до 10
+attempts = 0
+
+print("🤖 Я загадал число от 1 до 10. Угадай!")
+
+while True:
+    guess = int(input("Твоя догадка: "))
+    attempts += 1
+    
+    if guess == secret:
+        print(f"🤖 🎉 Угадал за {attempts} попыток! Ты гений!")
+        break  # Выход из цикла
+    elif guess < secret:
+        print("🤖 📈 Больше!")
+    else:
+        print("🤖 📉 Меньше!")</code></pre>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎮</div>
+            <div class="game-text">
+                <strong data-i18n="l6_analogy_title">Связь с нейросетями</strong>
+                <span data-i18n="l6_analogy_text">Обучение нейросети — это <strong>огромный цикл while</strong>: «пока ошибка большая → делаем шаг обучения → проверяем снова». Именно поэтому обучение ChatGPT заняло месяцы на тысячах видеокарт. Это был очень дорогой гринд 💸</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEVEL 7: Lists & Dicts -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">7</div>
+            <div class="level-info">
+                <h2 data-i18n="l7_title">📦 Сундуки и книги: Списки и словари</h2>
+                <div class="level-subtitle" data-i18n="l7_sub">Память бота</div>
+            </div>
+            <div class="level-xp" data-i18n="l7_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l7_p1">
+            Чтобы бот был умным, ему нужна <strong>память</strong>. В Python для этого есть две структуры:
+        </p>
+
+        <h3 data-i18n="l7_list_title">📜 Списки — как инвентарь (упорядоченный)</h3>
+        <pre><code># Инвентарь героя
+inventory = ["меч", "зелье", "щит", "500 золота"]
+
+print(inventory[0])      # меч (нумерация с 0!)
+inventory.append("лук")  # Добавили новый предмет
+print(inventory)         # ['меч', 'зелье', 'щит', '500 золота', 'лук']</code></pre>
+
+        <h3 data-i18n="l7_dict_title">📖 Словари — как база знаний (ключ → значение)</h3>
+        <pre><code># База знаний бота
+bot_knowledge = {
+    "привет": "Здравствуй, герой! 👋",
+    "как дела": "Работаю, не жалуюсь! 🤖",
+    "пока": "До встречи, путник! 🚀"
+}
+
+# Ищем ответ в базе
+question = input("Спроси меня: ").lower()
+if question in bot_knowledge:
+    print("🤖", bot_knowledge[question])
+else:
+    print("🤖 🤷 Не знаю такого. Научи меня!")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🧠✨</span>
+            <span data-i18n="l7_meme">Поздравляю! Ты только что написал свою первую «базу знаний». ChatGPT использует ту же идею, только словарь у него на 2 триллиона параметров. Но суть та же!</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 8: Functions -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">8</div>
+            <div class="level-info">
+                <h2 data-i18n="l8_title">⚡ Скиллы героя: Функции</h2>
+                <div class="level-subtitle" data-i18n="l8_sub">Превращаем код в переиспользуемые скиллы</div>
+            </div>
+            <div class="level-xp" data-i18n="l8_xp">+70 XP</div>
+        </div>
+
+        <p data-i18n="l8_p1">
+            В играх у героя есть <strong>набор скиллов</strong>: удар мечом, огненный шар, хил. Каждый скилл — это отдельная способность, которую можно использовать много раз. В Python скиллы называются <strong>функциями</strong>.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🔥</div>
+            <div class="game-text">
+                <strong data-i18n="l8_analogy_title">Функция = нейрон</strong>
+                <span data-i18n="l8_analogy_text">Функция получает <strong>входы</strong> (аргументы), делает что-то внутри и возвращает <strong>выход</strong> (результат). Это в точности как искусственный нейрон! Позже в курсе мы соберём из таких «нейронов» целую нейросеть.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l8_code_title">📝 Пишем скиллы для бота</h3>
+        <pre><code>def greet(name):
+    """Скилл №1: Приветствие"""
+    print(f"🤖 Привет, {name}! Я — твой ИИ-помощник.")
+
+def ask_mood():
+    """Скилл №2: Спросить настроение"""
+    print("🤖 Как у тебя дела?")
+    return input().lower()
+
+def classify_mood(text):
+    """Скилл №3: Определить настроение"""
+    if "отлично" in text or "супер" in text:
+        return "happy"
+    elif "норм" in text or "ок" in text:
+        return "neutral"
+    elif "плохо" in text or "грустно" in text:
+        return "sad"
+    else:
+        return "unknown"
+
+def respond(mood):
+    """Скилл №4: Ответить по настроению"""
+    if mood == "happy":
+        print("🤖 😄 Круто! Заряжайся этой энергией!")
+    elif mood == "neutral":
+        print("🤖 😌 Норм — это уже хорошо!")
+    elif mood == "sad":
+        print("🤖 🫂 Держись! Всё наладится.")
+    else:
+        print("🤖 🤔 Не понял, но я рядом.")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l8_tip_title">💡 Прокачка скиллов</strong>
+            <span data-i18n="l8_tip_text">Функции — это <strong>DRY-принцип</strong> (Don't Repeat Yourself). Один раз написал — используешь везде. Как в играх: выучил огненный шар → кидаешь его во всех боссов. Не надо каждый раз заново учить.</span>
+        </div>
+    </div>
+
+    <!-- LEVEL 9: FINAL BOSS -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l9_title">БОСС-ФАЙТ: Собираем ИИ-бота!</h2>
+                <div class="level-subtitle" data-i18n="l9_sub">Финальный проект урока</div>
+            </div>
+            <div class="level-xp" data-i18n="l9_xp">+100 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">⚔️🔥🐉</span>
+            <span data-i18n="l9_meme">Время показать, чему ты научился! Собери все скиллы в одного бота.</span>
+        </div>
+
+        <h3 data-i18n="l9_code_title">📝 Финальный код бота</h3>
+        <pre><code># ==========================================
+# 🤖 МОЙ ПЕРВЫЙ ИИ-БОТ
+# Автор: [твоё имя]
+# ==========================================
+
+def greet(name):
+    print(f"🤖 Привет, {name}! Я — твой ИИ-бот.")
+    print("🤖 Давай пообщаемся!")
+
+def ask_mood():
+    print("\n🤖 Как у тебя сегодня дела?")
+    return input("→ ").lower()
+
+def classify_mood(text):
+    if any(word in text for word in ["отлично", "супер", "класс", "круто"]):
+        return "happy"
+    elif any(word in text for word in ["норм", "ок", "сойдёт"]):
+        return "neutral"
+    elif any(word in text for word in ["плохо", "грустно", "устал", "беда"]):
+        return "sad"
+    else:
+        return "unknown"
+
+def respond(mood):
+    print()
+    if mood == "happy":
+        print("🤖 😄 Круто! Рад за тебя! Эта энергия — твой суперскилл.")
+    elif mood == "neutral":
+        print("🤖 😌 Стабильность — признак мастерства.")
+    elif mood == "sad":
+        print("🤖 🫂 Эй, я рядом. Хочешь, расскажу шутку про программистов?")
+        print("   — Почему программист ушёл с работы? Потому что он не получил массив (массу удовольствия)! 😄")
+    else:
+        print("🤖 🤔 Хм, интересно. Расскажи подробнее?")
+
+def main():
+    print("=" * 40)
+    print("🎮 ЗАПУСК ИИ-БОТА v1.0")
+    print("=" * 40)
+    
+    name = input("🤖 Как тебя зовут? → ")
+    greet(name)
+    
+    mood_text = ask_mood()
+    mood = classify_mood(mood_text)
+    respond(mood)
+    
+    print(f"\n🤖 Спасибо за общение, {name}! Возвращайся! 🚀")
+
+# Запускаем бота!
+if __name__ == "__main__":
+    main()</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l9_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l9_danger_text">Бот работает? Отвечает на 3 настроения? Не падает с ошибкой? Поздравляю — ты победил босса! 🏆</span>
+        </div>
+
+        <div class="mini-boss">
+            <div class="mini-boss-header">
+                <span class="boss-icon">🏆</span>
+                <h3 data-i18n="l9_boss_reward_title">Награда за победу над боссом</h3>
+            </div>
+            <ul>
+                <li data-i18n="l9_r1">💰 +100 AI-коинов</li>
+                <li data-i18n="l9_r2">⭐ +100 XP</li>
+                <li data-i18n="l9_r3">🎖 Ачивка «Первый ИИ-бот»</li>
+                <li data-i18n="l9_r4">📜 Сертификат в портфолио (скриншот работающего бота)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="achievements">
+        <h2 data-i18n="ach_title">🏆 Ачивки этого квеста</h2>
+        <div class="achievement-grid">
+            <div class="achievement">
+                <div class="achievement-icon">🎒</div>
+                <div class="achievement-name" data-i18n="ach1_name">Мастер инвентаря</div>
+                <div class="achievement-desc" data-i18n="ach1_desc">Создал 5 переменных</div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">💬</div>
+                <div class="achievement-name" data-i18n="ach2_name">Дипломат</div>
+                <div class="achievement-desc" data-i18n="ach2_desc">Написал диалог с NPC</div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">🌳</div>
+                <div class="achievement-name" data-i18n="ach3_name">Сценарист</div>
+                <div class="achievement-desc" data-i18n="ach3_desc">Сделал ветвление сюжета</div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">🔄</div>
+                <div class="achievement-name" data-i18n="ach4_name">Гриндер</div>
+                <div class="achievement-desc" data-i18n="ach4_desc">Освоил циклы</div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">⚡</div>
+                <div class="achievement-name" data-i18n="ach5_name">Мастер скиллов</div>
+                <div class="achievement-desc" data-i18n="ach5_desc">Написал 4 функции</div>
+            </div>
+            <div class="achievement">
+                <div class="achievement-icon">🤖</div>
+                <div class="achievement-name" data-i18n="ach6_name">Создатель ИИ</div>
+                <div class="achievement-desc" data-i18n="ach6_desc">Победил финального босса</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Quests (Homework) -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🎒 Квест «Умная визитка»</h3>
+            <p data-i18n="sq1_text">Расширь бота так, чтобы он запомнил имя, возраст и хобби пользователя. В конце должен сказать: «Классно, [имя], что тебе [возраст] лет и ты любишь [хобби]!»</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 30 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">🎯 Квест «ИИ-викторина»</h3>
+            <p data-i18n="sq2_text">Сделай бота-викторину: 5 вопросов по Python или играм, считает правильные ответы, в конце выставляет оценку и даёт комментарий («Ты нуб» / «Ты про» / «Ты гений IT»).</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 60 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🧠 Квест «Бот с памятью»</h3>
+            <p data-i18n="sq3_text">Сделай так, чтобы бот мог <strong>запоминать новые факты</strong> в процессе диалога. Если пользователь сказал «Я люблю котов», бот должен добавить это в словарь и использовать в будущем. Подсказка: используй словарь как базу знаний.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 100 AI-коинов + титул «AI Master»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Переменные — твой инвентарь</li>
+            <li data-i18n="sum2">✅ Типы данных — классы предметов</li>
+            <li data-i18n="sum3">✅ input/print — диалог с игроком</li>
+            <li data-i18n="sum4">✅ if/elif/else — ветвление сюжета</li>
+            <li data-i18n="sum5">✅ for/while — гриндилка</li>
+            <li data-i18n="sum6">✅ Списки/словари — память бота</li>
+            <li data-i18n="sum7">✅ Функции — скиллы героя</li>
+            <li data-i18n="sum8">🏆 Финальный босс — ИИ-бот побеждён!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀✨</span>
+            <span data-i18n="sum_meme">В следующем квесте мы создадим настоящую игру на Python с классами и объектами. Ты уже готов стать ИИ-магом 2-го уровня!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-0-setup.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">Урок 0: Установка VS Code</span>
+        </a>
+        <a href="lesson-1-2.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">1.2 Основы ООП: Создаём игру</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p data-i18n="footer">© 2026 AI Creator. Курс по ИИ для школьников 10 класса.</p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 1.1 • МОДУЛЬ 1",
+            title: "Первый ИИ-бот",
+            subtitle: "Добро пожаловать, Игрок 1! 🎯 Сегодня ты не просто учишь Python — ты создаёшь своего первого ИИ-бота. К концу квеста он будет здороваться, определять настроение и отвечать на вопросы. Готов? Press START.",
+            duration: "⏱ 2 часа", level: "📗 Уровень 1", xp: "⭐ +500 XP", loot: "💰 +100 AI-коинов",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 1 / 9",
+            l1_title: "🎬 Пролог: Зачем нам Python?", l1_sub: "Мотивация и погружение в лор", l1_xp: "+20 XP",
+            l1_p1: "Представь: ты зашёл в чат, написал «Привет, как дела?» — и тебе отвечает <strong>не человек</strong>. Это ChatGPT, Алиса, Gemini. Они написаны на <strong>Python</strong>. И сегодня ты научишься делать своего мини-ChatGPT.",
+            l1_analogy_title: "Игровая аналогия", l1_analogy_text: "Python — это как <strong>английский язык в мире IT</strong>. Как латиница в фэнтези-играх: на нём говорят все NPC, от маленьких скриптов до огромных нейросетей. Выучишь Python — сможешь «разговаривать» с любым ИИ.",
+            l1_meme: "«Я думал, ИИ — это магия. Оказалось, это просто много-много if-ов» — каждый, кто начал учить Python",
+            l1_quest_title: "🎯 Цель квеста", l1_quest_text: "К концу урока у тебя будет <strong>работающий ИИ-бот</strong>, который:",
+            l1_q1: "👋 Здоровается и представляется", l1_q2: "💬 Спрашивает, как у тебя дела",
+            l1_q3: "🧠 Определяет твоё настроение по ключевым словам", l1_q4: "😄 Адекватно отвечает (поддерживает / шутит / утешает)",
+            l2_title: "🎒 Инвентарь: Переменные", l2_sub: "Учимся хранить данные", l2_xp: "+40 XP",
+            l2_p1: "В любой RPG у героя есть <strong>инвентарь</strong> — рюкзак, где лежат мечи, зелья, золото. В Python роль инвентаря играют <strong>переменные</strong>. Это такие «коробочки с подписями», куда можно положить что угодно.",
+            l2_analogy_title: "Сравни с игрой", l2_analogy_text: "В Minecraft ты кладёшь алмазы в ячейку с подписью <code>diamonds</code>. В Python — то же самое, только вместо алмазов — числа, текст, True/False. А вместо ячеек — переменные.",
+            l2_code_title: "📝 Создаём свой инвентарь",
+            l2_tip_title: "💡 Правило naming-а (как в Genshin)", l2_tip_text: "Называй переменные понятно. <code>x = 5</code> — плохо (кто такой x?). <code>hero_hp = 100</code> — хорошо (сразу ясно, что это HP героя). Как с никами в играх: <code>player1</code> скучно, а <code>DragonSlayer2009</code> — уже интереснее 😄",
+            l2_miniboss_title: "Мини-босс: «Создай персонажа»", l2_miniboss_text: "Создай 5 переменных о своём игровом персонаже: имя, класс (воин/маг/лучник), уровень, сила, есть ли питомец. Выведи их все на экран.", l2_miniboss_reward: "🏆 Награда: +30 XP, +10 AI-коинов",
+            l3_title: "🧪 Классы предметов: Типы данных", l3_sub: "Что может лежать в инвентаре", l3_xp: "+40 XP",
+            l3_p1: "В играх предметы делятся на <strong>классы</strong>: оружие, броня, зелья, квестовые вещи. Нельзя надеть зелье как шлем. В Python точно так же: у каждого значения есть <strong>тип</strong>. И нельзя, например, сложить число с текстом.",
+            l3_types_title: "4 главных типа данных (как 4 стихии в играх)",
+            l3_analogy_title: "AI-контекст", l3_analogy_text: "Нейросети видят мир именно в этих типах! <code>int</code> — количество пикселей, <code>float</code> — вес синапса, <code>str</code> — текст сообщения, <code>bool</code> — спам/не спам. Так что типы данных — это <strong>алфавит, на котором говорит ИИ</strong>.",
+            l3_check_title: "🔍 Проверяем тип предмета",
+            l3_meme: "«Я пытался сложить \"5\" + 5 и получил ошибку. Оказалось, Python не настолько умный, чтобы догадаться, что \"5\" — это тоже число»",
+            l4_title: "💬 Диалог с NPC: input() и print()", l4_sub: "Учим бота общаться", l4_xp: "+50 XP",
+            l4_p1: "В играх есть <strong>диалоговые окна</strong>: NPC задаёт вопрос, ты выбираешь ответ. В Python эту магию делают две функции:",
+            l4_code_title: "📝 Первая диалоговая сцена",
+            l4_warn_title: "⚠️ Ловушка для новичков!", l4_warn_text: "<code>input()</code> всегда возвращает <strong>строку</strong>, даже если ты ввёл число. Хочешь использовать возраст в математике? Превращай в число: <code>age = int(input())</code>. Это как в играх: чтобы купить предмет, золото должно быть числом, а не текстом «сто».",
+            l4_miniboss_title: "Мини-босс: «Знакомство»", l4_miniboss_text: "Напиши программу-знакомство: она спрашивает имя, возраст и любимый жанр игр (RPG/шутер/стратегия). В конце красиво выводит: «Привет, [имя]! Тебе [возраст] лет, и ты любишь [жанр]. Через 10 лет тебе будет [возраст+10]!»", l4_miniboss_reward: "🏆 Награда: +40 XP, +15 AI-коинов",
+            l5_title: "🌳 Ветвление сюжета: if / elif / else", l5_sub: "Первый классификатор ИИ", l5_xp: "+60 XP",
+            l5_p1: "Помнишь игры с <strong>выбором реплик</strong>? (Detroit: Become Human, Mass Effect, Witcher). Ты выбираешь ответ — и сюжет идёт по-разному. В Python за это отвечают условия <code>if / elif / else</code>.",
+            l5_analogy_title: "Это и есть ИИ!", l5_analogy_text: "Любой ИИ-классификатор — это на самом деле <strong>очень много if-ов</strong>. Определяет, кот на фото или собака? if пикселей в ушах много → кот. Спам в почте? if слово «казино» → спам. Позже мы заменим if-ы на нейросети, но суть останется та же.",
+            l5_code_title: "📝 ИИ-классификатор настроения",
+            l5_lore_title: "📚 Лор для гиков", l5_lore_text: "То, что ты только что написал — это <strong>rule-based chatbot</strong> (чат-бот на правилах). Именно так работали первые «говорящие» программы в 1960-х! Самый известный — ELIZA, которая притворялась психотерапевтом. Твой бот — её правнук 😎",
+            l5_miniboss_title: "Мини-босс: «Распределитель в Хогвартс»", l5_miniboss_text: "Напиши программу, которая спрашивает 2 вопроса (например, «Ты любишь приключения?» и «Ты ценишь ум?»), и по ответам распределяет пользователя в один из 4 факультетов (или 4 класса в твоей любимой игре).", l5_miniboss_reward: "🏆 Награда: +50 XP, +20 AI-коинов",
+            l6_title: "🔄 Гриндилка: Циклы for и while", l6_sub: "Обрабатываем датасеты", l6_xp: "+60 XP",
+            l6_p1: "В играх есть <strong>гринд</strong> — когда ты убиваешь 100 одинаковых мобов ради лута. Скучно? Зато эффективно. Циклы в Python — это <strong>легальный гринд</strong>: одна и та же операция много раз, но без скуки.",
+            l6_for_title: "🔁 for — когда знаем, сколько раз гриндить",
+            l6_while_title: "🔁 while — когда гриндим, пока не достигнем цели",
+            l6_analogy_title: "Связь с нейросетями", l6_analogy_text: "Обучение нейросети — это <strong>огромный цикл while</strong>: «пока ошибка большая → делаем шаг обучения → проверяем снова». Именно поэтому обучение ChatGPT заняло месяцы на тысячах видеокарт. Это был очень дорогой гринд 💸",
+            l7_title: "📦 Сундуки и книги: Списки и словари", l7_sub: "Память бота", l7_xp: "+60 XP",
+            l7_p1: "Чтобы бот был умным, ему нужна <strong>память</strong>. В Python для этого есть две структуры:",
+            l7_list_title: "📜 Списки — как инвентарь (упорядоченный)",
+            l7_dict_title: "📖 Словари — как база знаний (ключ → значение)",
+            l7_meme: "Поздравляю! Ты только что написал свою первую «базу знаний». ChatGPT использует ту же идею, только словарь у него на 2 триллиона параметров. Но суть та же!",
+            l8_title: "⚡ Скиллы героя: Функции", l8_sub: "Превращаем код в переиспользуемые скиллы", l8_xp: "+70 XP",
+            l8_p1: "В играх у героя есть <strong>набор скиллов</strong>: удар мечом, огненный шар, хил. Каждый скилл — это отдельная способность, которую можно использовать много раз. В Python скиллы называются <strong>функциями</strong>.",
+            l8_analogy_title: "Функция = нейрон", l8_analogy_text: "Функция получает <strong>входы</strong> (аргументы), делает что-то внутри и возвращает <strong>выход</strong> (результат). Это в точности как искусственный нейрон! Позже в курсе мы соберём из таких «нейронов» целую нейросеть.",
+            l8_code_title: "📝 Пишем скиллы для бота",
+            l8_tip_title: "💡 Прокачка скиллов", l8_tip_text: "Функции — это <strong>DRY-принцип</strong> (Don't Repeat Yourself). Один раз написал — используешь везде. Как в играх: выучил огненный шар → кидаешь его во всех боссов. Не надо каждый раз заново учить.",
+            l9_title: "БОСС-ФАЙТ: Собираем ИИ-бота!", l9_sub: "Финальный проект урока", l9_xp: "+100 XP",
+            l9_meme: "Время показать, чему ты научился! Собери все скиллы в одного бота.",
+            l9_code_title: "📝 Финальный код бота",
+            l9_danger_title: "🚨 Проверь перед сдачей босса", l9_danger_text: "Бот работает? Отвечает на 3 настроения? Не падает с ошибкой? Поздравляю — ты победил босса! 🏆",
+            l9_boss_reward_title: "Награда за победу над боссом",
+            l9_r1: "💰 +100 AI-коинов", l9_r2: "⭐ +100 XP", l9_r3: "🎖 Ачивка «Первый ИИ-бот»", l9_r4: "📜 Сертификат в портфолио (скриншот работающего бота)",
+            ach_title: "🏆 Ачивки этого квеста",
+            ach1_name: "Мастер инвентаря", ach1_desc: "Создал 5 переменных",
+            ach2_name: "Дипломат", ach2_desc: "Написал диалог с NPC",
+            ach3_name: "Сценарист", ach3_desc: "Сделал ветвление сюжета",
+            ach4_name: "Гриндер", ach4_desc: "Освоил циклы",
+            ach5_name: "Мастер скиллов", ach5_desc: "Написал 4 функции",
+            ach6_name: "Создатель ИИ", ach6_desc: "Победил финального босса",
+            sq_title: "📜 Побочные квесты (домашнее задание)",
+            sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🎒 Квест «Умная визитка»", sq1_text: "Расширь бота так, чтобы он запомнил имя, возраст и хобби пользователя. В конце должен сказать: «Классно, [имя], что тебе [возраст] лет и ты любишь [хобби]!»", sq1_reward: "💰 Награда: 30 AI-коинов",
+            sq2_title: "🎯 Квест «ИИ-викторина»", sq2_text: "Сделай бота-викторину: 5 вопросов по Python или играм, считает правильные ответы, в конце выставляет оценку и даёт комментарий («Ты нуб» / «Ты про» / «Ты гений IT»).", sq2_reward: "💰 Награда: 60 AI-коинов",
+            sq3_title: "🧠 Квест «Бот с памятью»", sq3_text: "Сделай так, чтобы бот мог <strong>запоминать новые факты</strong> в процессе диалога. Если пользователь сказал «Я люблю котов», бот должен добавить это в словарь и использовать в будущем. Подсказка: используй словарь как базу знаний.", sq3_reward: "💰 Награда: 100 AI-коинов + титул «AI Master»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Переменные — твой инвентарь", sum2: "✅ Типы данных — классы предметов",
+            sum3: "✅ input/print — диалог с игроком", sum4: "✅ if/elif/else — ветвление сюжета",
+            sum5: "✅ for/while — гриндилка", sum6: "✅ Списки/словари — память бота",
+            sum7: "✅ Функции — скиллы героя", sum8: "🏆 Финальный босс — ИИ-бот побеждён!",
+            sum_meme: "В следующем квесте мы создадим настоящую игру на Python с классами и объектами. Ты уже готов стать ИИ-магом 2-го уровня!",
+            nav_back: "← Предыдущий квест", nav_back_title: "Урок 0: Установка VS Code",
+            nav_next: "Следующий квест →", nav_next_title: "1.2 Основы ООП: Создаём игру",
+            footer: "© 2026 AI Creator. Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 1.1 • MODULE 1",
+            title: "Your First AI Bot",
+            subtitle: "Welcome, Player 1! 🎯 Today you're not just learning Python — you're creating your first AI bot. By the end of the quest it will greet, detect mood, and answer questions. Ready? Press START.",
+            duration: "⏱ 2 hours", level: "📗 Level 1", xp: "⭐ +500 XP", loot: "💰 +100 AI-coins",
+            progress_title: "📊 Quest progress", progress_counter: "Level 1 / 9",
+            l1_title: "🎬 Prologue: Why Python?", l1_sub: "Motivation and lore dive", l1_xp: "+20 XP",
+            l1_p1: "Imagine: you open a chat, type «Hi, how are you?» — and <strong>a non-human</strong> replies. That's ChatGPT, Alexa, Gemini. They're written in <strong>Python</strong>. And today you'll build your own mini-ChatGPT.",
+            l1_analogy_title: "Game analogy", l1_analogy_text: "Python is like <strong>English in the IT world</strong>. Like Latin in fantasy games: every NPC speaks it, from tiny scripts to huge neural networks. Learn Python — and you'll «talk» to any AI.",
+            l1_meme: "«I thought AI was magic. Turns out it's just lots and lots of ifs» — everyone who started learning Python",
+            l1_quest_title: "🎯 Quest goal", l1_quest_text: "By the end of the lesson you'll have a <strong>working AI bot</strong> that:",
+            l1_q1: "👋 Greets and introduces itself", l1_q2: "💬 Asks how you're doing",
+            l1_q3: "🧠 Detects your mood by keywords", l1_q4: "😄 Responds appropriately (supports / jokes / comforts)",
+            l2_title: "🎒 Inventory: Variables", l2_sub: "Learning to store data", l2_xp: "+40 XP",
+            l2_p1: "In any RPG the hero has an <strong>inventory</strong> — a backpack with swords, potions, gold. In Python the role of inventory is played by <strong>variables</strong>. These are «labeled boxes» where you can put anything.",
+            l2_analogy_title: "Compare with a game", l2_analogy_text: "In Minecraft you put diamonds in a cell labeled <code>diamonds</code>. In Python it's the same, only instead of diamonds — numbers, text, True/False. And instead of cells — variables.",
+            l2_code_title: "📝 Creating your inventory",
+            l2_tip_title: "💡 Naming rule (like in Genshin)", l2_tip_text: "Name variables clearly. <code>x = 5</code> — bad (who's x?). <code>hero_hp = 100</code> — good (clear it's hero's HP). Like nicknames in games: <code>player1</code> is boring, but <code>DragonSlayer2009</code> — way cooler 😄",
+            l2_miniboss_title: "Mini-boss: «Create a character»", l2_miniboss_text: "Create 5 variables about your game character: name, class (warrior/mage/archer), level, strength, has pet. Print them all.", l2_miniboss_reward: "🏆 Reward: +30 XP, +10 AI-coins",
+            l3_title: "🧪 Item classes: Data types", l3_sub: "What can be in the inventory", l3_xp: "+40 XP",
+            l3_p1: "In games items are divided into <strong>classes</strong>: weapons, armor, potions, quest items. You can't wear a potion as a helmet. In Python it's the same: every value has a <strong>type</strong>. And you can't, for example, add a number to text.",
+            l3_types_title: "4 main data types (like 4 elements in games)",
+            l3_analogy_title: "AI context", l3_analogy_text: "Neural networks see the world in these types! <code>int</code> — pixel count, <code>float</code> — synapse weight, <code>str</code> — message text, <code>bool</code> — spam/not spam. So data types are the <strong>alphabet AI speaks</strong>.",
+            l3_check_title: "🔍 Checking item type",
+            l3_meme: "«I tried to add \"5\" + 5 and got an error. Turns out Python isn't smart enough to guess that \"5\" is also a number»",
+            l4_title: "💬 Dialog with NPC: input() and print()", l4_sub: "Teaching the bot to communicate", l4_xp: "+50 XP",
+            l4_p1: "Games have <strong>dialog boxes</strong>: NPC asks a question, you choose an answer. In Python this magic is done by two functions:",
+            l4_code_title: "📝 First dialog scene",
+            l4_warn_title: "⚠️ Trap for beginners!", l4_warn_text: "<code>input()</code> always returns a <strong>string</strong>, even if you typed a number. Want to use age in math? Convert to number: <code>age = int(input())</code>. Like in games: to buy an item, gold must be a number, not the text «hundred».",
+            l4_miniboss_title: "Mini-boss: «Introduction»", l4_miniboss_text: "Write an intro program: asks name, age and favorite game genre (RPG/shooter/strategy). At the end nicely outputs: «Hi, [name]! You're [age] years old, and you love [genre]. In 10 years you'll be [age+10]!»", l4_miniboss_reward: "🏆 Reward: +40 XP, +15 AI-coins",
+            l5_title: "🌳 Story branching: if / elif / else", l5_sub: "First AI classifier", l5_xp: "+60 XP",
+            l5_p1: "Remember games with <strong>dialog choices</strong>? (Detroit: Become Human, Mass Effect, Witcher). You choose an answer — and the story goes differently. In Python this is handled by <code>if / elif / else</code>.",
+            l5_analogy_title: "This IS AI!", l5_analogy_text: "Any AI classifier is actually <strong>a lot of ifs</strong>. Determines if there's a cat or dog in the photo? if lots of ear pixels → cat. Spam in email? if word «casino» → spam. Later we'll replace ifs with neural networks, but the essence stays the same.",
+            l5_code_title: "📝 AI mood classifier",
+            l5_lore_title: "📚 Lore for geeks", l5_lore_text: "What you just wrote is a <strong>rule-based chatbot</strong>. That's exactly how the first «talking» programs worked in the 1960s! The most famous — ELIZA, which pretended to be a psychotherapist. Your bot is her great-grandson 😎",
+            l5_miniboss_title: "Mini-boss: «Hogwarts Sorting»", l5_miniboss_text: "Write a program that asks 2 questions (e.g. «Do you like adventures?» and «Do you value intelligence?»), and by answers sorts the user into one of 4 houses (or 4 classes in your favorite game).", l5_miniboss_reward: "🏆 Reward: +50 XP, +20 AI-coins",
+            l6_title: "🔄 Grinding: for and while loops", l6_sub: "Processing datasets", l6_xp: "+60 XP",
+            l6_p1: "Games have <strong>grinding</strong> — when you kill 100 same mobs for loot. Boring? But effective. Loops in Python are <strong>legal grind</strong>: same operation many times, but without boredom.",
+            l6_for_title: "🔁 for — when we know how many times to grind",
+            l6_while_title: "🔁 while — when we grind until we reach the goal",
+            l6_analogy_title: "Connection to neural networks", l6_analogy_text: "Neural network training is a <strong>huge while loop</strong>: «while error is big → take a training step → check again». That's why ChatGPT training took months on thousands of GPUs. That was a very expensive grind 💸",
+            l7_title: "📦 Chests and books: Lists and dictionaries", l7_sub: "Bot's memory", l7_xp: "+60 XP",
+            l7_p1: "For a bot to be smart, it needs <strong>memory</strong>. In Python there are two structures for this:",
+            l7_list_title: "📜 Lists — like inventory (ordered)",
+            l7_dict_title: "📖 Dictionaries — like knowledge base (key → value)",
+            l7_meme: "Congrats! You just wrote your first «knowledge base». ChatGPT uses the same idea, only its dictionary has 2 trillion parameters. But the essence is the same!",
+            l8_title: "⚡ Hero's skills: Functions", l8_sub: "Turning code into reusable skills", l8_xp: "+70 XP",
+            l8_p1: "In games the hero has a <strong>set of skills</strong>: sword strike, fireball, heal. Each skill is a separate ability you can use many times. In Python skills are called <strong>functions</strong>.",
+            l8_analogy_title: "Function = neuron", l8_analogy_text: "A function gets <strong>inputs</strong> (arguments), does something inside and returns an <strong>output</strong> (result). This is exactly like an artificial neuron! Later in the course we'll build a whole neural network from such «neurons».",
+            l8_code_title: "📝 Writing skills for the bot",
+            l8_tip_title: "💡 Skill upgrade", l8_tip_text: "Functions are the <strong>DRY principle</strong> (Don't Repeat Yourself). Write once — use everywhere. Like in games: learned fireball → throw it at all bosses. No need to relearn every time.",
+            l9_title: "BOSS FIGHT: Building the AI bot!", l9_sub: "Final lesson project", l9_xp: "+100 XP",
+            l9_meme: "Time to show what you've learned! Combine all skills into one bot.",
+            l9_code_title: "📝 Final bot code",
+            l9_danger_title: "🚨 Check before submitting the boss", l9_danger_text: "Bot works? Responds to 3 moods? Doesn't crash with error? Congrats — you defeated the boss! 🏆",
+            l9_boss_reward_title: "Reward for defeating the boss",
+            l9_r1: "💰 +100 AI-coins", l9_r2: "⭐ +100 XP", l9_r3: "🎖 Achievement «First AI bot»", l9_r4: "📜 Certificate for portfolio (screenshot of working bot)",
+            ach_title: "🏆 Achievements of this quest",
+            ach1_name: "Inventory Master", ach1_desc: "Created 5 variables",
+            ach2_name: "Diplomat", ach2_desc: "Wrote dialog with NPC",
+            ach3_name: "Screenwriter", ach3_desc: "Made story branching",
+            ach4_name: "Grinder", ach4_desc: "Mastered loops",
+            ach5_name: "Skill Master", ach5_desc: "Wrote 4 functions",
+            ach6_name: "AI Creator", ach6_desc: "Defeated the final boss",
+            sq_title: "📜 Side quests (homework)",
+            sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🎒 Quest «Smart business card»", sq1_text: "Extend the bot so it remembers user's name, age and hobby. At the end it should say: «Cool, [name], that you're [age] years old and you love [hobby]!»", sq1_reward: "💰 Reward: 30 AI-coins",
+            sq2_title: "🎯 Quest «AI quiz»", sq2_text: "Make a quiz bot: 5 questions on Python or games, counts correct answers, at the end gives a grade and comment («You're a noob» / «You're a pro» / «You're an IT genius»).", sq2_reward: "💰 Reward: 60 AI-coins",
+            sq3_title: "🧠 Quest «Bot with memory»", sq3_text: "Make the bot <strong>remember new facts</strong> during dialog. If user said «I love cats», the bot should add it to the dictionary and use it in the future. Hint: use a dictionary as knowledge base.", sq3_reward: "💰 Reward: 100 AI-coins + title «AI Master»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Variables — your inventory", sum2: "✅ Data types — item classes",
+            sum3: "✅ input/print — dialog with player", sum4: "✅ if/elif/else — story branching",
+            sum5: "✅ for/while — grinding", sum6: "✅ Lists/dictionaries — bot's memory",
+            sum7: "✅ Functions — hero's skills", sum8: "🏆 Final boss — AI bot defeated!",
+            sum_meme: "In the next quest we'll create a real Python game with classes and objects. You're already ready to become a Level 2 AI mage!",
+            nav_back: "← Previous quest", nav_back_title: "Lesson 0: Installing VS Code",
+            nav_next: "Next quest →", nav_next_title: "1.2 OOP Basics: Creating a game",
+            footer: "© 2026 AI Creator. AI course for 10th grade students."
+        },
+        es: {
+            badge: "🎮 MISIÓN 1.1 • MÓDULO 1",
+            title: "Tu primer bot de IA",
+            subtitle: "¡Bienvenido, Jugador 1! 🎯 Hoy no solo aprendes Python — estás creando tu primer bot de IA. Al final de la misión saludará, detectará el estado de ánimo y responderá preguntas. ¿Listo? Press START.",
+            duration: "⏱ 2 horas", level: "📗 Nivel 1", xp: "⭐ +500 XP", loot: "💰 +100 AI-monedas",
+            progress_title: "📊 Progreso de la misión", progress_counter: "Nivel 1 / 9",
+            l1_title: "🎬 Prólogo: ¿Por qué Python?", l1_sub: "Motivación e inmersión en el lore", l1_xp: "+20 XP",
+            l1_p1: "Imagina: entras en un chat, escribes «Hola, ¿cómo estás?» — y te responde <strong>un no-humano</strong>. Eso es ChatGPT, Alexa, Gemini. Están escritos en <strong>Python</strong>. Y hoy harás tu propio mini-ChatGPT.",
+            l1_analogy_title: "Analogía de juego", l1_analogy_text: "Python es como <strong>el inglés en el mundo IT</strong>. Como el latín en juegos de fantasía: todos los NPC lo hablan, desde pequeños scripts hasta enormes redes neuronales. Aprende Python — y «hablarás» con cualquier IA.",
+            l1_meme: "«Pensé que la IA era magia. Resultó que son solo muchos ifs» — todos los que empezaron a aprender Python",
+            l1_quest_title: "🎯 Objetivo de la misión", l1_quest_text: "Al final de la lección tendrás un <strong>bot de IA funcionando</strong> que:",
+            l1_q1: "👋 Saluda y se presenta", l1_q2: "💬 Pregunta cómo estás",
+            l1_q3: "🧠 Detecta tu estado de ánimo por palabras clave", l1_q4: "😄 Responde adecuadamente (apoya / bromea / consuela)",
+            l2_title: "🎒 Inventario: Variables", l2_sub: "Aprendiendo a almacenar datos", l2_xp: "+40 XP",
+            l2_p1: "En cualquier RPG el héroe tiene un <strong>inventario</strong> — una mochila con espadas, pociones, oro. En Python el papel del inventario lo juegan las <strong>variables</strong>. Son «cajas con etiquetas» donde puedes poner cualquier cosa.",
+            l2_analogy_title: "Compara con un juego", l2_analogy_text: "En Minecraft pones diamantes en una celda llamada <code>diamonds</code>. En Python es lo mismo, solo que en lugar de diamantes — números, texto, True/False. Y en lugar de celdas — variables.",
+            l2_code_title: "📝 Creando tu inventario",
+            l2_tip_title: "💡 Regla de nombres (como en Genshin)", l2_tip_text: "Nombra variables claramente. <code>x = 5</code> — mal (¿quién es x?). <code>hero_hp = 100</code> — bien (claro que son los HP del héroe). Como nicks en juegos: <code>player1</code> es aburrido, pero <code>DragonSlayer2009</code> — mucho más cool 😄",
+            l2_miniboss_title: "Mini-jefe: «Crea un personaje»", l2_miniboss_text: "Crea 5 variables sobre tu personaje de juego: nombre, clase (guerrero/mago/arquero), nivel, fuerza, tiene mascota. Imprímelas todas.", l2_miniboss_reward: "🏆 Recompensa: +30 XP, +10 AI-monedas",
+            l3_title: "🧪 Clases de objetos: Tipos de datos", l3_sub: "Qué puede haber en el inventario", l3_xp: "+40 XP",
+            l3_p1: "En juegos los objetos se dividen en <strong>clases</strong>: armas, armaduras, pociones, objetos de misión. No puedes ponerte una poción como casco. En Python igual: cada valor tiene un <strong>tipo</strong>. Y no puedes, por ejemplo, sumar número con texto.",
+            l3_types_title: "4 tipos de datos principales (como 4 elementos en juegos)",
+            l3_analogy_title: "Contexto IA", l3_analogy_text: "¡Las redes neuronales ven el mundo en estos tipos! <code>int</code> — cantidad de píxeles, <code>float</code> — peso de sinapsis, <code>str</code> — texto del mensaje, <code>bool</code> — spam/no spam. Así que los tipos de datos son el <strong>alfabeto que habla la IA</strong>.",
+            l3_check_title: "🔍 Comprobando tipo de objeto",
+            l3_meme: "«Intenté sumar \"5\" + 5 y dio error. Resulta que Python no es tan listo para adivinar que \"5\" también es número»",
+            l4_title: "💬 Diálogo con NPC: input() y print()", l4_sub: "Enseñando al bot a comunicarse", l4_xp: "+50 XP",
+            l4_p1: "Los juegos tienen <strong>cajas de diálogo</strong>: el NPC pregunta, tú eliges respuesta. En Python esta magia la hacen dos funciones:",
+            l4_code_title: "📝 Primera escena de diálogo",
+            l4_warn_title: "⚠️ ¡Trampa para novatos!", l4_warn_text: "<code>input()</code> siempre devuelve <strong>string</strong>, incluso si escribiste número. ¿Quieres usar edad en matemáticas? Convierte a número: <code>age = int(input())</code>. Como en juegos: para comprar objeto, el oro debe ser número, no texto «cien».",
+            l4_miniboss_title: "Mini-jefe: «Presentación»", l4_miniboss_text: "Escribe un programa de presentación: pregunta nombre, edad y género de juego favorito (RPG/shooter/estrategia). Al final muestra bonito: «¡Hola, [nombre]! Tienes [edad] años, y te gusta [género]. ¡En 10 años tendrás [edad+10]!»", l4_miniboss_reward: "🏆 Recompensa: +40 XP, +15 AI-monedas",
+            l5_title: "🌳 Ramificación de historia: if / elif / else", l5_sub: "Primer clasificador de IA", l5_xp: "+60 XP",
+            l5_p1: "¿Recuerdas juegos con <strong>opciones de diálogo</strong>? (Detroit: Become Human, Mass Effect, Witcher). Eliges respuesta — y la historia va diferente. En Python esto lo manejan <code>if / elif / else</code>.",
+            l5_analogy_title: "¡Esto ES IA!", l5_analogy_text: "Cualquier clasificador de IA es realmente <strong>muchísimos ifs</strong>. ¿Detecta si hay gato o perro en foto? si hay muchos píxeles de orejas → gato. ¿Spam en email? si palabra «casino» → spam. Luego reemplazaremos ifs con redes neuronales, pero la esencia sigue igual.",
+            l5_code_title: "📝 Clasificador de ánimo de IA",
+            l5_lore_title: "📚 Lore para geeks", l5_lore_text: "Lo que acabas de escribir es un <strong>chatbot basado en reglas</strong>. ¡Así funcionaban los primeros programas «habladores» en los 60s! El más famoso — ELIZA, que fingía ser psicoterapeuta. Tu bot es su tataranieto 😎",
+            l5_miniboss_title: "Mini-jefe: «Selección de Hogwarts»", l5_miniboss_text: "Escribe un programa que pregunte 2 preguntas (ej. «¿Te gustan las aventuras?» y «¿Valoras la inteligencia?»), y por respuestas clasifique al usuario en una de 4 casas (o 4 clases en tu juego favorito).", l5_miniboss_reward: "🏆 Recompensa: +50 XP, +20 AI-monedas",
+            l6_title: "🔄 Grindeo: Bucles for y while", l6_sub: "Procesando datasets", l6_xp: "+60 XP",
+            l6_p1: "Los juegos tienen <strong>grindeo</strong> — cuando matas 100 mobs iguales por loot. ¿Aburrido? Pero efectivo. Los bucles en Python son <strong>grindeo legal</strong>: misma operación muchas veces, pero sin aburrimiento.",
+            l6_for_title: "🔁 for — cuando sabemos cuántas veces grindear",
+            l6_while_title: "🔁 while — cuando grindeamos hasta alcanzar objetivo",
+            l6_analogy_title: "Conexión con redes neuronales", l6_analogy_text: "El entrenamiento de red neuronal es un <strong>gran bucle while</strong>: «mientras error sea grande → da paso de entrenamiento → revisa otra vez». Por eso entrenar ChatGPT tomó meses en miles de GPUs. Fue un grindeo muy caro 💸",
+            l7_title: "📦 Cofres y libros: Listas y diccionarios", l7_sub: "Memoria del bot", l7_xp: "+60 XP",
+            l7_p1: "Para que el bot sea inteligente, necesita <strong>memoria</strong>. En Python hay dos estructuras para esto:",
+            l7_list_title: "📜 Listas — como inventario (ordenadas)",
+            l7_dict_title: "📖 Diccionarios — como base de conocimiento (clave → valor)",
+            l7_meme: "¡Felicidades! Acabas de escribir tu primera «base de conocimiento». ChatGPT usa la misma idea, solo que su diccionario tiene 2 trillones de parámetros. ¡Pero la esencia es la misma!",
+            l8_title: "⚡ Habilidades del héroe: Funciones", l8_sub: "Convirtiendo código en habilidades reutilizables", l8_xp: "+70 XP",
+            l8_p1: "En juegos el héroe tiene un <strong>conjunto de habilidades</strong>: golpe de espada, bola de fuego, cura. Cada habilidad es una capacidad separada que puedes usar muchas veces. En Python las habilidades se llaman <strong>funciones</strong>.",
+            l8_analogy_title: "Función = neurona", l8_analogy_text: "Una función recibe <strong>entradas</strong> (argumentos), hace algo dentro y devuelve una <strong>salida</strong> (resultado). ¡Esto es exactamente como una neurona artificial! Más tarde en el curso construiremos una red neuronal completa con estas «neuronas».",
+            l8_code_title: "📝 Escribiendo habilidades para el bot",
+            l8_tip_title: "💡 Mejora de habilidad", l8_tip_text: "Las funciones son el <strong>principio DRY</strong> (Don't Repeat Yourself). Escribe una vez — úsalo en todas partes. Como en juegos: aprendiste bola de fuego → la lanzas a todos los jefes. No necesitas reaprender cada vez.",
+            l9_title: "¡PELEA CONTRA EL JEFE: Construyendo el bot de IA!", l9_sub: "Proyecto final de la lección", l9_xp: "+100 XP",
+            l9_meme: "¡Hora de mostrar lo que aprendiste! Combina todas las habilidades en un bot.",
+            l9_code_title: "📝 Código final del bot",
+            l9_danger_title: "🚨 Revisa antes de entregar al jefe", l9_danger_text: "¿El bot funciona? ¿Responde a 3 ánimos? ¿No se cae con error? ¡Felicidades — derrotaste al jefe! 🏆",
+            l9_boss_reward_title: "Recompensa por derrotar al jefe",
+            l9_r1: "💰 +100 AI-monedas", l9_r2: "⭐ +100 XP", l9_r3: "🎖 Logro «Primer bot de IA»", l9_r4: "📜 Certificado para portafolio (captura del bot funcionando)",
+            ach_title: "🏆 Logros de esta misión",
+            ach1_name: "Maestro del inventario", ach1_desc: "Creó 5 variables",
+            ach2_name: "Diplomático", ach2_desc: "Escribió diálogo con NPC",
+            ach3_name: "Guionista", ach3_desc: "Hizo ramificación de historia",
+            ach4_name: "Grindeador", ach4_desc: "Dominó los bucles",
+            ach5_name: "Maestro de habilidades", ach5_desc: "Escribió 4 funciones",
+            ach6_name: "Creador de IA", ach6_desc: "Derrotó al jefe final",
+            sq_title: "📜 Misiones secundarias (tarea)",
+            sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL",
+            sq1_title: "🎒 Misión «Tarjeta inteligente»", sq1_text: "Extiende el bot para que recuerde nombre, edad y hobby del usuario. Al final debe decir: «¡Qué bien, [nombre], que tienes [edad] años y te gusta [hobby]!»", sq1_reward: "💰 Recompensa: 30 AI-monedas",
+            sq2_title: "🎯 Misión «Quiz de IA»", sq2_text: "Haz un bot de quiz: 5 preguntas sobre Python o juegos, cuenta respuestas correctas, al final da calificación y comentario («Eres noob» / «Eres pro» / «Eres genio IT»).", sq2_reward: "💰 Recompensa: 60 AI-monedas",
+            sq3_title: "🧠 Misión «Bot con memoria»", sq3_text: "Haz que el bot <strong>recuerde nuevos hechos</strong> durante el diálogo. Si el usuario dijo «Me gustan los gatos», el bot debe añadirlo al diccionario y usarlo después. Pista: usa diccionario como base de conocimiento.", sq3_reward: "💰 Recompensa: 100 AI-monedas + título «AI Master»",
+            sum_title: "Recta final", sum_sub: "Lo que subiste de nivel en esta misión",
+            sum1: "✅ Variables — tu inventario", sum2: "✅ Tipos de datos — clases de objetos",
+            sum3: "✅ input/print — diálogo con jugador", sum4: "✅ if/elif/else — ramificación de historia",
+            sum5: "✅ for/while — grindeo", sum6: "✅ Listas/diccionarios — memoria del bot",
+            sum7: "✅ Funciones — habilidades del héroe", sum8: "🏆 Jefe final — ¡bot de IA derrotado!",
+            sum_meme: "¡En la próxima misión crearemos un juego real en Python con clases y objetos! ¡Ya estás listo para convertirte en mago de IA nivel 2!",
+            nav_back: "← Misión anterior", nav_back_title: "Lección 0: Instalando VS Code",
+            nav_next: "Siguiente misión →", nav_next_title: "1.2 Fundamentos OOP: Creando un juego",
+            footer: "© 2026 AI Creator. Curso de IA para estudiantes de 10º grado."
+        },
+        de: {
+            badge: "🎮 QUEST 1.1 • MODUL 1",
+            title: "Dein erster KI-Bot",
+            subtitle: "Willkommen, Spieler 1! 🎯 Heute lernst du nicht nur Python — du erschaffst deinen ersten KI-Bot. Am Ende des Quests wird er grüßen, Stimmung erkennen und Fragen beantworten. Bereit? Press START.",
+            duration: "⏱ 2 Stunden", level: "📗 Level 1", xp: "⭐ +500 XP", loot: "💰 +100 AI-Münzen",
+            progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 1 / 9",
+            l1_title: "🎬 Prolog: Warum Python?", l1_sub: "Motivation und Lore-Eintauchen", l1_xp: "+20 XP",
+            l1_p1: "Stell dir vor: Du öffnest einen Chat, schreibst «Hi, wie geht's?» — und <strong>ein Nicht-Mensch</strong> antwortet. Das sind ChatGPT, Alexa, Gemini. Sie sind in <strong>Python</strong> geschrieben. Und heute baust du dein eigenes mini-ChatGPT.",
+            l1_analogy_title: "Spiel-Analogie", l1_analogy_text: "Python ist wie <strong>Englisch in der IT-Welt</strong>. Wie Latein in Fantasy-Spielen: Jeder NPC spricht es, von kleinen Skripten bis zu riesigen neuronalen Netzen. Lerne Python — und du «sprichst» mit jeder KI.",
+            l1_meme: "«Ich dachte, KI ist Magie. Es stellte sich heraus, dass es nur viele, viele Ifs sind» — jeder, der anfing, Python zu lernen",
+            l1_quest_title: "🎯 Quest-Ziel", l1_quest_text: "Am Ende der Lektion hast du einen <strong>funktionierenden KI-Bot</strong>, der:",
+            l1_q1: "👋 Grüßt und sich vorstellt", l1_q2: "💬 Fragt, wie es dir geht",
+            l1_q3: "🧠 Erkennt deine Stimmung an Schlüsselwörtern", l1_q4: "😄 Angemessen reagiert (unterstützt / witzelt / tröstet)",
+            l2_title: "🎒 Inventar: Variablen", l2_sub: "Daten speichern lernen", l2_xp: "+40 XP",
+            l2_p1: "In jedem RPG hat der Held ein <strong>Inventar</strong> — einen Rucksack mit Schwertern, Tränken, Gold. In Python spielen <strong>Variablen</strong> die Rolle des Inventars. Das sind «beschriftete Kisten», in die du alles legen kannst.",
+            l2_analogy_title: "Vergleiche mit einem Spiel", l2_analogy_text: "In Minecraft legst du Diamanten in eine Zelle namens <code>diamonds</code>. In Python ist es dasselbe, nur statt Diamanten — Zahlen, Text, True/False. Und statt Zellen — Variablen.",
+            l2_code_title: "📝 Erstelle dein Inventar",
+            l2_tip_title: "💡 Namensregel (wie in Genshin)", l2_tip_text: "Benenne Variablen klar. <code>x = 5</code> — schlecht (wer ist x?). <code>hero_hp = 100</code> — gut (klar, dass es HP des Helden ist). Wie Nicknames in Spielen: <code>player1</code> ist langweilig, aber <code>DragonSlayer2009</code> — viel cooler 😄",
+            l2_miniboss_title: "Mini-Boss: «Erstelle einen Charakter»", l2_miniboss_text: "Erstelle 5 Variablen über deinen Spielcharakter: Name, Klasse (Krieger/Magier/Bogenschütze), Level, Stärke, hat Haustier. Gib sie alle aus.", l2_miniboss_reward: "🏆 Belohnung: +30 XP, +10 AI-Münzen",
+            l3_title: "🧪 Gegenstandsklassen: Datentypen", l3_sub: "Was im Inventar sein kann", l3_xp: "+40 XP",
+            l3_p1: "In Spielen sind Gegenstände in <strong>Klassen</strong> eingeteilt: Waffen, Rüstungen, Tränke, Quest-Items. Du kannst einen Trank nicht als Helm tragen. In Python ist es genauso: Jeder Wert hat einen <strong>Typ</strong>. Und du kannst z.B. nicht Zahl mit Text addieren.",
+            l3_types_title: "4 Hauptdatentypen (wie 4 Elemente in Spielen)",
+            l3_analogy_title: "KI-Kontext", l3_analogy_text: "Neuronale Netze sehen die Welt in diesen Typen! <code>int</code> — Pixelanzahl, <code>float</code> — Synapsengewicht, <code>str</code> — Nachrichtentext, <code>bool</code> — Spam/nicht Spam. Also sind Datentypen das <strong>Alphabet, das KI spricht</strong>.",
+            l3_check_title: "🔍 Gegenstandstyp prüfen",
+            l3_meme: "«Ich versuchte \"5\" + 5 zu addieren und bekam einen Fehler. Python ist wohl nicht schlau genug zu erraten, dass \"5\" auch eine Zahl ist»",
+            l4_title: "💬 Dialog mit NPC: input() und print()", l4_sub: "Dem Bot kommunizieren beibringen", l4_xp: "+50 XP",
+            l4_p1: "Spiele haben <strong>Dialogboxen</strong>: NPC stellt Frage, du wählst Antwort. In Python machen diese Magie zwei Funktionen:",
+            l4_code_title: "📝 Erste Dialog-Szene",
+            l4_warn_title: "⚠️ Falle für Anfänger!", l4_warn_text: "<code>input()</code> gibt immer einen <strong>String</strong> zurück, auch wenn du Zahl eingegeben hast. Willst du Alter in Mathe nutzen? In Zahl umwandeln: <code>age = int(input())</code>. Wie in Spielen: Um Item zu kaufen, muss Gold Zahl sein, nicht Text «hundert».",
+            l4_miniboss_title: "Mini-Boss: «Vorstellung»", l4_miniboss_text: "Schreibe ein Vorstellungsprogramm: fragt Name, Alter und Lieblings-Game-Genre (RPG/Shooter/Strategie). Am Ende schön ausgeben: «Hi, [Name]! Du bist [Alter] Jahre alt, und du magst [Genre]. In 10 Jahren wirst du [Alter+10] sein!»", l4_miniboss_reward: "🏆 Belohnung: +40 XP, +15 AI-Münzen",
+            l5_title: "🌳 Story-Verzweigung: if / elif / else", l5_sub: "Erster KI-Klassifikator", l5_xp: "+60 XP",
+            l5_p1: "Erinnerst du dich an Spiele mit <strong>Dialog-Optionen</strong>? (Detroit: Become Human, Mass Effect, Witcher). Du wählst Antwort — und die Story läuft anders. In Python regeln das <code>if / elif / else</code>.",
+            l5_analogy_title: "Das IST KI!", l5_analogy_text: "Jeder KI-Klassifikator ist eigentlich <strong>sehr viele Ifs</strong>. Erkennt, ob Katze oder Hund auf Foto? wenn viele Ohr-Pixel → Katze. Spam in E-Mail? wenn Wort «Casino» → Spam. Später ersetzen wir Ifs durch neuronale Netze, aber die Essenz bleibt gleich.",
+            l5_code_title: "📝 KI-Stimmungs-Klassifikator",
+            l5_lore_title: "📚 Lore für Geeks", l5_lore_text: "Was du gerade geschrieben hast, ist ein <strong>regelbasierter Chatbot</strong>. Genau so funktionierten die ersten «sprechenden» Programme in den 1960ern! Das berühmteste — ELIZA, die Psychotherapeutin spielte. Dein Bot ist ihr Urenkel 😎",
+            l5_miniboss_title: "Mini-Boss: «Hogwarts-Sortierung»", l5_miniboss_text: "Schreibe ein Programm, das 2 Fragen stellt (z.B. «Magst du Abenteuer?» und «Schätzt du Intelligenz?»), und nach Antworten den Nutzer in eines von 4 Häusern (oder 4 Klassen in deinem Lieblingsspiel) sortiert.", l5_miniboss_reward: "🏆 Belohnung: +50 XP, +20 AI-Münzen",
+            l6_title: "🔄 Grinding: for- und while-Schleifen", l6_sub: "Datensätze verarbeiten", l6_xp: "+60 XP",
+            l6_p1: "Spiele haben <strong>Grinding</strong> — wenn du 100 gleiche Mobs für Loot tötest. Langweilig? Aber effektiv. Schleifen in Python sind <strong>legales Grinding</strong>: gleiche Operation oft, aber ohne Langeweile.",
+            l6_for_title: "🔁 for — wenn wir wissen, wie oft grinden",
+            l6_while_title: "🔁 while — wenn wir grinden, bis wir Ziel erreichen",
+            l6_analogy_title: "Verbindung zu neuronalen Netzen", l6_analogy_text: "Training neuronaler Netze ist eine <strong>riesige while-Schleife</strong>: «während Fehler groß → Trainingsschritt → nochmal prüfen». Deshalb dauerte ChatGPT-Training Monate auf tausenden GPUs. Das war sehr teures Grinding 💸",
+            l7_title: "📦 Truhen und Bücher: Listen und Dictionaries", l7_sub: "Speicher des Bots", l7_xp: "+60 XP",
+            l7_p1: "Damit der Bot schlau ist, braucht er <strong>Speicher</strong>. In Python gibt es dafür zwei Strukturen:",
+            l7_list_title: "📜 Listen — wie Inventar (geordnet)",
+            l7_dict_title: "📖 Dictionaries — wie Wissensbasis (Schlüssel → Wert)",
+            l7_meme: "Glückwunsch! Du hast gerade deine erste «Wissensbasis» geschrieben. ChatGPT nutzt dieselbe Idee, nur hat sein Dictionary 2 Billionen Parameter. Aber die Essenz ist gleich!",
+            l8_title: "⚡ Helden-Skills: Funktionen", l8_sub: "Code in wiederverwendbare Skills verwandeln", l8_xp: "+70 XP",
+            l8_p1: "In Spielen hat der Held ein <strong>Set an Skills</strong>: Schwertschlag, Feuerball, Heilung. Jeder Skill ist eine separate Fähigkeit, die du oft nutzen kannst. In Python heißen Skills <strong>Funktionen</strong>.",
+            l8_analogy_title: "Funktion = Neuron", l8_analogy_text: "Eine Funktion bekommt <strong>Inputs</strong> (Argumente), macht etwas intern und gibt einen <strong>Output</strong> (Ergebnis) zurück. Das ist genau wie ein künstliches Neuron! Später im Kurs bauen wir ein ganzes neuronales Netz aus solchen «Neuronen».",
+            l8_code_title: "📝 Skills für den Bot schreiben",
+            l8_tip_title: "💡 Skill-Upgrade", l8_tip_text: "Funktionen sind das <strong>DRY-Prinzip</strong> (Don't Repeat Yourself). Einmal schreiben — überall nutzen. Wie in Spielen: Feuerball gelernt → wirfst du ihn auf alle Bosse. Nicht jedes Mal neu lernen.",
+            l9_title: "BOSSKAMPF: KI-Bot zusammenbauen!", l9_sub: "Finale Lektion-Projekt", l9_xp: "+100 XP",
+            l9_meme: "Zeit zu zeigen, was du gelernt hast! Kombiniere alle Skills zu einem Bot.",
+            l9_code_title: "📝 Finaler Bot-Code",
+            l9_danger_title: "🚨 Prüfe vor Boss-Abgabe", l9_danger_text: "Bot funktioniert? Reagiert auf 3 Stimmungen? Stürzt nicht ab? Glückwunsch — du hast den Boss besiegt! 🏆",
+            l9_boss_reward_title: "Belohnung für Boss-Besiegung",
+            l9_r1: "💰 +100 AI-Münzen", l9_r2: "⭐ +100 XP", l9_r3: "🎖 Erfolg «Erster KI-Bot»", l9_r4: "📜 Zertifikat fürs Portfolio (Screenshot des laufenden Bots)",
+            ach_title: "🏆 Erfolge dieses Quests",
+            ach1_name: "Inventar-Meister", ach1_desc: "Erstellte 5 Variablen",
+            ach2_name: "Diplomat", ach2_desc: "Schrieb Dialog mit NPC",
+            ach3_name: "Drehbuchautor", ach3_desc: "Machte Story-Verzweigung",
+            ach4_name: "Grinder", ach4_desc: "Meisterte Schleifen",
+            ach5_name: "Skill-Meister", ach5_desc: "Schrieb 4 Funktionen",
+            ach6_name: "KI-Schöpfer", ach6_desc: "Besiegte den Endboss",
+            sq_title: "📜 Nebenquests (Hausaufgabe)",
+            sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER",
+            sq1_title: "🎒 Quest «Smarte Visitenkarte»", sq1_text: "Erweitere den Bot, damit er Name, Alter und Hobby des Nutzers merkt. Am Ende soll er sagen: «Cool, [Name], dass du [Alter] Jahre alt bist und [Hobby] magst!»", sq1_reward: "💰 Belohnung: 30 AI-Münzen",
+            sq2_title: "🎯 Quest «KI-Quiz»", sq2_text: "Mach einen Quiz-Bot: 5 Fragen zu Python oder Spielen, zählt richtige Antworten, gibt am Ende Note und Kommentar («Du bist Noob» / «Du bist Pro» / «Du bist IT-Genie»).", sq2_reward: "💰 Belohnung: 60 AI-Münzen",
+            sq3_title: "🧠 Quest «Bot mit Gedächtnis»", sq3_text: "Lass den Bot <strong>neue Fakten während des Dialogs merken</strong>. Wenn Nutzer sagte «Ich mag Katzen», soll Bot das ins Dictionary aufnehmen und später nutzen. Tipp: Nutze Dictionary als Wissensbasis.", sq3_reward: "💰 Belohnung: 100 AI-Münzen + Titel «AI Master»",
+            sum_title: "Zielgerade", sum_sub: "Was du in diesem Quest hochgestuft hast",
+            sum1: "✅ Variablen — dein Inventar", sum2: "✅ Datentypen — Gegenstandsklassen",
+            sum3: "✅ input/print — Dialog mit Spieler", sum4: "✅ if/elif/else — Story-Verzweigung",
+            sum5: "✅ for/while — Grinding", sum6: "✅ Listen/Dictionaries — Speicher des Bots",
+            sum7: "✅ Funktionen — Skills des Helden", sum8: "🏆 Endboss — KI-Bot besiegt!",
+            sum_meme: "Im nächsten Quest erstellen wir ein echtes Python-Spiel mit Klassen und Objekten. Du bist schon bereit, KI-Magier Level 2 zu werden!",
+            nav_back: "← Vorheriger Quest", nav_back_title: "Lektion 0: VS Code installieren",
+            nav_next: "Nächster Quest →", nav_next_title: "1.2 OOP-Grundlagen: Spiel erstellen",
+            footer: "© 2026 AI Creator. KI-Kurs für Schüler der 10. Klasse."
+        },
+        kk: {
+            badge: "🎮 КВЕСТ 1.1 • 1-МОДУЛЬ",
+            title: "Сенің алғашқы ЖИ-ботың",
+            subtitle: "Қош келдің, 1-Ойыншы! 🎯 Бүгін сен тек Python үйренбейсің — алғашқы ЖИ-ботыңды жасайсың. Квест соңында ол сәлемдеседі, көңіл-күйді анықтайды және сұрақтарға жауап береді. Дайынсың ба? Press START.",
+            duration: "⏱ 2 сағат", level: "📗 1-деңгей", xp: "⭐ +500 XP", loot: "💰 +100 ЖИ-теңге",
+            progress_title: "📊 Квест прогрессі", progress_counter: "1-деңгей / 9",
+            l1_title: "🎬 Пролог: Неліктен Python?", l1_sub: "Мотивация және лорға бату", l1_xp: "+20 XP",
+            l1_p1: "Елестет: чатқа кірдің, «Сәлем, қалайсың?» деп жаздың — және саған <strong>адам емес</strong> жауап береді. Бұл ChatGPT, Алиса, Gemini. Олар <strong>Python</strong>-да жазылған. Ал бүгін сен өз мини-ChatGPT-іңді жасайсың.",
+            l1_analogy_title: "Ойын аналогиясы", l1_analogy_text: "Python — бұл <strong>IT-әлемдегі ағылшын тілі</strong>. Фэнтези ойындарындағы латын тілі сияқты: оны барлық NPC айтады, кішкентай скрипттерден үлкен нейрондық желілерге дейін. Python үйрен — кез келген ЖИ-мен «сөйлесесің».",
+            l1_meme: "«Мен ЖИ сиқыр деп ойладым. Білдім: ол жай көп-көп if-тер екен» — Python үйрене бастаған әркім",
+            l1_quest_title: "🎯 Квест мақсаты", l1_quest_text: "Сабақ соңында сенде <strong>жұмыс істейтін ЖИ-бот</strong> болады, ол:",
+            l1_q1: "👋 Сәлемдеседі және танысады", l1_q2: "💬 Қалай екеніңді сұрайды",
+            l1_q3: "🧠 Кілт сөздер бойынша көңіл-күйіңді анықтайды", l1_q4: "😄 Жарасымды жауап береді (қолдайды / әзілдейді / жұбатады)",
+            l2_title: "🎒 Инвентарь: Айнымалылар", l2_sub: "Деректерді сақтауды үйренеміз", l2_xp: "+40 XP",
+            l2_p1: "Кез келген RPG-де батырдың <strong>инвентары</strong> болады — қылыштар, дәрілер, алтын салынған рюкзак. Python-да инвентарь рөлін <strong>айнымалылар</strong> атқарады. Бұл «жапсырмалары бар қораптар», оларға кез келген нәрсе салуға болады.",
+            l2_analogy_title: "Ойынмен салыстыр", l2_analogy_text: "Minecraft-те сен алмаздарды <code>diamonds</code> деп аталған ұяшыққа саласың. Python-да дәл солай, тек алмаздардың орнына — сандар, мәтін, True/False. Ал ұяшықтардың орнына — айнымалылар.",
+            l2_code_title: "📝 Өз инвентарыңды жаса",
+            l2_tip_title: "💡 Атау ережесі (Genshin сияқты)", l2_tip_text: "Айнымалыларды анық ата. <code>x = 5</code> — жаман (x кім?). <code>hero_hp = 100</code> — жақсы (батырдың HP екені бірден түсінікті). Ойындағы никтер сияқты: <code>player1</code> жалықтырады, ал <code>DragonSlayer2009</code> — қызығырақ 😄",
+            l2_miniboss_title: "Мини-босс: «Кейіпкер жаса»", l2_miniboss_text: "Ойын кейіпкерің туралы 5 айнымалы жаса: аты, классы (жауынгер/сиқыршы/мерген), деңгейі, күші, үй жануары бар ма. Бәрін экранға шығар.", l2_miniboss_reward: "🏆 Сыйлық: +30 XP, +10 ЖИ-теңге",
+            l3_title: "🧪 Зат кластары: Дерек типтері", l3_sub: "Инвентарда не бола алады", l3_xp: "+40 XP",
+            l3_p1: "Ойындарда заттар <strong>кластарға</strong> бөлінеді: қару, бронь, дәрілер, квест заттары. Дәріні дулыға ретінде кие алмайсың. Python-да дәл солай: әр мәннің <strong>типі</strong> болады. Мысалы, сан мен мәтінді қоса алмайсың.",
+            l3_types_title: "4 негізгі дерек типі (ойындағы 4 стихия сияқты)",
+            l3_analogy_title: "ЖИ-контекст", l3_analogy_text: "Нейрондық желілер әлемді осы типтерде көреді! <code>int</code> — пиксель саны, <code>float</code> — синапс салмағы, <code>str</code> — хабарлама мәтіні, <code>bool</code> — спам/спам емес. Сондықтан дерек типтері — бұл <strong>ЖИ сөйлейтін алфавит</strong>.",
+            l3_check_title: "🔍 Зат типін тексеру",
+            l3_meme: "«\"5\" + 5 қоспақ болдым, қате шықты. Python \"5\" де сан екенін таба алмайтын дәрежеде ақылды емес екен»",
+            l4_title: "💬 NPC-мен диалог: input() және print()", l4_sub: "Ботқа сөйлесуді үйретеміз", l4_xp: "+50 XP",
+            l4_p1: "Ойындарда <strong>диалог терезелері</strong> болады: NPC сұрақ қояды, сен жауап таңдайсың. Python-да бұл сиқырды екі функция жасайды:",
+            l4_code_title: "📝 Бірінші диалог сахнасы",
+            l4_warn_title: "⚠️ Жаңадан бастаушыларға арналған тұзақ!", l4_warn_text: "<code>input()</code> әрқашан <strong>жол</strong> қайтарады, сан терсең де. Жасты математикада қолданғың келе ме? Санға айналдыр: <code>age = int(input())</code>. Ойындағыдай: зат сатып алу үшін алтын сан болуы керек, «жүз» мәтіні емес.",
+            l4_miniboss_title: "Мини-босс: «Танысу»", l4_miniboss_text: "Танысу бағдарламасын жаз: атын, жасын және сүйікті ойын жанрын сұрайды (RPG/шутер/стратегия). Соңында әдемі шығарады: «Сәлем, [атың]! Саған [жасың] жас, және сен [жанр] ұнатасың. 10 жылдан кейін саған [жасың+10] болады!»", l4_miniboss_reward: "🏆 Сыйлық: +40 XP, +15 ЖИ-теңге",
+            l5_title: "🌳 Оқиға бұтақталуы: if / elif / else", l5_sub: "Бірінші ЖИ-классификатор", l5_xp: "+60 XP",
+            l5_p1: "<strong>Реплика таңдауы</strong> бар ойындарды есіңе ал (Detroit: Become Human, Mass Effect, Witcher). Сен жауап таңдайсың — оқиға әртүрлі жүреді. Python-да бұны <code>if / elif / else</code> шарттары басқарады.",
+            l5_analogy_title: "Бұл — ЖИ!", l5_analogy_text: "Кез келген ЖИ-классификатор — шын мәнінде <strong>өте көп if-тер</strong>. Фотода мысық немесе ит бар ма анықтайды? егер құлақ пиксельдері көп → мысық. Поштада спам? егер «казино» сөзі → спам. Кейін if-терді нейрондық желілерге ауыстырамыз, бірақ мәні сол күйінде қалады.",
+            l5_code_title: "📝 ЖИ көңіл-күй классификаторы",
+            l5_lore_title: "📚 Гиктерге арналған лор", l5_lore_text: "Сен жазған нәрсе — <strong>ережеге негізделген чатбот</strong>. 1960 жылдардағы алғашқы «сөйлейтін» бағдарламалар дәл осылай жұмыс істеді! Ең атақтысы — ELIZA, психотерапевт болып көрінген. Сенің ботың — оның шөбересі 😎",
+            l5_miniboss_title: "Мини-босс: «Хогвартсқа бөлу»", l5_miniboss_text: "2 сұрақ қоятын бағдарлама жаз (мысалы, «Шытырманды ұнатасың ба?» және «Ақылды бағалайсың ба?»), және жауаптар бойынша қолданушыны 4 факультеттің біріне (немесе сүйікті ойындағы 4 классқа) бөледі.", l5_miniboss_reward: "🏆 Сыйлық: +50 XP, +20 ЖИ-теңге",
+            l6_title: "🔄 Гринд: for және while циклдері", l6_sub: "Деректер жиынтығын өңдеу", l6_xp: "+60 XP",
+            l6_p1: "Ойындарда <strong>гринд</strong> болады — лут үшін 100 бірдей мобты өлтіргенде. Жалықтыра ма? Бірақ тиімді. Python-да циклдер — бұл <strong>заңды гринд</strong>: бір операцияны көп рет, бірақ жалықпай.",
+            l6_for_title: "🔁 for — қанша рет гриндтейтінімізді білгенде",
+            l6_while_title: "🔁 while — мақсатқа жеткенше гриндтейміз",
+            l6_analogy_title: "Нейрондық желілермен байланыс", l6_analogy_text: "Нейрондық желіні оқыту — бұл <strong>үлкен while циклі</strong>: «қате үлкен болғанда → оқыту қадамын жасаймыз → қайта тексереміз». Сондықтан ChatGPT оқыту мыңдаған видеокарталарда айларға созылды. Бұл өте қымбат гринд болды 💸",
+            l7_title: "📦 Сандықтар мен кітаптар: Тізімдер мен сөздіктер", l7_sub: "Бот жады", l7_xp: "+60 XP",
+            l7_p1: "Бот ақылды болуы үшін оған <strong>жад</strong> керек. Python-да бұл үшін екі құрылым бар:",
+            l7_list_title: "📜 Тізімдер — инвентарь сияқты (реттелген)",
+            l7_dict_title: "📖 Сөздіктер — білім базасы сияқты (кілт → мән)",
+            l7_meme: "Құттықтаймын! Сен бірінші «білім базаңды» жаздың. ChatGPT дәл сол идеяны қолданады, тек оның сөздігінде 2 триллион параметр бар. Бірақ мәні сол!",
+            l8_title: "⚡ Батыр дағдылары: Функциялар", l8_sub: "Кодты қайта қолданатын дағдыларға айналдыру", l8_xp: "+70 XP",
+            l8_p1: "Ойындарда батырдың <strong>дағдылар жиынтығы</strong> болады: қылыш соққысы, от шары, емдеу. Әр дағды — көп рет қолдануға болатын бөлек қабілет. Python-да дағдылар <strong>функциялар</strong> деп аталады.",
+            l8_analogy_title: "Функция = нейрон", l8_analogy_text: "Функция <strong>кірістер</strong> (аргументтер) алады, ішінде бірдеңе жасайды және <strong>шығыс</strong> (нәтиже) қайтарады. Бұл жасанды нейронға дәл келеді! Курста кейін осындай «нейрондардан» тұтас нейрондық желі жасаймыз.",
+            l8_code_title: "📝 Ботқа арналған дағдылар жазу",
+            l8_tip_title: "💡 Дағдыны жақсарту", l8_tip_text: "Функциялар — бұл <strong>DRY принципі</strong> (Don't Repeat Yourself). Бір рет жаздың — бәріңде қолданасың. Ойындағыдай: от шарын үйрендің → оны барлық босстарға лақтырасың. Әр рет қайта үйренудің қажеті жоқ.",
+            l9_title: "БОСС-ФАЙТ: ЖИ-ботты жинаймыз!", l9_sub: "Сабақтың финалды жобасы", l9_xp: "+100 XP",
+            l9_meme: "Не үйренгеніңді көрсету уақыты! Барлық дағдыларды бір ботқа біріктір.",
+            l9_code_title: "📝 Боттың финалды коды",
+            l9_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l9_danger_text: "Бот жұмыс істейді ме? 3 көңіл-күйге жауап береді ме? Қателікпен құламай ма? Құттықтаймын — сен боссты жеңдің! 🏆",
+            l9_boss_reward_title: "Боссты жеңгені үшін сыйлық",
+            l9_r1: "💰 +100 ЖИ-теңге", l9_r2: "⭐ +100 XP", l9_r3: "🎖 «Бірінші ЖИ-бот» жетістігі", l9_r4: "📜 Портфолиоға сертификат (жұмыс істеп тұрған боттың скриншоты)",
+            ach_title: "🏆 Осы квесттің жетістіктері",
+            ach1_name: "Инвентарь шебері", ach1_desc: "5 айнымалы жасады",
+            ach2_name: "Дипломат", ach2_desc: "NPC-мен диалог жазды",
+            ach3_name: "Сценарист", ach3_desc: "Оқиға бұтақталуын жасады",
+            ach4_name: "Гриндер", ach4_desc: "Цикльдерді игерді",
+            ach5_name: "Дағды шебері", ach5_desc: "4 функция жазды",
+            ach6_name: "ЖИ жасаушы", ach6_desc: "Финалды боссты жеңді",
+            sq_title: "📜 Қосалқы квесттер (үй тапсырмасы)",
+            sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН",
+            sq1_title: "🎒 Квест «Ақылды визитка»", sq1_text: "Ботты кеңейт, ол қолданушының атын, жасын және хоббиін жаттасын. Соңында айтуы керек: «Тамаша, [аты], саған [жасың] жас және сен [хобби] ұнатасың!»", sq1_reward: "💰 Сыйлық: 30 ЖИ-теңге",
+            sq2_title: "🎯 Квест «ЖИ-викторина»", sq2_text: "Викторина ботын жаса: Python немесе ойындар бойынша 5 сұрақ, дұрыс жауаптарды санайды, соңында баға және пікір қояды («Сен нубсың» / «Сен просың» / «Сен IT генийсің»).", sq2_reward: "💰 Сыйлық: 60 ЖИ-теңге",
+            sq3_title: "🧠 Квест «Жадты бот»", sq3_text: "Бот диалог кезінде <strong>жаңа фактілерді жаттай</strong> алатындай ет. Егер қолданушы «Мен мысықтарды ұнатамын» десе, бот оны сөздікке қосуы және кейін қолдануы керек. Кеңес: сөздікті білім базасы ретінде қолдан.", sq3_reward: "💰 Сыйлық: 100 ЖИ-теңге + «AI Master» титулы",
+            sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің",
+            sum1: "✅ Айнымалылар — сенің инвентарың", sum2: "✅ Дерек типтері — зат кластары",
+            sum3: "✅ input/print — ойыншымен диалог", sum4: "✅ if/elif/else — оқиға бұтақталуы",
+            sum5: "✅ for/while — гринд", sum6: "✅ Тізімдер/сөздіктер — бот жады",
+            sum7: "✅ Функциялар — батыр дағдылары", sum8: "🏆 Финалды босс — ЖИ-бот жеңілді!",
+            sum_meme: "Келесі квестте біз кластар мен объектілері бар нақты Python ойынын жасаймыз. Сен 2-деңгейлі ЖИ-сиқыршы болуға дайынсың!",
+            nav_back: "← Алдыңғы квест", nav_back_title: "0-сабақ: VS Code орнату",
+            nav_next: "Келесі квест →", nav_next_title: "1.2 ООП негіздері: Ойын жасау",
+            footer: "© 2026 AI Creator. 10-сынып оқушыларына арналған ЖИ курсы."
+        }
+    };
+
+    // Переключение языка
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
