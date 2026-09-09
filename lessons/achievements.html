@@ -33,7 +33,6 @@
             z-index: -1;
         }
 
-        /* Header */
         header {
             position: sticky;
             top: 0;
@@ -89,14 +88,12 @@
             color: white;
         }
 
-        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Hero */
         .hero {
             text-align: center;
             padding: 3rem 1rem;
@@ -119,7 +116,6 @@
             margin: 0 auto;
         }
 
-        /* Player Stats */
         .player-stats {
             background: linear-gradient(135deg, rgba(255, 180, 0, 0.08), rgba(120, 80, 255, 0.08));
             border: 1px solid rgba(255, 180, 0, 0.3);
@@ -156,7 +152,6 @@
             font-size: 0.9rem;
         }
 
-        /* Rank */
         .rank-display {
             background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
             border: 2px solid rgba(255, 180, 0, 0.4);
@@ -229,7 +224,6 @@
             font-size: 0.9rem;
         }
 
-        /* Filters */
         .filters {
             display: flex;
             gap: 0.5rem;
@@ -260,7 +254,6 @@
             border-color: transparent;
         }
 
-        /* Achievements grid */
         .achievements-section {
             margin-bottom: 3rem;
         }
@@ -306,7 +299,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        /* Rarity colors */
         .achievement.common::before { background: linear-gradient(90deg, #a0a3b8, #c8cad8); }
         .achievement.rare::before { background: linear-gradient(90deg, #00c8ff, #7850ff); }
         .achievement.epic::before { background: linear-gradient(90deg, #7850ff, #ff50a0); }
@@ -413,7 +405,6 @@
             color: #00c864;
         }
 
-        /* Notification */
         .notification {
             position: fixed;
             top: 100px;
@@ -451,7 +442,6 @@
             opacity: 0.95;
         }
 
-        /* Reset button */
         .reset-section {
             text-align: center;
             margin-top: 3rem;
@@ -477,7 +467,6 @@
             transform: translateY(-2px);
         }
 
-        /* Footer */
         footer {
             background: rgba(10, 14, 39, 0.95);
             border-top: 1px solid rgba(255, 180, 0, 0.3);
@@ -487,7 +476,6 @@
             margin-top: 3rem;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 { font-size: 2rem; }
             .rank-name { font-size: 1.8rem; }
@@ -505,46 +493,43 @@
             <a href="../index.html" class="nav-link">📚 Курс</a>
             <a href="lesson-0-setup.html" class="nav-link">🎮 Урок 0</a>
             <a href="lesson-1-1.html" class="nav-link">⚔️ Урок 1.1</a>
-            <a href="achievements.html" class="nav-link active">🏆 Ачивки</a>
+            <a href="achievements.html" class="nav-link active"> Ачивки</a>
         </nav>
     </div>
 </header>
 
 <div class="container">
 
-    <!-- Hero -->
     <div class="hero">
-        <h1 data-i18n="hero_title">🏆 Зал Славы</h1>
-        <p data-i18n="hero_subtitle">Собирай ачивки, прокачивай ранг и становись легендой AI Creator!</p>
+        <h1>🏆 Зал Славы</h1>
+        <p>Собирай ачивки, прокачивай ранг и становись легендой AI Creator!</p>
     </div>
 
-    <!-- Player Stats -->
     <div class="player-stats">
         <div class="stat-card">
             <div class="stat-icon">🏆</div>
             <div class="stat-value" id="unlocked-count">0</div>
-            <div class="stat-label" data-i18n="stat_unlocked">Открыто ачивок</div>
+            <div class="stat-label">Открыто ачивок</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">⭐</div>
             <div class="stat-value" id="total-xp">0</div>
-            <div class="stat-label" data-i18n="stat_xp">Всего XP</div>
+            <div class="stat-label">Всего XP</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">💰</div>
             <div class="stat-value" id="total-coins">0</div>
-            <div class="stat-label" data-i18n="stat_coins">AI-коинов</div>
+            <div class="stat-label">AI-коинов</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">📊</div>
             <div class="stat-value" id="progress-percent">0%</div>
-            <div class="stat-label" data-i18n="stat_progress">Общий прогресс</div>
+            <div class="stat-label">Общий прогресс</div>
         </div>
     </div>
 
-    <!-- Rank -->
     <div class="rank-display">
-        <div class="rank-title" data-i18n="rank_title">ТВОЙ ТЕКУЩИЙ РАНГ</div>
+        <div class="rank-title">ТВОЙ ТЕКУЩИЙ РАНГ</div>
         <div class="rank-name" id="rank-name">🌱 Новичок</div>
         <div class="rank-progress">
             <div class="rank-bar">
@@ -554,54 +539,44 @@
         </div>
     </div>
 
-    <!-- Filters -->
     <div class="filters">
-        <button class="filter-btn active" data-filter="all" data-i18n="filter_all">🌟 Все</button>
-        <button class="filter-btn" data-filter="unlocked" data-i18n="filter_unlocked">✅ Полученные</button>
-        <button class="filter-btn" data-filter="locked" data-i18n="filter_locked">🔒 Закрытые</button>
-        <button class="filter-btn" data-filter="common" data-i18n="filter_common">⚪ Обычные</button>
-        <button class="filter-btn" data-filter="rare" data-i18n="filter_rare">🔵 Редкие</button>
-        <button class="filter-btn" data-filter="epic" data-i18n="filter_epic">🟣 Эпические</button>
-        <button class="filter-btn" data-filter="legendary" data-i18n="filter_legendary">🟡 Легендарные</button>
+        <button class="filter-btn active" data-filter="all">🌟 Все</button>
+        <button class="filter-btn" data-filter="unlocked">✅ Полученные</button>
+        <button class="filter-btn" data-filter="locked">🔒 Закрытые</button>
+        <button class="filter-btn" data-filter="common">⚪ Обычные</button>
+        <button class="filter-btn" data-filter="rare">🔵 Редкие</button>
+        <button class="filter-btn" data-filter="epic">🟣 Эпические</button>
+        <button class="filter-btn" data-filter="legendary">🟡 Легендарные</button>
     </div>
 
-    <!-- Achievements sections -->
     <div id="achievements-container"></div>
 
-    <!-- Reset -->
     <div class="reset-section">
-        <p style="color: #a0a3b8; margin-bottom: 1rem;" data-i18n="reset_text">⚠️ Сбросить весь прогресс? Это действие нельзя отменить.</p>
-        <button class="reset-btn" id="reset-btn" data-i18n="reset_btn">🗑 Сбросить прогресс</button>
+        <p style="color: #a0a3b8; margin-bottom: 1rem;">⚠️ Сбросить весь прогресс? Это действие нельзя отменить.</p>
+        <button class="reset-btn" id="reset-btn">🗑 Сбросить прогресс</button>
     </div>
 
 </div>
 
-<!-- Notification -->
 <div class="notification" id="notification">
     <div class="notification-title">
-        <span>🎉</span>
-        <span data-i18n="notif_title">Ачивка получена!</span>
+        <span></span>
+        <span>Ачивка получена!</span>
     </div>
     <div class="notification-text" id="notification-text"></div>
 </div>
 
 <footer>
-    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+    <p>© 2026 AI Creator. Курс по ИИ для школьников 10 класса.</p>
 </footer>
 
 <script>
-  <script>
-    // ==========================================
-    // 🏆 СИСТЕМА АЧИВОК
-    // ==========================================
-    
     const ACHIEVEMENTS = [
-        // Урок 0: Установка VS Code
         {
             id: 'lesson0_installed',
             name: 'Первые шаги',
             desc: 'Установил VS Code и Python',
-            icon: '🎒',
+            icon: '',
             rarity: 'common',
             xp: 50,
             coins: 10,
@@ -630,8 +605,6 @@
             lesson: 0,
             section: 'Урок 0: Установка VS Code'
         },
-
-        // Урок 1.1: Первый ИИ-бот
         {
             id: 'lesson1_inventory',
             name: 'Мастер инвентаря',
@@ -680,7 +653,7 @@
             id: 'lesson1_skillmaster',
             name: 'Мастер скиллов',
             desc: 'Написал 4 функции',
-            icon: '⚡',
+            icon: '',
             rarity: 'epic',
             xp: 70,
             coins: 30,
@@ -698,8 +671,6 @@
             lesson: 1.1,
             section: 'Урок 1.1: Первый ИИ-бот'
         },
-
-        // Урок 1.2: Создаём свою игру
         {
             id: 'lesson1_2_architect',
             name: 'Архитектор',
@@ -715,7 +686,7 @@
             id: 'lesson1_2_gamedesigner',
             name: 'Геймдизайнер',
             desc: 'Создал 3 разных игровых персонажа с уникальными статами',
-            icon: '🎮',
+            icon: '',
             rarity: 'common',
             xp: 80,
             coins: 25,
@@ -759,15 +730,13 @@
             id: 'lesson1_2_universe_creator',
             name: 'Создатель Вселенной',
             desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием',
-            icon: '👑',
+            icon: '',
             rarity: 'legendary',
             xp: 200,
             coins: 100,
             lesson: 1.2,
             section: 'Урок 1.2: Создаём свою игру'
         },
-
-        // Общие ачивки
         {
             id: 'polyglot',
             name: 'Полиглот',
@@ -814,7 +783,6 @@
         }
     ];
 
-    // Ранги
     const RANKS = [
         { name: '🌱 Новичок', minXP: 0, color: '#a0a3b8' },
         { name: '⚔️ Ученик', minXP: 300, color: '#00c8ff' },
@@ -823,19 +791,15 @@
         { name: '👑 Легенда', minXP: 2500, color: '#ffb400' }
     ];
 
-    // Загрузка прогресса из localStorage
     let unlockedIds = JSON.parse(localStorage.getItem('ai_creator_achievements') || '[]');
 
-    // Проверка URL-параметра для автоматической активации
     const urlParams = new URLSearchParams(window.location.search);
     const unlockParam = urlParams.get('unlock');
     if (unlockParam && !unlockedIds.includes(unlockParam)) {
         unlockAchievement(unlockParam);
-        // Убираем параметр из URL, чтобы не спамить уведомления при обновлении
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // Разблокировать ачивку
     function unlockAchievement(id) {
         if (unlockedIds.includes(id)) return;
         
@@ -850,7 +814,6 @@
         updateStats();
     }
 
-    // Показать уведомление
     function showNotification(achievement) {
         const notif = document.getElementById('notification');
         const text = document.getElementById('notification-text');
@@ -859,7 +822,6 @@
         setTimeout(() => notif.classList.remove('show'), 4000);
     }
 
-    // Получить текущий ранг
     function getCurrentRank(xp) {
         let current = RANKS[0];
         let next = RANKS[1];
@@ -872,7 +834,6 @@
         return { current, next };
     }
 
-    // Обновить статистику
     function updateStats() {
         const unlocked = ACHIEVEMENTS.filter(a => unlockedIds.includes(a.id));
         const totalXP = unlocked.reduce((sum, a) => sum + a.xp, 0);
@@ -884,27 +845,23 @@
         document.getElementById('total-coins').textContent = totalCoins;
         document.getElementById('progress-percent').textContent = `${progress}%`;
 
-        // Ранг
         const { current, next } = getCurrentRank(totalXP);
         document.getElementById('rank-name').textContent = current.name;
         
         if (next) {
             const progressInRank = ((totalXP - current.minXP) / (next.minXP - current.minXP)) * 100;
             document.getElementById('rank-fill').style.width = `${Math.min(progressInRank, 100)}%`;
-            document.getElementById('rank-text').textContent = 
-                `До следующего ранга: ${totalXP} / ${next.minXP} XP`;
+            document.getElementById('rank-text').textContent = `До следующего ранга: ${totalXP} / ${next.minXP} XP`;
         } else {
             document.getElementById('rank-fill').style.width = '100%';
             document.getElementById('rank-text').textContent = `Максимальный ранг достигнут! 🎉`;
         }
     }
 
-    // Отрисовка ачивок
     function renderAchievements(filter = 'all') {
         const container = document.getElementById('achievements-container');
         container.innerHTML = '';
 
-        // Группировка по секциям
         const sections = {};
         ACHIEVEMENTS.forEach(a => {
             if (!sections[a.section]) sections[a.section] = [];
@@ -926,7 +883,6 @@
             sections[sectionName].forEach(achievement => {
                 const isUnlocked = unlockedIds.includes(achievement.id);
                 
-                // Фильтрация
                 if (filter === 'unlocked' && !isUnlocked) return;
                 if (filter === 'locked' && isUnlocked) return;
                 if (['common', 'rare', 'epic', 'legendary'].includes(filter) && achievement.rarity !== filter) return;
@@ -952,7 +908,6 @@
                     </div>
                 `;
                 
-                // Демо-кнопка для разблокировки (для тестирования)
                 if (!isUnlocked) {
                     card.addEventListener('click', () => {
                         if (confirm(`Разблокировать ачивку "${achievement.name}"? (демо-режим)`)) {
@@ -971,7 +926,6 @@
         });
     }
 
-    // Названия редкостей
     function getRarityName(rarity) {
         const names = {
             common: '⚪ Обычная',
@@ -982,7 +936,6 @@
         return names[rarity] || rarity;
     }
 
-    // Фильтры
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -991,7 +944,6 @@
         });
     });
 
-    // Сброс прогресса
     document.getElementById('reset-btn').addEventListener('click', () => {
         if (confirm('Точно сбросить весь прогресс? Это действие нельзя отменить!')) {
             localStorage.removeItem('ai_creator_achievements');
@@ -1002,9 +954,9 @@
         }
     });
 
-    // Инициализация
     renderAchievements();
     updateStats();
 </script>
+
 </body>
 </html>
