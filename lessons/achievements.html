@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Зал Славы — AI Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #e4e6eb;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 180, 0, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 180, 0, 0.3);
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffb400, #ff50a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #a0a3b8;
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 180, 0, 0.1);
+            color: #ffb400;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #ffb400, #ff50a0);
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffb400, #ff50a0, #7850ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            color: #a0a3b8;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Player Stats */
+        .player-stats {
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.08), rgba(120, 80, 255, 0.08));
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 180, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffb400;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #a0a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Rank */
+        .rank-display {
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
+            border: 2px solid rgba(255, 180, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .rank-title {
+            font-size: 0.9rem;
+            color: #a0a3b8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .rank-name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffb400, #ff50a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .rank-progress {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .rank-bar {
+            height: 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 180, 0, 0.3);
+        }
+
+        .rank-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffb400, #ff50a0);
+            border-radius: 12px;
+            transition: width 0.8s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rank-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .rank-text {
+            margin-top: 0.5rem;
+            color: #a0a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0a3b8;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 180, 0, 0.1);
+            color: #ffb400;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #ffb400, #ff50a0);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Achievements grid */
+        .achievements-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #ffb400;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .achievement {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .achievement::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #7850ff, #00c8ff);
+        }
+
+        .achievement:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Rarity colors */
+        .achievement.common::before { background: linear-gradient(90deg, #a0a3b8, #c8cad8); }
+        .achievement.rare::before { background: linear-gradient(90deg, #00c8ff, #7850ff); }
+        .achievement.epic::before { background: linear-gradient(90deg, #7850ff, #ff50a0); }
+        .achievement.legendary::before { background: linear-gradient(90deg, #ffb400, #ff50a0); height: 4px; }
+
+        .achievement.unlocked {
+            background: rgba(255, 180, 0, 0.05);
+            border-color: rgba(255, 180, 0, 0.4);
+        }
+
+        .achievement.unlocked.common { border-color: rgba(160, 163, 184, 0.5); background: rgba(160, 163, 184, 0.05); }
+        .achievement.unlocked.rare { border-color: rgba(0, 200, 255, 0.5); background: rgba(0, 200, 255, 0.05); }
+        .achievement.unlocked.epic { border-color: rgba(120, 80, 255, 0.5); background: rgba(120, 80, 255, 0.05); }
+        .achievement.unlocked.legendary { 
+            border-color: rgba(255, 180, 0, 0.6); 
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
+            animation: legendaryGlow 3s infinite;
+        }
+
+        @keyframes legendaryGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 180, 0, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(255, 180, 0, 0.4); }
+        }
+
+        .achievement.locked {
+            opacity: 0.5;
+            filter: grayscale(0.7);
+        }
+
+        .achievement.locked .achievement-icon {
+            filter: grayscale(1);
+        }
+
+        .achievement-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.05rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .achievement-rarity {
+            display: inline-block;
+            padding: 0.1rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rarity-common { background: rgba(160, 163, 184, 0.2); color: #c8cad8; }
+        .rarity-rare { background: rgba(0, 200, 255, 0.2); color: #00c8ff; }
+        .rarity-epic { background: rgba(120, 80, 255, 0.2); color: #b090ff; }
+        .rarity-legendary { background: linear-gradient(135deg, rgba(255, 180, 0, 0.3), rgba(255, 80, 160, 0.3)); color: #ffb400; }
+
+        .achievement-desc {
+            color: #a0a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .achievement-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .achievement-reward {
+            color: #ffb400;
+            font-weight: bold;
+        }
+
+        .achievement-status {
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .status-locked {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff5050;
+        }
+
+        .status-unlocked {
+            background: rgba(0, 200, 100, 0.2);
+            color: #00c864;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.95), rgba(255, 80, 160, 0.95));
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(255, 180, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s;
+            max-width: 350px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification-text {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        /* Reset button */
+        .reset-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 80, 80, 0.05);
+            border: 1px solid rgba(255, 80, 80, 0.2);
+            border-radius: 12px;
+        }
+
+        .reset-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 80, 80, 0.1);
+            border: 1px solid rgba(255, 80, 80, 0.4);
+            color: #ff5050;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 80, 80, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 1px solid rgba(255, 180, 0, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: #a0a3b8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .rank-name { font-size: 1.8rem; }
+            .header-content { flex-direction: column; }
+            .container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="index.html" class="logo">🏆 AI Creator</a>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link">📚 Курс</a>
+            <a href="lesson-0-setup.html" class="nav-link">🎮 Урок 0</a>
+            <a href="lesson-1-1.html" class="nav-link">⚔️ Урок 1.1</a>
+            <a href="achievements.html" class="nav-link active">🏆 Ачивки</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1 data-i18n="hero_title">🏆 Зал Славы</h1>
+        <p data-i18n="hero_subtitle">Собирай ачивки, прокачивай ранг и становись легендой AI Creator!</p>
+    </div>
+
+    <!-- Player Stats -->
+    <div class="player-stats">
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value" id="unlocked-count">0</div>
+            <div class="stat-label" data-i18n="stat_unlocked">Открыто ачивок</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value" id="total-xp">0</div>
+            <div class="stat-label" data-i18n="stat_xp">Всего XP</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="total-coins">0</div>
+            <div class="stat-label" data-i18n="stat_coins">AI-коинов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="progress-percent">0%</div>
+            <div class="stat-label" data-i18n="stat_progress">Общий прогресс</div>
+        </div>
+    </div>
+
+    <!-- Rank -->
+    <div class="rank-display">
+        <div class="rank-title" data-i18n="rank_title">ТВОЙ ТЕКУЩИЙ РАНГ</div>
+        <div class="rank-name" id="rank-name">🌱 Новичок</div>
+        <div class="rank-progress">
+            <div class="rank-bar">
+                <div class="rank-fill" id="rank-fill" style="width: 0%;"></div>
+            </div>
+            <div class="rank-text" id="rank-text">До следующего ранга: 0 / 500 XP</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all" data-i18n="filter_all">🌟 Все</button>
+        <button class="filter-btn" data-filter="unlocked" data-i18n="filter_unlocked">✅ Полученные</button>
+        <button class="filter-btn" data-filter="locked" data-i18n="filter_locked">🔒 Закрытые</button>
+        <button class="filter-btn" data-filter="common" data-i18n="filter_common">⚪ Обычные</button>
+        <button class="filter-btn" data-filter="rare" data-i18n="filter_rare">🔵 Редкие</button>
+        <button class="filter-btn" data-filter="epic" data-i18n="filter_epic">🟣 Эпические</button>
+        <button class="filter-btn" data-filter="legendary" data-i18n="filter_legendary">🟡 Легендарные</button>
+    </div>
+
+    <!-- Achievements sections -->
+    <div id="achievements-container"></div>
+
+    <!-- Reset -->
+    <div class="reset-section">
+        <p style="color: #a0a3b8; margin-bottom: 1rem;" data-i18n="reset_text">⚠️ Сбросить весь прогресс? Это действие нельзя отменить.</p>
+        <button class="reset-btn" id="reset-btn" data-i18n="reset_btn">🗑 Сбросить прогресс</button>
+    </div>
+
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+    <div class="notification-title">
+        <span>🎉</span>
+        <span data-i18n="notif_title">Ачивка получена!</span>
+    </div>
+    <div class="notification-text" id="notification-text"></div>
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    // ==========================================
+    // 🏆 СИСТЕМА АЧИВОК
+    // ==========================================
+    
+    const ACHIEVEMENTS = [
+        // Урок 0: Установка VS Code
+        {
+            id: 'lesson0_installed',
+            name: 'Первые шаги',
+            desc: 'Установил VS Code и Python',
+            icon: '🎒',
+            rarity: 'common',
+            xp: 50,
+            coins: 10,
+            lesson: 0,
+            section: 'Урок 0: Установка VS Code'
+        },
+        {
+            id: 'lesson0_hello',
+            name: 'Hello, AI!',
+            desc: 'Написал первую программу',
+            icon: '👋',
+            rarity: 'common',
+            xp: 50,
+            coins: 10,
+            lesson: 0,
+            section: 'Урок 0: Установка VS Code'
+        },
+        {
+            id: 'lesson0_hotkeys',
+            name: 'Скоростной',
+            desc: 'Выучил 8 горячих клавиш',
+            icon: '⌨️',
+            rarity: 'rare',
+            xp: 100,
+            coins: 20,
+            lesson: 0,
+            section: 'Урок 0: Установка VS Code'
+        },
+
+        // Урок 1.1: Первый ИИ-бот
+        {
+            id: 'lesson1_inventory',
+            name: 'Мастер инвентаря',
+            desc: 'Создал 5 переменных',
+            icon: '🎒',
+            rarity: 'common',
+            xp: 30,
+            coins: 10,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+        {
+            id: 'lesson1_diplomat',
+            name: 'Дипломат',
+            desc: 'Написал диалог с NPC',
+            icon: '💬',
+            rarity: 'common',
+            xp: 40,
+            coins: 15,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+        {
+            id: 'lesson1_screenwriter',
+            name: 'Сценарист',
+            desc: 'Сделал ветвление сюжета',
+            icon: '🌳',
+            rarity: 'rare',
+            xp: 50,
+            coins: 20,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+        {
+            id: 'lesson1_grinder',
+            name: 'Гриндер',
+            desc: 'Освоил циклы',
+            icon: '🔄',
+            rarity: 'rare',
+            xp: 60,
+            coins: 20,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+        {
+            id: 'lesson1_skillmaster',
+            name: 'Мастер скиллов',
+            desc: 'Написал 4 функции',
+            icon: '⚡',
+            rarity: 'epic',
+            xp: 70,
+            coins: 30,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+        {
+            id: 'lesson1_boss',
+            name: 'Создатель ИИ',
+            desc: 'Победил финального босса',
+            icon: '🤖',
+            rarity: 'legendary',
+            xp: 100,
+            coins: 100,
+            lesson: 1.1,
+            section: 'Урок 1.1: Первый ИИ-бот'
+        },
+
+        // Общие ачивки
+        {
+            id: 'polyglot',
+            name: 'Полиглот',
+            desc: 'Переключил все 5 языков на сайте',
+            icon: '🌍',
+            rarity: 'rare',
+            xp: 50,
+            coins: 25,
+            lesson: 'general',
+            section: 'Общие достижения'
+        },
+        {
+            id: 'explorer',
+            name: 'Исследователь',
+            desc: 'Открыл все страницы курса',
+            icon: '🗺️',
+            rarity: 'epic',
+            xp: 100,
+            coins: 50,
+            lesson: 'general',
+            section: 'Общие достижения'
+        },
+        {
+            id: 'homework_hero',
+            name: 'Герой домашки',
+            desc: 'Выполнил все 3 побочных квеста',
+            icon: '📜',
+            rarity: 'epic',
+            xp: 150,
+            coins: 75,
+            lesson: 'general',
+            section: 'Общие достижения'
+        },
+        {
+            id: 'ai_master',
+            name: 'AI Master',
+            desc: 'Сделал бота с памятью',
+            icon: '🧠',
+            rarity: 'legendary',
+            xp: 200,
+            coins: 100,
+            lesson: 'general',
+            section: 'Общие достижения'
+        }
+    ];
+
+    // Ранги
+    const RANKS = [
+        { name: '🌱 Новичок', minXP: 0, color: '#a0a3b8' },
+        { name: '⚔️ Ученик', minXP: 200, color: '#00c8ff' },
+        { name: '🛡️ Адепт', minXP: 500, color: '#7850ff' },
+        { name: '🔮 Мастер', minXP: 1000, color: '#ff50a0' },
+        { name: '👑 Легенда', minXP: 2000, color: '#ffb400' }
+    ];
+
+    // Загрузка прогресса из localStorage
+    let unlockedIds = JSON.parse(localStorage.getItem('ai_creator_achievements') || '[]');
+
+    // Проверка URL-параметра для автоматической активации
+    const urlParams = new URLSearchParams(window.location.search);
+    const unlockParam = urlParams.get('unlock');
+    if (unlockParam && !unlockedIds.includes(unlockParam)) {
+        unlockAchievement(unlockParam);
+    }
+
+    // Разблокировать ачивку
+    function unlockAchievement(id) {
+        if (unlockedIds.includes(id)) return;
+        
+        const achievement = ACHIEVEMENTS.find(a => a.id === id);
+        if (!achievement) return;
+
+        unlockedIds.push(id);
+        localStorage.setItem('ai_creator_achievements', JSON.stringify(unlockedIds));
+        
+        showNotification(achievement);
+        renderAchievements();
+        updateStats();
+    }
+
+    // Показать уведомление
+    function showNotification(achievement) {
+        const notif = document.getElementById('notification');
+        const text = document.getElementById('notification-text');
+        text.textContent = `${achievement.icon} ${achievement.name} — +${achievement.xp} XP, +${achievement.coins} 💰`;
+        notif.classList.add('show');
+        setTimeout(() => notif.classList.remove('show'), 4000);
+    }
+
+    // Получить текущий ранг
+    function getCurrentRank(xp) {
+        let current = RANKS[0];
+        let next = RANKS[1];
+        for (let i = 0; i < RANKS.length; i++) {
+            if (xp >= RANKS[i].minXP) {
+                current = RANKS[i];
+                next = RANKS[i + 1] || null;
+            }
+        }
+        return { current, next };
+    }
+
+    // Обновить статистику
+    function updateStats() {
+        const unlocked = ACHIEVEMENTS.filter(a => unlockedIds.includes(a.id));
+        const totalXP = unlocked.reduce((sum, a) => sum + a.xp, 0);
+        const totalCoins = unlocked.reduce((sum, a) => sum + a.coins, 0);
+        const progress = Math.round((unlocked.length / ACHIEVEMENTS.length) * 100);
+
+        document.getElementById('unlocked-count').textContent = `${unlocked.length}/${ACHIEVEMENTS.length}`;
+        document.getElementById('total-xp').textContent = totalXP;
+        document.getElementById('total-coins').textContent = totalCoins;
+        document.getElementById('progress-percent').textContent = `${progress}%`;
+
+        // Ранг
+        const { current, next } = getCurrentRank(totalXP);
+        document.getElementById('rank-name').textContent = current.name;
+        
+        if (next) {
+            const progressInRank = ((totalXP - current.minXP) / (next.minXP - current.minXP)) * 100;
+            document.getElementById('rank-fill').style.width = `${progressInRank}%`;
+            document.getElementById('rank-text').textContent = 
+                `До следующего ранга: ${totalXP} / ${next.minXP} XP`;
+        } else {
+            document.getElementById('rank-fill').style.width = '100%';
+            document.getElementById('rank-text').textContent = `Максимальный ранг достигнут! 🎉`;
+        }
+    }
+
+    // Отрисовка ачивок
+    function renderAchievements(filter = 'all') {
+        const container = document.getElementById('achievements-container');
+        container.innerHTML = '';
+
+        // Группировка по секциям
+        const sections = {};
+        ACHIEVEMENTS.forEach(a => {
+            if (!sections[a.section]) sections[a.section] = [];
+            sections[a.section].push(a);
+        });
+
+        Object.keys(sections).forEach(sectionName => {
+            const section = document.createElement('div');
+            section.className = 'achievements-section';
+            
+            const title = document.createElement('h2');
+            title.className = 'section-title';
+            title.innerHTML = `📖 ${sectionName}`;
+            section.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'achievements-grid';
+
+            sections[sectionName].forEach(achievement => {
+                const isUnlocked = unlockedIds.includes(achievement.id);
+                
+                // Фильтрация
+                if (filter === 'unlocked' && !isUnlocked) return;
+                if (filter === 'locked' && isUnlocked) return;
+                if (['common', 'rare', 'epic', 'legendary'].includes(filter) && achievement.rarity !== filter) return;
+
+                const card = document.createElement('div');
+                card.className = `achievement ${achievement.rarity} ${isUnlocked ? 'unlocked' : 'locked'}`;
+                card.innerHTML = `
+                    <div class="achievement-header">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${achievement.name}</div>
+                            <span class="achievement-rarity rarity-${achievement.rarity}">
+                                ${getRarityName(achievement.rarity)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="achievement-desc">${achievement.desc}</div>
+                    <div class="achievement-footer">
+                        <span class="achievement-reward">+${achievement.xp} XP · +${achievement.coins} 💰</span>
+                        <span class="achievement-status ${isUnlocked ? 'status-unlocked' : 'status-locked'}">
+                            ${isUnlocked ? '✅ Получено' : '🔒 Закрыто'}
+                        </span>
+                    </div>
+                `;
+                
+                // Демо-кнопка для разблокировки (для тестирования)
+                if (!isUnlocked) {
+                    card.addEventListener('click', () => {
+                        if (confirm(`Разблокировать ачивку "${achievement.name}"? (демо-режим)`)) {
+                            unlockAchievement(achievement.id);
+                        }
+                    });
+                }
+
+                grid.appendChild(card);
+            });
+
+            if (grid.children.length > 0) {
+                section.appendChild(grid);
+                container.appendChild(section);
+            }
+        });
+    }
+
+    // Названия редкостей
+    function getRarityName(rarity) {
+        const names = {
+            common: '⚪ Обычная',
+            rare: '🔵 Редкая',
+            epic: '🟣 Эпическая',
+            legendary: '🟡 Легендарная'
+        };
+        return names[rarity] || rarity;
+    }
+
+    // Фильтры
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAchievements(btn.dataset.filter);
+        });
+    });
+
+    // Сброс прогресса
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        if (confirm('Точно сбросить весь прогресс? Это действие нельзя отменить!')) {
+            localStorage.removeItem('ai_creator_achievements');
+            unlockedIds = [];
+            renderAchievements();
+            updateStats();
+            alert('Прогресс сброшен. Начинаем заново! 🚀');
+        }
+    });
+
+    // Инициализация
+    renderAchievements();
+    updateStats();
+</script>
+
+</body>
+</html>
