@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 1.2: Создаём свою игру — AI Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #e4e6eb;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(255, 80, 160, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(120, 80, 255, 0.3);
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            color: #e4e6eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(120, 80, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Lesson container */
+        .lesson-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Quest header */
+        .quest-header {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quest-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff50a0, #7850ff);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); }
+        }
+
+        .quest-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quest-header .subtitle {
+            color: #a0a3b8;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .quest-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .meta-tag {
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Level blocks */
+        .level {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #7850ff, #00c8ff);
+        }
+
+        .level.boss::before {
+            background: linear-gradient(90deg, #ff50a0, #ff8800);
+            height: 5px;
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .level-number {
+            background: linear-gradient(135deg, #7850ff, #00c8ff);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4);
+        }
+
+        .level.boss .level-number {
+            background: linear-gradient(135deg, #ff50a0, #ff8800);
+            box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4);
+            animation: bossGlow 2s infinite;
+        }
+
+        @keyframes bossGlow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); }
+        }
+
+        .level-info h2 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .level-info .level-subtitle {
+            color: #a0a3b8;
+            font-size: 0.95rem;
+        }
+
+        .level-xp {
+            margin-left: auto;
+            background: rgba(255, 180, 0, 0.15);
+            border: 1px solid rgba(255, 180, 0, 0.4);
+            color: #ffb400;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .level p {
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .level h3 {
+            color: #00c8ff;
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .level ul, .level ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #c8cad8;
+        }
+
+        .level li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Memes and fun boxes */
+        .meme-box {
+            background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1));
+            border: 2px dashed rgba(255, 80, 160, 0.4);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-style: italic;
+            color: #ff9ec8;
+        }
+
+        .meme-box .meme-emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Info boxes */
+        .info-box {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.tip {
+            background: rgba(0, 200, 100, 0.08);
+            border-color: #00c864;
+        }
+
+        .info-box.warning {
+            background: rgba(255, 180, 0, 0.08);
+            border-color: #ffb400;
+        }
+
+        .info-box.danger {
+            background: rgba(255, 80, 80, 0.08);
+            border-color: #ff5050;
+        }
+
+        .info-box.lore {
+            background: rgba(120, 80, 255, 0.08);
+            border-color: #7850ff;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #0d1117;
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        pre::before {
+            content: 'PYTHON';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(120, 80, 255, 0.3);
+            color: #a0a3b8;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            border-radius: 0 8px 0 8px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        code {
+            color: #00c8ff;
+            background: rgba(0, 200, 255, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e4e6eb;
+        }
+
+        /* Game analogies */
+        .game-analogy {
+            background: rgba(0, 200, 255, 0.05);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .game-analogy .game-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .game-analogy .game-text strong {
+            color: #00c8ff;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Mini-boss */
+        .mini-boss {
+            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
+            border: 2px solid rgba(255, 180, 0, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .mini-boss-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .mini-boss-header .boss-icon {
+            font-size: 1.8rem;
+        }
+
+        .mini-boss-header h3 {
+            color: #ffb400;
+            margin: 0;
+        }
+
+        .mini-boss .reward {
+            display: inline-block;
+            background: rgba(255, 180, 0, 0.2);
+            border: 1px solid rgba(255, 180, 0, 0.5);
+            color: #ffb400;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* ACHIEVEMENT BUTTON - НОВОЕ! */
+        .achievement-unlock {
+            background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08));
+            border: 2px solid rgba(0, 200, 100, 0.4);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .achievement-unlock::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent);
+            animation: achievementShine 3s infinite;
+        }
+
+        @keyframes achievementShine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        .achievement-unlock:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3);
+        }
+
+        .achievement-unlock .ach-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .achievement-unlock h3 {
+            color: #00c864;
+            margin-bottom: 0.3rem;
+            font-size: 1.3rem;
+        }
+
+        .achievement-unlock .ach-desc {
+            color: #c8cad8;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .achievement-unlock .ach-reward {
+            color: #ffb400;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .achievement-unlock .ach-btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #00c864, #00c8ff);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4);
+        }
+
+        .achievement-unlock .ach-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6);
+        }
+
+        .achievement-unlock .ach-hint {
+            color: #a0a3b8;
+            font-size: 0.85rem;
+            margin-top: 0.8rem;
+            font-style: italic;
+        }
+
+        /* Side quests (homework) */
+        .side-quests {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .side-quests h2 {
+            color: #7850ff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .quest-card {
+            background: rgba(120, 80, 255, 0.05);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+
+        .quest-difficulty {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .quest-card.easy .quest-difficulty {
+            background: rgba(0, 200, 100, 0.2);
+            color: #00c864;
+        }
+
+        .quest-card.medium .quest-difficulty {
+            background: rgba(255, 180, 0, 0.2);
+            color: #ffb400;
+        }
+
+        .quest-card.hard .quest-difficulty {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff5050;
+        }
+
+        .quest-card h3 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .quest-card p {
+            color: #c8cad8;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-reward {
+            color: #ffb400;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem 1.5rem;
+            background: rgba(120, 80, 255, 0.1);
+            border: 1px solid rgba(120, 80, 255, 0.3);
+            border-radius: 12px;
+            color: #e4e6eb;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(120, 80, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3);
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2));
+            border-color: #00c8ff;
+        }
+
+        .nav-btn-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a0a3b8;
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-btn-title {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 1px solid rgba(120, 80, 255, 0.3);
+            padding: 2rem;
+            text-align: center;
+            color: #a0a3b8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .quest-header h1 { font-size: 2rem; }
+            .lesson-container { padding: 1rem; }
+            .level { padding: 1.5rem; }
+            .header-content { flex-direction: column; }
+            .level-header { flex-direction: column; align-items: flex-start; }
+            .level-xp { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <!-- Quest Header -->
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 1.2 • МОДУЛЬ 1</span>
+        <h1 data-i18n="title">Создаём свою игру</h1>
+        <p class="subtitle" data-i18n="subtitle">
+            Добро пожаловать на Уровень 2, Игрок! 🎯 Сегодня ты перестанешь быть просто игроком — ты станешь <strong>Геймдизайнером</strong>. Научишься создавать своих героев, монстров и целые игровые вселенные с помощью магии ООП.
+        </p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 2.5 часа</span>
+            <span class="meta-tag" data-i18n="level">📘 Уровень 2</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +800 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +250 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 1 / 8</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 12%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Intro to OOP -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🎨 Чертёж vs Герой: Что такое класс?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Главная идея ООП за 30 секунд</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+30 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">
+            Представь: ты играешь в Genshin Impact. Там сотни персонажей — Архонты, путешественники, боссы. Но разработчикам не пришлось писать код для каждого отдельно. Они создали <strong>один чертёж</strong> — «Персонаж», а потом по нему сделали 100+ героев.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🏗️</div>
+            <div class="game-text">
+                <strong data-i18n="l1_analogy_title">ООП = Конструктор LEGO</strong>
+                <span data-i18n="l1_analogy_text">В ООП есть две вещи: <strong>Класс</strong> (чертёж/инструкция) и <strong>Объект</strong> (конкретная вещь по этому чертежу). Класс «Персонаж» говорит: «У каждого героя есть имя, HP и атака». А объекты — это конкретные Архонты, которых ты коллекционируешь.</span>
+            </div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🤯</span>
+            <span data-i18n="l1_meme">«Я думал, в играх каждый персонаж — это отдельный код. Оказывается, они все сделаны по одному чертежу, просто с разными параметрами!» — любой, кто впервые понял ООП</span>
+        </div>
+
+        <h3 data-i18n="l1_code_title">📝 Первый класс в Python</h3>
+        <pre><code>class Hero:
+    """Это чертёж героя. Пока что пустой."""
+    pass
+
+# Создаём объект по чертежу (это называется "инстанцирование")
+hero1 = Hero()
+hero2 = Hero()
+
+print(hero1)  # &lt;__main__.Hero object at 0x...&gt;
+print(hero2)  # &lt;__main__.Hero object at 0x...&gt;
+# Это два РАЗНЫХ героя, но пока они абсолютно одинаковые</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Запомни правило</strong>
+            <span data-i18n="l1_tip_text">Классы в Python пишутся с <strong>большой буквы</strong> (Hero, Monster, Item). Переменные и функции — с маленькой (hero1, attack()). Это как в играх: имена боссов пишут с заглавной, а обычные слова — со строчной.</span>
+        </div>
+
+        <!-- 🏆 АЧИВКА №1 -->
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏗️</span>
+            <h3 data-i18n="ach1_name">Ачивка: Архитектор</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Создал свой первый класс в Python</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+50 XP · +15 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson1_2_architect" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если создал класс Hero и два объекта!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Attributes -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">📊 Статы героя: Атрибуты</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Добавляем характеристики персонажу</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+50 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">
+            В любой RPG у героя есть <strong>статы</strong>: HP, мана, сила, ловкость, интеллект. В Python эти статы называются <strong>атрибутами</strong> — это переменные, которые «принадлежат» объекту.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">📊</div>
+            <div class="game-text">
+                <strong data-i18n="l2_analogy_title">Смотри в игру</strong>
+                <span data-i18n="l2_analogy_text">Когда ты открываешь меню персонажа в RPG, ты видишь: Имя, Уровень, HP, Атака. Это и есть атрибуты! А когда нажимаешь «Удар мечом» — это уже <strong>метод</strong> (о нём на уровне 4).</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l2_code_title">📝 Добавляем статы герою</h3>
+        <pre><code>class Hero:
+    def __init__(self, name, hp, attack):
+        # Это КОНСТРУКТОР — он вызывается при создании героя
+        self.name = name        # Имя героя
+        self.hp = hp            # Здоровье
+        self.attack = attack    # Сила атаки
+        self.level = 1          # Уровень (у всех начинается с 1)
+    
+    def show_stats(self):
+        # Метод для вывода статов
+        print(f"🦸 {self.name} | Ур.{self.level} | HP: {self.hp} | ATK: {self.attack}")
+
+# Создаём героев с разными статами
+warrior = Hero("Конан", 150, 25)
+mage = Hero("Гэндальф", 80, 40)
+archer = Hero("Леголас", 100, 30)
+
+warrior.show_stats()  # 🦸 Конан | Ур.1 | HP: 150 | ATK: 25
+mage.show_stats()     # 🦸 Гэндальф | Ур.1 | HP: 80 | ATK: 40
+archer.show_stats()   # 🦸 Леголас | Ур.1 | HP: 100 | ATK: 30</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l2_warn_title">⚠️ Магическое слово: self</strong>
+            <span data-i18n="l2_warn_text"><code>self</code> — это «я», «этот объект». Когда ты пишешь <code>self.name = name</code>, ты говоришь: «У <strong>ЭТОГО</strong> героя имя равно тому, что передали в конструктор». Без self Python не поймёт, к какому герою относятся статы.</span>
+        </div>
+
+        <!-- 🏆 АЧИВКА №2 -->
+        <div class="achievement-unlock">
+            <span class="ach-icon">🎮</span>
+            <h3 data-i18n="ach2_name">Ачивка: Геймдизайнер</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Создал 3 разных игровых персонажа с уникальными статами</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+80 XP · +25 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson1_2_gamedesigner" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если создал воина, мага и лучника!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Methods -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">⚔️ Скиллы героя: Методы</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Учим персонажа действовать</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">
+            Мало создать героя со статами — он должен ещё что-то <strong>делать</strong>! Атаковать, лечиться, получать опыт. В Python действия героя называются <strong>методами</strong> — это функции, которые «живут» внутри класса.
+        </p>
+
+        <h3 data-i18n="l3_code_title">📝 Добавляем скиллы</h3>
+        <pre><code>class Hero:
+    def __init__(self, name, hp, attack):
+        self.name = name
+        self.hp = hp
+        self.max_hp = hp  # Запоминаем максимум HP
+        self.attack = attack
+        self.level = 1
+        self.xp = 0
+    
+    def show_stats(self):
+        print(f"🦸 {self.name} | Ур.{self.level} | HP: {self.hp}/{self.max_hp} | ATK: {self.attack}")
+    
+    def attack_enemy(self, enemy):
+        """Скилл: Атаковать врага"""
+        damage = self.attack
+        enemy.hp -= damage
+        print(f"⚔️ {self.name} атакует {enemy.name} и наносит {damage} урона!")
+        if enemy.hp <= 0:
+            print(f"💀 {enemy.name} повержен!")
+        else:
+            print(f"🩸 У {enemy.name} осталось {enemy.hp} HP")
+    
+    def heal(self, amount):
+        """Скилл: Лечиться"""
+        self.hp = min(self.hp + amount, self.max_hp)
+        print(f"💚 {self.name} восстановил {amount} HP. Теперь HP: {self.hp}")
+    
+    def gain_xp(self, amount):
+        """Скилл: Получить опыт"""
+        self.xp += amount
+        print(f"⭐ {self.name} получил {amount} XP! Всего: {self.xp}")
+        
+        # Проверка уровня
+        if self.xp >= 100:
+            self.level_up()
+    
+    def level_up(self):
+        """Скилл: Повысить уровень"""
+        self.level += 1
+        self.max_hp += 20
+        self.hp = self.max_hp
+        self.attack += 5
+        self.xp = 0
+        print(f"🎉 {self.name} достиг {self.level} уровня! HP и ATK выросли!")
+
+# Создаём героев
+warrior = Hero("Конан", 150, 25)
+goblin = Hero("Гоблин", 50, 10)
+
+# Битва!
+warrior.show_stats()
+goblin.show_stats()
+
+warrior.attack_enemy(goblin)  # ⚔️ Конан атакует Гоблина...
+warrior.gain_xp(50)           # ⭐ Получаем опыт
+warrior.gain_xp(60)           # 🎉 Уровень повышен!</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l3_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l3_lore_text">То, что ты только что написал — это основа <strong>любой RPG</strong>. Именно так устроены классы в World of Warcraft, Skyrim, Dota 2. У каждого юнита есть атрибуты (HP, мана, урон) и методы (атака, скилл, смерть). Теперь ты понимаешь, как устроены твои любимые игры изнутри!</span>
+        </div>
+
+        <!-- 🏆 АЧИВКА №3 -->
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚔️</span>
+            <h3 data-i18n="ach3_name">Ачивка: Боец</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал метод атаки и устроил первую битву</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+100 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson1_2_fighter" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если твой герой победил врага!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Mini-boss -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">⚔️ Мини-босс: Тамагочи</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Создай своего виртуального питомца</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">
+            Помнишь игру <strong>Тамагочи</strong> с 90-х? Там был виртуальный питомец, которого надо было кормить, играть с ним и следить, чтобы он не умер. Сейчас ты создашь своего!
+        </p>
+
+        <h3 data-i18n="l4_task_title">📝 Задание</h3>
+        <p data-i18n="l4_task_text">Создай класс <code>Pet</code> с:</p>
+        <ul>
+            <li data-i18n="l4_t1">Атрибутами: имя, голод (0-100), счастье (0-100), энергия (0-100)</li>
+            <li data-i18n="l4_t2">Методами: <code>feed()</code> (уменьшает голод), <code>play()</code> (увеличивает счастье, уменьшает энергию), <code>sleep()</code> (восстанавливает энергию)</li>
+            <li data-i18n="l4_t3">Методом <code>status()</code>, который выводит текущее состояние питомца</li>
+        </ul>
+
+        <pre><code>class Pet:
+    def __init__(self, name):
+        self.name = name
+        self.hunger = 50      # 0 = сыт, 100 = голоден
+        self.happiness = 50   # 0 = грустит, 100 = счастлив
+        self.energy = 50      # 0 = устал, 100 = полон сил
+    
+    def feed(self):
+        self.hunger = max(0, self.hunger - 30)
+        print(f"🍕 {self.name} поел! Голод: {self.hunger}")
+    
+    def play(self):
+        if self.energy < 20:
+            print(f"😴 {self.name} слишком устал, чтобы играть!")
+            return
+        self.happiness = min(100, self.happiness + 20)
+        self.energy = max(0, self.energy - 20)
+        print(f"🎾 {self.name} поиграл! Счастье: {self.happiness}, Энергия: {self.energy}")
+    
+    def sleep(self):
+        self.energy = min(100, self.energy + 40)
+        print(f"💤 {self.name} поспал. Энергия: {self.energy}")
+    
+    def status(self):
+        print(f"\n🐾 {self.name}:")
+        print(f"   🍖 Голод: {self.hunger}/100")
+        print(f"   😊 Счастье: {self.happiness}/100")
+        print(f"   ⚡ Энергия: {self.energy}/100\n")
+
+# Создаём питомца
+my_pet = Pet("Дракоша")
+my_pet.status()
+my_pet.feed()
+my_pet.play()
+my_pet.sleep()
+my_pet.status()</code></pre>
+
+        <!-- 🏆 АЧИВКА №4 -->
+        <div class="achievement-unlock">
+            <span class="ach-icon">🐾</span>
+            <h3 data-i18n="ach4_name">Ачивка: Укротитель</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Создал своего виртуального питомца</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+100 XP · +40 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson1_2_tamer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если твой питомец работает!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: Inheritance -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">5</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">🧬 Эволюция: Наследование</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Создаём новые классы на основе старых</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l5_p1">
+            В играх есть <strong>эволюция</strong>: покемон превращается в более сильную версию, сохраняя все свои статы, но получая новые скиллы. В Python это называется <strong>наследование</strong>.
+        </p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🧬</div>
+            <div class="game-text">
+                <strong data-i18n="l5_analogy_title">Покемон-стиль</strong>
+                <span data-i18n="l5_analogy_text">Представь: у тебя есть класс <code>Character</code> (базовый). От него наследуются <code>Warrior</code>, <code>Mage</code>, <code>Archer</code>. Все они получают общие атрибуты (имя, HP), но у каждого свои уникальные скиллы. Это как эволюция в Pokémon — базовые характеристики остаются, но добавляются новые способности.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Создаём классы-наследники</h3>
+        <pre><code>class Character:
+    """Базовый класс — как базовый покемон"""
+    def __init__(self, name, hp):
+        self.name = name
+        self.hp = hp
+    
+    def show(self):
+        print(f"{self.name} | HP: {self.hp}")
+
+class Warrior(Character):
+    """Наследует от Character, но добавляет своё"""
+    def __init__(self, name, hp, sword_power):
+        super().__init__(name, hp)  # Вызываем конструктор родителя
+        self.sword_power = sword_power
+    
+    def slash(self):
+        print(f"⚔️ {self.name} делает мощный удар мечом! Урон: {self.sword_power}")
+
+class Mage(Character):
+    def __init__(self, name, hp, mana, spell_power):
+        super().__init__(name, hp)
+        self.mana = mana
+        self.spell_power = spell_power
+    
+    def cast_fireball(self):
+        if self.mana >= 20:
+            self.mana -= 20
+            print(f"🔥 {self.name} кастует Огненный шар! Урон: {self.spell_power}")
+        else:
+            print(f"😵 У {self.name} недостаточно маны!")
+
+# Создаём персонажей
+conan = Warrior("Конан", 150, 35)
+gandalf = Mage("Гэндальф", 80, 100, 50)
+
+conan.show()        # Конан | HP: 150
+conan.slash()       # ⚔️ Конан делает мощный удар мечом! Урон: 35
+
+gandalf.show()      # Гэндальф | HP: 80
+gandalf.cast_fireball()  # 🔥 Гэндальф кастует Огненный шар! Урон: 50</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l5_tip_title">💡 Магия super()</strong>
+            <span data-i18n="l5_tip_text"><code>super().__init__(name, hp)</code> — это как сказать: «Папа-класс, сделай свою работу по инициализации имени и HP, а я уже добавлю свои фишки». Без этой строки у воина не было бы имени и HP — только сила меча.</span>
+        </div>
+
+        <!-- 🏆 АЧИВКА №5 -->
+        <div class="achievement-unlock">
+            <span class="ach-icon">🧬</span>
+            <h3 data-i18n="ach5_name">Ачивка: Генетик</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал класс-наследник с уникальными скиллами</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+120 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson1_2_geneticist" class="ach-btn" data-i18n="ach5_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Нажми, если создал Warrior и Mage!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 6: Final Boss -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l6_title">БОСС-ФАЙТ: Битва героев!</h2>
+                <div class="level-subtitle" data-i18n="l6_sub">Создай полноценную мини-RPG</div>
+            </div>
+            <div class="level-xp" data-i18n="l6_xp">+200 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">⚔️🔥🐉</span>
+            <span data-i18n="l6_meme">Время показать, чему ты научился! Собери всё в одну мини-RPG, где два героя сражаются друг с другом!</span>
+        </div>
+
+        <h3 data-i18n="l6_code_title">📝 Финальный код: Битва героев</h3>
+        <pre><code># ==========================================
+# ⚔️ БИТВА ГЕРОЕВ — МИНИ-RPG
+# Автор: [твоё имя]
+# ==========================================
+
+import random
+import time
+
+class Character:
+    """Базовый класс персонажа"""
+    def __init__(self, name, hp, attack):
+        self.name = name
+        self.hp = hp
+        self.max_hp = hp
+        self.attack = attack
+    
+    def is_alive(self):
+        return self.hp > 0
+    
+    def take_damage(self, damage):
+        self.hp = max(0, self.hp - damage)
+    
+    def show(self):
+        hp_bar = "█" * (self.hp // 10) + "░" * ((self.max_hp - self.hp) // 10)
+        print(f"{self.name}: [{hp_bar}] {self.hp}/{self.max_hp} HP")
+
+class Warrior(Character):
+    def __init__(self, name):
+        super().__init__(name, hp=150, attack=20)
+        self.shield_block = 0.2  # 20% шанс заблокировать удар
+    
+    def attack(self, enemy):
+        damage = self.attack + random.randint(-5, 10)
+        enemy.take_damage(damage)
+        print(f"⚔️ {self.name} атакует {enemy.name} на {damage} урона!")
+    
+    def defend(self):
+        if random.random() < self.shield_block:
+            print(f"🛡️ {self.name} блокирует удар щитом!")
+            return True
+        return False
+
+class Mage(Character):
+    def __init__(self, name):
+        super().__init__(name, hp=90, attack=15)
+        self.mana = 100
+        self.max_mana = 100
+    
+    def attack(self, enemy):
+        if self.mana >= 30:
+            damage = 40 + random.randint(0, 15)
+            self.mana -= 30
+            enemy.take_damage(damage)
+            print(f"🔥 {self.name} кастует огненный шар на {damage} урона!")
+        else:
+            damage = self.attack
+            enemy.take_damage(damage)
+            print(f"✨ {self.name} бьёт посохом на {damage} урона (мало маны)")
+    
+    def meditate(self):
+        self.mana = min(self.max_mana, self.mana + 40)
+        print(f"🧘 {self.name} медитирует. Мана: {self.mana}/{self.max_mana}")
+
+def battle(hero1, hero2):
+    """Главный цикл битвы"""
+    print("=" * 50)
+    print(f"🎬 НАЧИНАЕТСЯ БИТВА: {hero1.name} VS {hero2.name}")
+    print("=" * 50)
+    
+    round_num = 1
+    while hero1.is_alive() and hero2.is_alive():
+        print(f"\n--- Раунд {round_num} ---")
+        hero1.show()
+        hero2.show()
+        time.sleep(1)
+        
+        # Ход первого героя
+        attacker, defender = hero1, hero2
+        if hasattr(defender, 'defend') and defender.defend():
+            print(f"🛡️ Атака заблокирована!")
+        else:
+            attacker.attack(defender)
+        
+        if not defender.is_alive():
+            break
+        
+        time.sleep(1)
+        
+        # Ход второго героя
+        attacker, defender = hero2, hero1
+        if hasattr(defender, 'defend') and defender.defend():
+            print(f"🛡️ Атака заблокирована!")
+        else:
+            attacker.attack(defender)
+        
+        # Медитация мага, если маны мало
+        if isinstance(hero2, Mage) and hero2.mana < 30:
+            hero2.meditate()
+        
+        round_num += 1
+        time.sleep(1)
+    
+    # Определяем победителя
+    print("\n" + "=" * 50)
+    if hero1.is_alive():
+        print(f"🏆 ПОБЕДИТЕЛЬ: {hero1.name}!")
+    else:
+        print(f"🏆 ПОБЕДИТЕЛЬ: {hero2.name}!")
+    print("=" * 50)
+
+# Создаём героев
+conan = Warrior("Конан-Варвар")
+gandalf = Mage("Гэндальф-Серый")
+
+# Битва!
+battle(conan, gandalf)</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l6_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l6_danger_text">Игра запускается? Битва идёт до победы одного из героев? Есть раунды, урон, HP-бары? Поздравляю — ты создал свою первую мини-RPG! 🏆</span>
+        </div>
+
+        <!-- 🏆 АЧИВКА №6 - ЛЕГЕНДАРНАЯ -->
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach6_name">ЛЕГЕНДАРНАЯ АЧИВКА: Создатель Вселенной</h3>
+            <p class="ach-desc" data-i18n="ach6_desc">Создал полноценную мини-RPG с битвой, классами и наследованием</p>
+            <div class="ach-reward" data-i18n="ach6_reward">+200 XP · +100 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson1_2_universe_creator" class="ach-btn" 
+               style="background: linear-gradient(135deg, #ffb400, #ff50a0);" 
+               data-i18n="ach6_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach6_hint">Только 10% игроков получают эту ачивку. Ты — в их числе!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests (Homework) -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧪 Квест «Алхимик»</h3>
+            <p data-i18n="sq1_text">Создай класс <code>Potion</code> (Зелье) с атрибутами: тип (здоровье/мана/сила), сила эффекта. Добавь метод <code>use(hero)</code>, который применяет эффект к герою.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 40 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">🐉 Квест «Босс-монстр»</h3>
+            <p data-i18n="sq2_text">Создай класс <code>Boss</code>, который наследуется от Character. У него должны быть: огромные статы, 2 разных атаки (случайный выбор), и фаза ярости при HP &lt; 30% (урон x2).</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 80 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🌍 Квест «Открытый мир»</h3>
+            <p data-i18n="sq3_text">Создай полноценную RPG-систему: классы <code>Hero</code>, <code>Enemy</code>, <code>Item</code>, <code>Location</code>. Герой может перемещаться между локациями, сражаться с врагами, подбирать предметы и прокачиваться. Сделай текстовый квест с выбором действий.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 150 AI-коинов + титул «Game Dev»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Классы — чертежи для объектов</li>
+            <li data-i18n="sum2">✅ Объекты — конкретные экземпляры</li>
+            <li data-i18n="sum3">✅ Атрибуты — статы персонажа</li>
+            <li data-i18n="sum4">✅ Методы — скиллы персонажа</li>
+            <li data-i18n="sum5">✅ Конструктор __init__ — создание героя</li>
+            <li data-i18n="sum6">✅ self — «я», этот объект</li>
+            <li data-i18n="sum7">✅ Наследование — эволюция классов</li>
+            <li data-i18n="sum8">🏆 Финальный босс — мини-RPG создана!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Геймдизайнер! В следующем квесте мы погрузимся в мир математики для ИИ и сделаем первого настоящего ML-классификатора. Готовься — будет мощно!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-1-1.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">1.1 Первый ИИ-бот</span>
+        </a>
+        <a href="lesson-2-1.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">2.1 Математика для ИИ</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 1.2 • МОДУЛЬ 1",
+            title: "Создаём свою игру",
+            subtitle: "Добро пожаловать на Уровень 2, Игрок! 🎯 Сегодня ты перестанешь быть просто игроком — ты станешь <strong>Геймдизайнером</strong>. Научишься создавать своих героев, монстров и целые игровые вселенные с помощью магии ООП.",
+            duration: "⏱ 2.5 часа", level: "📘 Уровень 2", xp: "⭐ +800 XP", loot: "💰 +250 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 1 / 8",
+            l1_title: "🎨 Чертёж vs Герой: Что такое класс?", l1_sub: "Главная идея ООП за 30 секунд", l1_xp: "+30 XP",
+            l1_p1: "Представь: ты играешь в Genshin Impact. Там сотни персонажей. Но разработчикам не пришлось писать код для каждого отдельно. Они создали <strong>один чертёж</strong> — «Персонаж», а потом по нему сделали 100+ героев.",
+            l1_analogy_title: "ООП = Конструктор LEGO", l1_analogy_text: "В ООП есть две вещи: <strong>Класс</strong> (чертёж) и <strong>Объект</strong> (конкретная вещь по чертежу). Класс «Персонаж» говорит: «У каждого героя есть имя, HP и атака». А объекты — это конкретные Архонты, которых ты коллекционируешь.",
+            l1_meme: "«Я думал, в играх каждый персонаж — это отдельный код. Оказывается, они все сделаны по одному чертежу!» — любой, кто впервые понял ООП",
+            l1_code_title: "📝 Первый класс в Python",
+            l1_tip_title: "💡 Запомни правило", l1_tip_text: "Классы в Python пишутся с <strong>большой буквы</strong> (Hero, Monster, Item). Переменные и функции — с маленькой. Это как в играх: имена боссов пишут с заглавной, а обычные слова — со строчной.",
+            ach1_name: "Ачивка: Архитектор", ach1_desc: "Создал свой первый класс в Python", ach1_reward: "+50 XP · +15 💰 · ⚪ Обычная",
+            ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если создал класс Hero и два объекта!",
+            l2_title: "📊 Статы героя: Атрибуты", l2_sub: "Добавляем характеристики персонажу", l2_xp: "+50 XP",
+            l2_p1: "В любой RPG у героя есть <strong>статы</strong>: HP, мана, сила, ловкость. В Python эти статы называются <strong>атрибутами</strong> — переменные, которые «принадлежат» объекту.",
+            l2_analogy_title: "Смотри в игру", l2_analogy_text: "Когда ты открываешь меню персонажа в RPG, ты видишь: Имя, Уровень, HP, Атака. Это и есть атрибуты! А когда нажимаешь «Удар мечом» — это уже <strong>метод</strong>.",
+            l2_code_title: "📝 Добавляем статы герою",
+            l2_warn_title: "⚠️ Магическое слово: self", l2_warn_text: "<code>self</code> — это «я», «этот объект». Когда ты пишешь <code>self.name = name</code>, ты говоришь: «У <strong>ЭТОГО</strong> героя имя равно тому, что передали в конструктор».",
+            ach2_name: "Ачивка: Геймдизайнер", ach2_desc: "Создал 3 разных игровых персонажа с уникальными статами", ach2_reward: "+80 XP · +25 💰 · ⚪ Обычная",
+            ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если создал воина, мага и лучника!",
+            l3_title: "⚔️ Скиллы героя: Методы", l3_sub: "Учим персонажа действовать", l3_xp: "+60 XP",
+            l3_p1: "Мало создать героя со статами — он должен ещё что-то <strong>делать</strong>! Атаковать, лечиться, получать опыт. В Python действия героя называются <strong>методами</strong>.",
+            l3_code_title: "📝 Добавляем скиллы",
+            l3_lore_title: "📚 Лор для гиков", l3_lore_text: "То, что ты только что написал — это основа <strong>любой RPG</strong>. Именно так устроены классы в World of Warcraft, Skyrim, Dota 2. Теперь ты понимаешь, как устроены твои любимые игры изнутри!",
+            ach3_name: "Ачивка: Боец", ach3_desc: "Реализовал метод атаки и устроил первую битву", ach3_reward: "+100 XP · +30 💰 · 🔵 Редкая",
+            ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если твой герой победил врага!",
+            l4_title: "⚔️ Мини-босс: Тамагочи", l4_sub: "Создай своего виртуального питомца", l4_xp: "+100 XP",
+            l4_p1: "Помнишь игру <strong>Тамагочи</strong>? Там был виртуальный питомец, которого надо было кормить и играть с ним. Сейчас ты создашь своего!",
+            l4_task_title: "📝 Задание", l4_task_text: "Создай класс <code>Pet</code> с:",
+            l4_t1: "Атрибутами: имя, голод (0-100), счастье (0-100), энергия (0-100)",
+            l4_t2: "Методами: feed() (уменьшает голод), play() (увеличивает счастье), sleep() (восстанавливает энергию)",
+            l4_t3: "Методом status(), который выводит текущее состояние питомца",
+            ach4_name: "Ачивка: Укротитель", ach4_desc: "Создал своего виртуального питомца", ach4_reward: "+100 XP · +40 💰 · 🔵 Редкая",
+            ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если твой питомец работает!",
+            l5_title: "🧬 Эволюция: Наследование", l5_sub: "Создаём новые классы на основе старых", l5_xp: "+80 XP",
+            l5_p1: "В играх есть <strong>эволюция</strong>: покемон превращается в более сильную версию. В Python это называется <strong>наследование</strong>.",
+            l5_analogy_title: "Покемон-стиль", l5_analogy_text: "Представь: у тебя есть класс Character (базовый). От него наследуются Warrior, Mage, Archer. Все получают общие атрибуты, но у каждого свои уникальные скиллы. Как эволюция в Pokémon!",
+            l5_code_title: "📝 Создаём классы-наследники",
+            l5_tip_title: "💡 Магия super()", l5_tip_text: "<code>super().__init__(name, hp)</code> — это как сказать: «Папа-класс, сделай свою работу, а я добавлю свои фишки».",
+            ach5_name: "Ачивка: Генетик", ach5_desc: "Создал класс-наследник с уникальными скиллами", ach5_reward: "+120 XP · +50 💰 · 🟣 Эпическая",
+            ach5_btn: "🏆 Получить ачивку", ach5_hint: "Нажми, если создал Warrior и Mage!",
+            l6_title: "БОСС-ФАЙТ: Битва героев!", l6_sub: "Создай полноценную мини-RPG", l6_xp: "+200 XP",
+            l6_meme: "Время показать, чему ты научился! Собери всё в одну мини-RPG, где два героя сражаются друг с другом!",
+            l6_code_title: "📝 Финальный код: Битва героев",
+            l6_danger_title: "🚨 Проверь перед сдачей босса", l6_danger_text: "Игра запускается? Битва идёт до победы одного из героев? Поздравляю — ты создал свою первую мини-RPG! 🏆",
+            ach6_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Создатель Вселенной", ach6_desc: "Создал полноценную мини-RPG с битвой, классами и наследованием",
+            ach6_reward: "+200 XP · +100 💰 · 🟡 Легендарная",
+            ach6_btn: "👑 Получить легендарную ачивку", ach6_hint: "Только 10% игроков получают эту ачивку. Ты — в их числе!",
+            sq_title: "📜 Побочные квесты (домашнее задание)",
+            sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧪 Квест «Алхимик»", sq1_text: "Создай класс Potion (Зелье) с атрибутами: тип, сила эффекта. Добавь метод use(hero), который применяет эффект к герою.", sq1_reward: "💰 Награда: 40 AI-коинов",
+            sq2_title: "🐉 Квест «Босс-монстр»", sq2_text: "Создай класс Boss, который наследуется от Character. У него должны быть: огромные статы, 2 разных атаки, и фаза ярости при HP < 30%.", sq2_reward: "💰 Награда: 80 AI-коинов",
+            sq3_title: "🌍 Квест «Открытый мир»", sq3_text: "Создай полноценную RPG-систему: классы Hero, Enemy, Item, Location. Герой может перемещаться, сражаться, подбирать предметы и прокачиваться.", sq3_reward: "💰 Награда: 150 AI-коинов + титул «Game Dev»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Классы — чертежи для объектов", sum2: "✅ Объекты — конкретные экземпляры",
+            sum3: "✅ Атрибуты — статы персонажа", sum4: "✅ Методы — скиллы персонажа",
+            sum5: "✅ Конструктор __init__ — создание героя", sum6: "✅ self — «я», этот объект",
+            sum7: "✅ Наследование — эволюция классов", sum8: "🏆 Финальный босс — мини-RPG создана!",
+            sum_meme: "Поздравляю, Геймдизайнер! В следующем квесте мы погрузимся в мир математики для ИИ. Готовься — будет мощно!",
+            nav_back: "← Предыдущий квест", nav_back_title: "1.1 Первый ИИ-бот",
+            nav_next: "Следующий квест →", nav_next_title: "2.1 Математика для ИИ",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 1.2 • MODULE 1",
+            title: "Creating Your Own Game",
+            subtitle: "Welcome to Level 2, Player! 🎯 Today you'll stop being just a player — you'll become a <strong>Game Designer</strong>. Learn to create your own heroes, monsters and whole game universes with OOP magic.",
+            duration: "⏱ 2.5 hours", level: "📘 Level 2", xp: "⭐ +800 XP", loot: "💰 +250 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 1 / 8",
+            l1_title: "🎨 Blueprint vs Hero: What's a class?", l1_sub: "Main OOP idea in 30 seconds", l1_xp: "+30 XP",
+            l1_p1: "Imagine: you're playing Genshin Impact. There are hundreds of characters. But developers didn't write code for each separately. They created <strong>one blueprint</strong> — «Character», and made 100+ heroes from it.",
+            l1_analogy_title: "OOP = LEGO Constructor", l1_analogy_text: "In OOP there are two things: <strong>Class</strong> (blueprint) and <strong>Object</strong> (concrete thing from blueprint). Class «Character» says: «Every hero has name, HP and attack». And objects are the specific Archons you collect.",
+            l1_meme: "«I thought in games each character is separate code. Turns out they're all made from one blueprint!» — anyone who first understood OOP",
+            l1_code_title: "📝 First class in Python",
+            l1_tip_title: "💡 Remember the rule", l1_tip_text: "Classes in Python are written with <strong>capital letter</strong> (Hero, Monster, Item). Variables and functions — with lowercase. Like in games: boss names are capitalized, regular words — lowercase.",
+            ach1_name: "Achievement: Architect", ach1_desc: "Created your first Python class", ach1_reward: "+50 XP · +15 💰 · ⚪ Common",
+            ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you created Hero class and two objects!",
+            l2_title: "📊 Hero stats: Attributes", l2_sub: "Adding characteristics to character", l2_xp: "+50 XP",
+            l2_p1: "In any RPG the hero has <strong>stats</strong>: HP, mana, strength, agility. In Python these stats are called <strong>attributes</strong> — variables that «belong» to the object.",
+            l2_analogy_title: "Look at the game", l2_analogy_text: "When you open character menu in RPG, you see: Name, Level, HP, Attack. These are attributes! And when you click «Sword strike» — that's already a <strong>method</strong>.",
+            l2_code_title: "📝 Adding stats to hero",
+            l2_warn_title: "⚠️ Magic word: self", l2_warn_text: "<code>self</code> is «me», «this object». When you write <code>self.name = name</code>, you say: «For <strong>THIS</strong> hero, name equals what was passed to constructor».",
+            ach2_name: "Achievement: Game Designer", ach2_desc: "Created 3 different game characters with unique stats", ach2_reward: "+80 XP · +25 💰 · ⚪ Common",
+            ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you created warrior, mage and archer!",
+            l3_title: "⚔️ Hero skills: Methods", l3_sub: "Teaching character to act", l3_xp: "+60 XP",
+            l3_p1: "Not enough to create hero with stats — he must <strong>do</strong> something! Attack, heal, gain experience. In Python hero actions are called <strong>methods</strong>.",
+            l3_code_title: "📝 Adding skills",
+            l3_lore_title: "📚 Lore for geeks", l3_lore_text: "What you just wrote is the foundation of <strong>any RPG</strong>. That's how classes are built in World of Warcraft, Skyrim, Dota 2. Now you understand how your favorite games work inside!",
+            ach3_name: "Achievement: Fighter", ach3_desc: "Implemented attack method and held first battle", ach3_reward: "+100 XP · +30 💰 · 🔵 Rare",
+            ach3_btn: "🏆 Get achievement", ach3_hint: "Click if your hero defeated the enemy!",
+            l4_title: "⚔️ Mini-boss: Tamagotchi", l4_sub: "Create your virtual pet", l4_xp: "+100 XP",
+            l4_p1: "Remember <strong>Tamagotchi</strong>? There was a virtual pet you had to feed and play with. Now you'll create your own!",
+            l4_task_title: "📝 Task", l4_task_text: "Create class <code>Pet</code> with:",
+            l4_t1: "Attributes: name, hunger (0-100), happiness (0-100), energy (0-100)",
+            l4_t2: "Methods: feed() (reduces hunger), play() (increases happiness), sleep() (restores energy)",
+            l4_t3: "Method status() that shows current pet state",
+            ach4_name: "Achievement: Tamer", ach4_desc: "Created your virtual pet", ach4_reward: "+100 XP · +40 💰 · 🔵 Rare",
+            ach4_btn: "🏆 Get achievement", ach4_hint: "Click if your pet works!",
+            l5_title: "🧬 Evolution: Inheritance", l5_sub: "Creating new classes based on old ones", l5_xp: "+80 XP",
+            l5_p1: "Games have <strong>evolution</strong>: Pokémon evolves into stronger version. In Python this is called <strong>inheritance</strong>.",
+            l5_analogy_title: "Pokémon-style", l5_analogy_text: "Imagine: you have class Character (base). From it inherit Warrior, Mage, Archer. All get common attributes, but each has unique skills. Like evolution in Pokémon!",
+            l5_code_title: "📝 Creating child classes",
+            l5_tip_title: "💡 Magic of super()", l5_tip_text: "<code>super().__init__(name, hp)</code> is like saying: «Parent class, do your job, and I'll add my features».",
+            ach5_name: "Achievement: Geneticist", ach5_desc: "Created child class with unique skills", ach5_reward: "+120 XP · +50 💰 · 🟣 Epic",
+            ach5_btn: "🏆 Get achievement", ach5_hint: "Click if you created Warrior and Mage!",
+            l6_title: "BOSS FIGHT: Battle of Heroes!", l6_sub: "Create a full mini-RPG", l6_xp: "+200 XP",
+            l6_meme: "Time to show what you've learned! Combine everything into one mini-RPG where two heroes fight each other!",
+            l6_code_title: "📝 Final code: Battle of Heroes",
+            l6_danger_title: "🚨 Check before submitting boss", l6_danger_text: "Game runs? Battle goes until one hero wins? Congrats — you created your first mini-RPG! 🏆",
+            ach6_name: "LEGENDARY: Universe Creator", ach6_desc: "Created full mini-RPG with battle, classes and inheritance",
+            ach6_reward: "+200 XP · +100 💰 · 🟡 Legendary",
+            ach6_btn: "👑 Get legendary achievement", ach6_hint: "Only 10% of players get this achievement. You're one of them!",
+            sq_title: "📜 Side quests (homework)",
+            sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧪 Quest «Alchemist»", sq1_text: "Create class Potion with attributes: type, effect power. Add method use(hero) that applies effect to hero.", sq1_reward: "💰 Reward: 40 AI-coins",
+            sq2_title: "🐉 Quest «Boss monster»", sq2_text: "Create class Boss inheriting from Character. It should have: huge stats, 2 different attacks, and rage phase at HP < 30%.", sq2_reward: "💰 Reward: 80 AI-coins",
+            sq3_title: "🌍 Quest «Open world»", sq3_text: "Create full RPG system: classes Hero, Enemy, Item, Location. Hero can move, fight, pick up items and level up.", sq3_reward: "💰 Reward: 150 AI-coins + title «Game Dev»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Classes — blueprints for objects", sum2: "✅ Objects — concrete instances",
+            sum3: "✅ Attributes — character stats", sum4: "✅ Methods — character skills",
+            sum5: "✅ Constructor __init__ — hero creation", sum6: "✅ self — «me», this object",
+            sum7: "✅ Inheritance — class evolution", sum8: "🏆 Final boss — mini-RPG created!",
+            sum_meme: "Congrats, Game Designer! In the next quest we'll dive into math for AI. Get ready — it'll be epic!",
+            nav_back: "← Previous quest", nav_back_title: "1.1 First AI bot",
+            nav_next: "Next quest →", nav_next_title: "2.1 Math for AI",
+            footer: "AI course for 10th grade students."
+        },
+        es: {
+            badge: "🎮 MISIÓN 1.2 • MÓDULO 1",
+            title: "Creando tu propio juego",
+            subtitle: "¡Bienvenido al Nivel 2, Jugador! 🎯 Hoy dejarás de ser solo un jugador — te convertirás en <strong>Diseñador de Juegos</strong>. Aprenderás a crear tus propios héroes, monstruos y universos de juego con la magia de OOP.",
+            duration: "⏱ 2.5 horas", level: "📘 Nivel 2", xp: "⭐ +800 XP", loot: "💰 +250 AI-monedas", ach: "🏆 6 logros",
+            progress_title: "📊 Progreso de la misión", progress_counter: "Nivel 1 / 8",
+            l1_title: "🎨 Plano vs Héroe: ¿Qué es una clase?", l1_sub: "Idea principal de OOP en 30 segundos", l1_xp: "+30 XP",
+            l1_p1: "Imagina: juegas Genshin Impact. Hay cientos de personajes. Pero los desarrolladores no escribieron código para cada uno. Crearon <strong>un plano</strong> — «Personaje», y hicieron 100+ héroes con él.",
+            l1_analogy_title: "OOP = Constructor LEGO", l1_analogy_text: "En OOP hay dos cosas: <strong>Clase</strong> (plano) y <strong>Objeto</strong> (cosa concreta del plano). Clase «Personaje» dice: «Cada héroe tiene nombre, HP y ataque». Y los objetos son los Arcontes específicos que coleccionas.",
+            l1_meme: "«Pensé que en juegos cada personaje es código separado. ¡Resulta que todos están hechos con un plano!» — cualquiera que entendió OOP por primera vez",
+            l1_code_title: "📝 Primera clase en Python",
+            l1_tip_title: "💡 Recuerda la regla", l1_tip_text: "Las clases en Python se escriben con <strong>mayúscula</strong> (Hero, Monster, Item). Variables y funciones — con minúscula.",
+            ach1_name: "Logro: Arquitecto", ach1_desc: "Creó su primera clase en Python", ach1_reward: "+50 XP · +15 💰 · ⚪ Común",
+            ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si creaste clase Hero y dos objetos!",
+            l2_title: "📊 Stats del héroe: Atributos", l2_sub: "Añadiendo características al personaje", l2_xp: "+50 XP",
+            l2_p1: "En cualquier RPG el héroe tiene <strong>stats</strong>: HP, maná, fuerza, agilidad. En Python estos stats se llaman <strong>atributos</strong>.",
+            l2_analogy_title: "Mira el juego", l2_analogy_text: "Cuando abres menú de personaje en RPG, ves: Nombre, Nivel, HP, Ataque. ¡Estos son atributos! Y cuando pulsas «Golpe de espada» — eso ya es un <strong>método</strong>.",
+            l2_code_title: "📝 Añadiendo stats al héroe",
+            l2_warn_title: "⚠️ Palabra mágica: self", l2_warn_text: "<code>self</code> es «yo», «este objeto». Cuando escribes <code>self.name = name</code>, dices: «Para <strong>ESTE</strong> héroe, nombre es igual a lo que se pasó al constructor».",
+            ach2_name: "Logro: Diseñador de Juegos", ach2_desc: "Creó 3 personajes diferentes con stats únicos", ach2_reward: "+80 XP · +25 💰 · ⚪ Común",
+            ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si creaste guerrero, mago y arquero!",
+            l3_title: "⚔️ Skills del héroe: Métodos", l3_sub: "Enseñando al personaje a actuar", l3_xp: "+60 XP",
+            l3_p1: "No basta con crear héroe con stats — ¡debe <strong>hacer</strong> algo! Atacar, curarse, ganar experiencia. En Python las acciones se llaman <strong>métodos</strong>.",
+            l3_code_title: "📝 Añadiendo skills",
+            l3_lore_title: "📚 Lore para geeks", l3_lore_text: "Lo que acabas de escribir es la base de <strong>cualquier RPG</strong>. Así están construidas las clases en World of Warcraft, Skyrim, Dota 2.",
+            ach3_name: "Logro: Luchador", ach3_desc: "Implementó método de ataque y libró primera batalla", ach3_reward: "+100 XP · +30 💰 · 🔵 Raro",
+            ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si tu héroe derrotó al enemigo!",
+            l4_title: "⚔️ Mini-jefe: Tamagotchi", l4_sub: "Crea tu mascota virtual", l4_xp: "+100 XP",
+            l4_p1: "¿Recuerdas <strong>Tamagotchi</strong>? Había una mascota virtual a la que debías alimentar y jugar. ¡Ahora crearás la tuya!",
+            l4_task_title: "📝 Tarea", l4_task_text: "Crea clase <code>Pet</code> con:",
+            l4_t1: "Atributos: nombre, hambre (0-100), felicidad (0-100), energía (0-100)",
+            l4_t2: "Métodos: feed() (reduce hambre), play() (aumenta felicidad), sleep() (restaura energía)",
+            l4_t3: "Método status() que muestra estado actual de la mascota",
+            ach4_name: "Logro: Domador", ach4_desc: "Creó su mascota virtual", ach4_reward: "+100 XP · +40 💰 · 🔵 Raro",
+            ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si tu mascota funciona!",
+            l5_title: "🧬 Evolución: Herencia", l5_sub: "Creando nuevas clases basadas en antiguas", l5_xp: "+80 XP",
+            l5_p1: "Los juegos tienen <strong>evolución</strong>: Pokémon evoluciona a versión más fuerte. En Python esto se llama <strong>herencia</strong>.",
+            l5_analogy_title: "Estilo Pokémon", l5_analogy_text: "Imagina: tienes clase Character (base). De ella heredan Warrior, Mage, Archer. Todos obtienen atributos comunes, pero cada uno tiene skills únicos. ¡Como evolución en Pokémon!",
+            l5_code_title: "📝 Creando clases hijas",
+            l5_tip_title: "💡 Magia de super()", l5_tip_text: "<code>super().__init__(name, hp)</code> es como decir: «Clase padre, haz tu trabajo, y yo añadiré mis características».",
+            ach5_name: "Logro: Genetista", ach5_desc: "Creó clase hija con skills únicos", ach5_reward: "+120 XP · +50 💰 · 🟣 Épico",
+            ach5_btn: "🏆 Obtener logro", ach5_hint: "¡Haz clic si creaste Warrior y Mage!",
+            l6_title: "¡PELEA JEFE: Batalla de Héroes!", l6_sub: "Crea un mini-RPG completo", l6_xp: "+200 XP",
+            l6_meme: "¡Hora de mostrar lo que aprendiste! ¡Combina todo en un mini-RPG donde dos héroes luchan entre sí!",
+            l6_code_title: "📝 Código final: Batalla de Héroes",
+            l6_danger_title: "🚨 Revisa antes de entregar jefe", l6_danger_text: "¿El juego corre? ¿La batalla va hasta que un héroe gana? ¡Felicidades — creaste tu primer mini-RPG! 🏆",
+            ach6_name: "LEGENDARIO: Creador de Universos", ach6_desc: "Creó mini-RPG completo con batalla, clases y herencia",
+            ach6_reward: "+200 XP · +100 💰 · 🟡 Legendario",
+            ach6_btn: "👑 Obtener logro legendario", ach6_hint: "¡Solo el 10% de jugadores obtiene este logro. ¡Tú eres uno de ellos!",
+            sq_title: "📜 Misiones secundarias (tarea)",
+            sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL",
+            sq1_title: "🧪 Misión «Alquimista»", sq1_text: "Crea clase Potion con atributos: tipo, poder de efecto. Añade método use(hero) que aplica efecto al héroe.", sq1_reward: "💰 Recompensa: 40 AI-monedas",
+            sq2_title: "🐉 Misión «Monstruo jefe»", sq2_text: "Crea clase Boss heredando de Character. Debe tener: stats enormes, 2 ataques diferentes, y fase de rabia a HP < 30%.", sq2_reward: "💰 Recompensa: 80 AI-monedas",
+            sq3_title: "🌍 Misión «Mundo abierto»", sq3_text: "Crea sistema RPG completo: clases Hero, Enemy, Item, Location. Héroe puede moverse, luchar, recoger objetos y subir de nivel.", sq3_reward: "💰 Recompensa: 150 AI-monedas + título «Game Dev»",
+            sum_title: "Recta final", sum_sub: "Lo que subiste de nivel en esta misión",
+            sum1: "✅ Clases — planos para objetos", sum2: "✅ Objetos — instancias concretas",
+            sum3: "✅ Atributos — stats del personaje", sum4: "✅ Métodos — skills del personaje",
+            sum5: "✅ Constructor __init__ — creación de héroe", sum6: "✅ self — «yo», este objeto",
+            sum7: "✅ Herencia — evolución de clases", sum8: "🏆 Jefe final — ¡mini-RPG creado!",
+            sum_meme: "¡Felicidades, Diseñador de Juegos! En la próxima misión nos sumergiremos en matemáticas para IA. ¡Prepárate — será épico!",
+            nav_back: "← Misión anterior", nav_back_title: "1.1 Primer bot de IA",
+            nav_next: "Siguiente misión →", nav_next_title: "2.1 Matemáticas para IA",
+            footer: "Curso de IA para estudiantes de 10º grado."
+        },
+        de: {
+            badge: "🎮 QUEST 1.2 • MODUL 1",
+            title: "Erstelle dein eigenes Spiel",
+            subtitle: "Willkommen auf Level 2, Spieler! 🎯 Heute wirst du aufhören, nur ein Spieler zu sein — du wirst <strong>Game Designer</strong>. Lerne, deine eigenen Helden, Monster und ganze Spieluniversen mit OOP-Magie zu erschaffen.",
+            duration: "⏱ 2,5 Stunden", level: "📘 Level 2", xp: "⭐ +800 XP", loot: "💰 +250 AI-Münzen", ach: "🏆 6 Erfolge",
+            progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 1 / 8",
+            l1_title: "🎨 Bauplan vs Held: Was ist eine Klasse?", l1_sub: "Hauptidee von OOP in 30 Sekunden", l1_xp: "+30 XP",
+            l1_p1: "Stell dir vor: Du spielst Genshin Impact. Es gibt Hunderte von Charakteren. Aber Entwickler mussten nicht für jeden Code schreiben. Sie erstellten <strong>einen Bauplan</strong> — «Charakter», und machten 100+ Helden daraus.",
+            l1_analogy_title: "OOP = LEGO-Konstruktor", l1_analogy_text: "In OOP gibt es zwei Dinge: <strong>Klasse</strong> (Bauplan) und <strong>Objekt</strong> (konkretes Ding aus Bauplan). Klasse «Charakter» sagt: «Jeder Held hat Name, HP und Angriff». Und Objekte sind die spezifischen Archonten, die du sammelst.",
+            l1_meme: "«Ich dachte, in Spielen ist jeder Charakter separater Code. Es stellt sich heraus, alle sind aus einem Bauplan!» — jeder, der OOP zum ersten Mal verstand",
+            l1_code_title: "📝 Erste Klasse in Python",
+            l1_tip_title: "💡 Merk dir die Regel", l1_tip_text: "Klassen in Python werden mit <strong>Großbuchstaben</strong> geschrieben (Hero, Monster, Item). Variablen und Funktionen — mit Kleinbuchstaben.",
+            ach1_name: "Erfolg: Architekt", ach1_desc: "Erste Python-Klasse erstellt", ach1_reward: "+50 XP · +15 💰 · ⚪ Gewöhnlich",
+            ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du Hero-Klasse und zwei Objekte erstellt hast!",
+            l2_title: "📊 Helden-Stats: Attribute", l2_sub: "Charakteristiken zum Charakter hinzufügen", l2_xp: "+50 XP",
+            l2_p1: "In jedem RPG hat der Held <strong>Stats</strong>: HP, Mana, Stärke, Agilität. In Python heißen diese Stats <strong>Attribute</strong>.",
+            l2_analogy_title: "Schau ins Spiel", l2_analogy_text: "Wenn du Charakter-Menü in RPG öffnest, siehst du: Name, Level, HP, Angriff. Das sind Attribute! Und wenn du «Schwertschlag» klickst — das ist schon ein <strong>Methode</strong>.",
+            l2_code_title: "📝 Stats zum Helden hinzufügen",
+            l2_warn_title: "⚠️ Magisches Wort: self", l2_warn_text: "<code>self</code> ist «ich», «dieses Objekt». Wenn du <code>self.name = name</code> schreibst, sagst du: «Für <strong>DIESEN</strong> Helden ist Name gleich dem, was an Konstruktor übergeben wurde».",
+            ach2_name: "Erfolg: Game Designer", ach2_desc: "3 verschiedene Charaktere mit einzigartigen Stats erstellt", ach2_reward: "+80 XP · +25 💰 · ⚪ Gewöhnlich",
+            ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du Krieger, Magier und Bogenschütze erstellt hast!",
+            l3_title: "⚔️ Helden-Skills: Methoden", l3_sub: "Charakter handeln lehren", l3_xp: "+60 XP",
+            l3_p1: "Nicht genug, Helden mit Stats zu erstellen — er muss etwas <strong>tun</strong>! Angreifen, heilen, Erfahrung sammeln. In Python heißen Helden-Aktionen <strong>Methoden</strong>.",
+            l3_code_title: "📝 Skills hinzufügen",
+            l3_lore_title: "📚 Lore für Geeks", l3_lore_text: "Was du gerade geschrieben hast, ist die Grundlage <strong>jedes RPG</strong>. So sind Klassen in World of Warcraft, Skyrim, Dota 2 aufgebaut.",
+            ach3_name: "Erfolg: Kämpfer", ach3_desc: "Angriffsmethode implementiert und erste Schlacht geschlagen", ach3_reward: "+100 XP · +30 💰 · 🔵 Selten",
+            ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn dein Held den Feind besiegt hat!",
+            l4_title: "⚔️ Mini-Boss: Tamagotchi", l4_sub: "Erstelle dein virtuelles Haustier", l4_xp: "+100 XP",
+            l4_p1: "Erinnerst du dich an <strong>Tamagotchi</strong>? Da war ein virtuelles Haustier, das man füttern und mit dem man spielen musste. Jetzt erstellst du dein eigenes!",
+            l4_task_title: "📝 Aufgabe", l4_task_text: "Erstelle Klasse <code>Pet</code> mit:",
+            l4_t1: "Attributen: Name, Hunger (0-100), Glück (0-100), Energie (0-100)",
+            l4_t2: "Methoden: feed() (reduziert Hunger), play() (erhöht Glück), sleep() (stellt Energie wieder her)",
+            l4_t3: "Methode status(), die aktuellen Zustand des Haustiers anzeigt",
+            ach4_name: "Erfolg: Zähmer", ach4_desc: "Virtuelles Haustier erstellt", ach4_reward: "+100 XP · +40 💰 · 🔵 Selten",
+            ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn dein Haustier funktioniert!",
+            l5_title: "🧬 Evolution: Vererbung", l5_sub: "Neue Klassen basierend auf alten erstellen", l5_xp: "+80 XP",
+            l5_p1: "Spiele haben <strong>Evolution</strong>: Pokémon entwickelt sich zu stärkerer Version. In Python heißt das <strong>Vererbung</strong>.",
+            l5_analogy_title: "Pokémon-Stil", l5_analogy_text: "Stell dir vor: du hast Klasse Character (Basis). Von ihr erben Warrior, Mage, Archer. Alle bekommen gemeinsame Attribute, aber jeder hat einzigartige Skills. Wie Evolution in Pokémon!",
+            l5_code_title: "📝 Kind-Klassen erstellen",
+            l5_tip_title: "💡 Magie von super()", l5_tip_text: "<code>super().__init__(name, hp)</code> ist wie zu sagen: «Eltern-Klasse, mach deine Arbeit, und ich füge meine Features hinzu».",
+            ach5_name: "Erfolg: Genetiker", ach5_desc: "Kind-Klasse mit einzigartigen Skills erstellt", ach5_reward: "+120 XP · +50 💰 · 🟣 Episch",
+            ach5_btn: "🏆 Erfolg erhalten", ach5_hint: "Klicke, wenn du Warrior und Mage erstellt hast!",
+            l6_title: "BOSSKAMPF: Schlacht der Helden!", l6_sub: "Erstelle ein vollständiges Mini-RPG", l6_xp: "+200 XP",
+            l6_meme: "Zeit zu zeigen, was du gelernt hast! Kombiniere alles zu einem Mini-RPG, wo zwei Helden gegeneinander kämpfen!",
+            l6_code_title: "📝 Finaler Code: Schlacht der Helden",
+            l6_danger_title: "🚨 Prüfe vor Boss-Abgabe", l6_danger_text: "Spiel läuft? Schlacht geht bis ein Held gewinnt? Glückwunsch — du hast dein erstes Mini-RPG erstellt! 🏆",
+            ach6_name: "LEGENDÄR: Universum-Schöpfer", ach6_desc: "Vollständiges Mini-RPG mit Kampf, Klassen und Vererbung erstellt",
+            ach6_reward: "+200 XP · +100 💰 · 🟡 Legendär",
+            ach6_btn: "👑 Legendären Erfolg erhalten", ach6_hint: "Nur 10% der Spieler erhalten diesen Erfolg. Du bist einer von ihnen!",
+            sq_title: "📜 Nebenquests (Hausaufgabe)",
+            sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER",
+            sq1_title: "🧪 Quest «Alchimist»", sq1_text: "Erstelle Klasse Potion mit Attributen: Typ, Effektstärke. Füge Methode use(hero) hinzu, die Effekt auf Helden anwendet.", sq1_reward: "💰 Belohnung: 40 AI-Münzen",
+            sq2_title: "🐉 Quest «Boss-Monster»", sq2_text: "Erstelle Klasse Boss, die von Character erbt. Sie sollte haben: riesige Stats, 2 verschiedene Angriffe, und Raserei-Phase bei HP < 30%.", sq2_reward: "💰 Belohnung: 80 AI-Münzen",
+            sq3_title: "🌍 Quest «Offene Welt»", sq3_text: "Erstelle vollständiges RPG-System: Klassen Hero, Enemy, Item, Location. Held kann sich bewegen, kämpfen, Items aufsammeln und leveln.", sq3_reward: "💰 Belohnung: 150 AI-Münzen + Titel «Game Dev»",
+            sum_title: "Zielgerade", sum_sub: "Was du in diesem Quest hochgestuft hast",
+            sum1: "✅ Klassen — Baupläne für Objekte", sum2: "✅ Objekte — konkrete Instanzen",
+            sum3: "✅ Attribute — Charakter-Stats", sum4: "✅ Methoden — Charakter-Skills",
+            sum5: "✅ Konstruktor __init__ — Helden-Erstellung", sum6: "✅ self — «ich», dieses Objekt",
+            sum7: "✅ Vererbung — Klassen-Evolution", sum8: "🏆 Finaler Boss — Mini-RPG erstellt!",
+            sum_meme: "Glückwunsch, Game Designer! Im nächsten Quest tauchen wir in Mathematik für KI ein. Mach dich bereit — es wird episch!",
+            nav_back: "← Vorheriger Quest", nav_back_title: "1.1 Erster KI-Bot",
+            nav_next: "Nächster Quest →", nav_next_title: "2.1 Mathematik für KI",
+            footer: "KI-Kurs für Schüler der 10. Klasse."
+        },
+        kk: {
+            badge: "🎮 КВЕСТ 1.2 • 1-МОДУЛЬ",
+            title: "Өз ойыныңды жасау",
+            subtitle: "2-деңгейге қош келдің, Ойыншы! 🎯 Бүгін сен жай ғана ойыншы болуды доғарасың — <strong>Ойын дизайнері</strong> боласың. ООП сиқырымен өз батырларыңды, монстрларыңды және тұтас ойын әлемдерін жасауды үйренесің.",
+            duration: "⏱ 2,5 сағат", level: "📘 2-деңгей", xp: "⭐ +800 XP", loot: "💰 +250 ЖИ-теңге", ach: "🏆 6 жетістік",
+            progress_title: "📊 Квест прогрессі", progress_counter: "1-деңгей / 8",
+            l1_title: "🎨 Сызба vs Батыр: Класс деген не?", l1_sub: "ООП негізгі идеясы 30 секундта", l1_xp: "+30 XP",
+            l1_p1: "Елестет: Genshin Impact ойнайсың. Жүздеген кейіпкерлер бар. Бірақ әзірлеушілер әрқайсысы үшін код жазған жоқ. Олар <strong>бір сызба</strong> жасады — «Кейіпкер», одан 100+ батыр жасады.",
+            l1_analogy_title: "ООП = LEGO конструкторы", l1_analogy_text: "ООП-та екі нәрсе бар: <strong>Класс</strong> (сызба) және <strong>Объект</strong> (сызбадан нақты нәрсе). «Кейіпкер» класы айтады: «Әр батырдың аты, HP және шабуылы бар». Ал объектілер — сен жинайтын нақты Архонттар.",
+            l1_meme: "«Ойындарда әр кейіпкер бөлек код деп ойладым. Білдім: олардың бәрі бір сызбадан жасалған!» — ООП-ты бірінші рет түсіngen әркім",
+            l1_code_title: "📝 Python-дағы бірінші класс",
+            l1_tip_title: "💡 Ережені есте сақта", l1_tip_text: "Python-да кластар <strong>бас әріппен</strong> жазылады (Hero, Monster, Item). Айнымалылар мен функциялар — кіші әріппен.",
+            ach1_name: "Жетістік: Сәулетші", ach1_desc: "Python-да бірінші классын жасады", ach1_reward: "+50 XP · +15 💰 · ⚪ Кәдімгі",
+            ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Hero классын және екі объект жасасаң — бас!",
+            l2_title: "📊 Батыр статы: Атрибуттар", l2_sub: "Кейіпкерге сипаттамалар қосу", l2_xp: "+50 XP",
+            l2_p1: "Кез келген RPG-де батырдың <strong>статтары</strong> болады: HP, мана, күш, ептілік. Python-да бұл статтар <strong>атрибуттар</strong> деп аталады.",
+            l2_analogy_title: "Ойынға қара", l2_analogy_text: "RPG-де кейіпкер мәзірін ашқанда көресің: Аты, Деңгейі, HP, Шабуыл. Бұл — атрибуттар! Ал «Қылыш соққысы» басқанда — бұл уже <strong>әдіс</strong>.",
+            l2_code_title: "📝 Батырға статтар қосу",
+            l2_warn_title: "⚠️ Сиқырлы сөз: self", l2_warn_text: "<code>self</code> — бұл «мен», «осы объект». <code>self.name = name</code> жазғанда: «<strong>ОСЫ</strong> батыр үшін аты конструкторға берілгенге тең» дейсің.",
+            ach2_name: "Жетістік: Ойын дизайнері", ach2_desc: "Бірегей статтары бар 3 түрлі кейіпкер жасады", ach2_reward: "+80 XP · +25 💰 · ⚪ Кәдімгі",
+            ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Жауынгер, сиқыршы және мерген жасасаң — бас!",
+            l3_title: "⚔️ Батыр дағдылары: Әдістер", l3_sub: "Кейіпкерге әрекет етуді үйрету", l3_xp: "+60 XP",
+            l3_p1: "Статтары бар батыр жасау жеткіліксіз — ол бірдеңе <strong>істеуі</strong> керек! Шабуыл, емдеу, тәжірибе жинау. Python-да батыр әрекеттері <strong>әдістер</strong> деп аталады.",
+            l3_code_title: "📝 Дағдылар қосу",
+            l3_lore_title: "📚 Гиктерге арналған лор", l3_lore_text: "Сен жазған нәрсе — <strong>кез келген RPG</strong> негізі. World of Warcraft, Skyrim, Dota 2-де кластар дәл осылай құрылған.",
+            ach3_name: "Жетістік: Жауынгер", ach3_desc: "Шабуыл әдісін жүзеге асырып, бірінші шайқасты өткізді", ach3_reward: "+100 XP · +30 💰 · 🔵 Сирек",
+            ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Батырың жауды жеңсе — бас!",
+            l4_title: "⚔️ Мини-босс: Тамагочи", l4_sub: "Виртуалды үй жануарыңды жаса", l4_xp: "+100 XP",
+            l4_p1: "<strong>Тамагочи</strong> ойынын есіңе ал? Онда виртуалды үй жануары болды, оны тамақтандыру және ойнау керек еді. Енді өзіндікіңді жасайсың!",
+            l4_task_title: "📝 Тапсырма", l4_task_text: "<code>Pet</code> классын жаса:",
+            l4_t1: "Атрибуттар: аты, аштық (0-100), бақыт (0-100), энергия (0-100)",
+            l4_t2: "Әдістер: feed() (аштықты азайтады), play() (бақытты арттырады), sleep() (энергияны қалпына келтіреді)",
+            l4_t3: "Үй жануарының ағымдағы күйін көрсететін status() әдісі",
+            ach4_name: "Жетістік: Баптаушы", ach4_desc: "Виртуалды үй жануарын жасады", ach4_reward: "+100 XP · +40 💰 · 🔵 Сирек",
+            ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Үй жануарың жұмыс істесе — бас!",
+            l5_title: "🧬 Эволюция: Мұрагерлік", l5_sub: "Ескілер негізінде жаңа кластар жасау", l5_xp: "+80 XP",
+            l5_p1: "Ойындарда <strong>эволюция</strong> болады: покемон күштірек нұсқаға айналады. Python-да бұл <strong>мұрагерлік</strong> деп аталады.",
+            l5_analogy_title: "Покемон стилі", l5_analogy_text: "Елестет: Character классың бар (негізгі). Одан Warrior, Mage, Archer мұрагерлейді. Бәрі ортақ атрибуттар алады, бірақ әрқайсысында бірегей дағдылар. Покемондағы эволюция сияқты!",
+            l5_code_title: "📝 Бала кластар жасау",
+            l5_tip_title: "💡 super() сиқыры", l5_tip_text: "<code>super().__init__(name, hp)</code> — бұл: «Ата-класс, өз жұмысыңды жаса, мен өз мүмкіндіктерімді қосамын» деген сияқты.",
+            ach5_name: "Жетістік: Генетик", ach5_desc: "Бірегей дағдылары бар бала класс жасады", ach5_reward: "+120 XP · +50 💰 · 🟣 Эпикалық",
+            ach5_btn: "🏆 Жетістікті алу", ach5_hint: "Warrior және Mage жасасаң — бас!",
+            l6_title: "БОСС-ФАЙТ: Батырлар шайқасы!", l6_sub: "Толық мини-RPG жаса", l6_xp: "+200 XP",
+            l6_meme: "Не үйренгеніңді көрсету уақыты! Бәрін бір мини-RPG-ге біріктір, онда екі батыр бір-бірімен шайқасады!",
+            l6_code_title: "📝 Финалды код: Батырлар шайқасы",
+            l6_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l6_danger_text: "Ойын іске қосыла ма? Шайқас бір батыр жеңгенше жүре ме? Құттықтаймын — сен бірінші мини-RPG-іңді жасадың! 🏆",
+            ach6_name: "АҢЫЗДЫҚ: Әлем жасаушы", ach6_desc: "Шайқас, кластар және мұрагерлік бар толық мини-RPG жасады",
+            ach6_reward: "+200 XP · +100 💰 · 🟡 Аңыздық",
+            ach6_btn: "👑 Аңыздық жетістікті алу", ach6_hint: "Бұл жетістікті ойыншылардың тек 10%-ы алады. Сен — солардың бірісің!",
+            sq_title: "📜 Қосалқы квесттер (үй тапсырмасы)",
+            sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН",
+            sq1_title: "🧪 Квест «Алхимик»", sq1_text: "Potion классын жаса, атрибуттары: түрі, эффект күші. Геройға эффектті қолданатын use(hero) әдісін қос.", sq1_reward: "💰 Сыйлық: 40 ЖИ-теңге",
+            sq2_title: "🐉 Квест «Босс-монстр»", sq2_text: "Character-ден мұрагерлейтін Boss классын жаса. Онда болуы керек: үлкен статтар, 2 түрлі шабуыл, HP < 30% кезінде ашу фазасы.", sq2_reward: "💰 Сыйлық: 80 ЖИ-теңге",
+            sq3_title: "🌍 Квест «Ашық әлем»", sq3_text: "Толық RPG жүйесін жаса: Hero, Enemy, Item, Location кластары. Батыр қозғала, шайқаса, заттар жинай және деңгей көтереді.", sq3_reward: "💰 Сыйлық: 150 ЖИ-теңге + «Game Dev» титулы",
+            sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің",
+            sum1: "✅ Кластар — объектілерге арналған сызбалар", sum2: "✅ Объектілер — нақты даналар",
+            sum3: "✅ Атрибуттар — кейіпкер статтары", sum4: "✅ Әдістер — кейіпкер дағдылары",
+            sum5: "✅ Конструктор __init__ — батыр жасау", sum6: "✅ self — «мен», бұл объект",
+            sum7: "✅ Мұрагерлік — кластар эволюциясы", sum8: "🏆 Финалды босс — мини-RPG жасалды!",
+            sum_meme: "Құттықтаймын, Ойын дизайнері! Келесі квестте ЖИ үшін математикаға батамыз. Дайындал — эпикалық болады!",
+            nav_back: "← Алдыңғы квест", nav_back_title: "1.1 Бірінші ЖИ-бот",
+            nav_next: "Келесі квест →", nav_next_title: "2.1 ЖИ үшін математика",
+            footer: "10-сынып оқушыларына арналған ЖИ курсы."
+        }
+    };
+
+    // Переключение языка
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
