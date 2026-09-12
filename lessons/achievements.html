@@ -1,582 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 Зал Славы — AI Creator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #0a0e27;
-            color: #e4e6eb;
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 180, 0, 0.12) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 100%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(10, 14, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 180, 0, 0.3);
-            z-index: 100;
-            padding: 1rem 2rem;
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ffb400, #ff50a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-link {
-            color: #a0a3b8;
-            text-decoration: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 180, 0, 0.1);
-            color: #ffb400;
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, #ffb400, #ff50a0);
-            color: white;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 3rem 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #ffb400, #ff50a0, #7850ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero p {
-            color: #a0a3b8;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .player-stats {
-            background: linear-gradient(135deg, rgba(255, 180, 0, 0.08), rgba(120, 80, 255, 0.08));
-            border: 1px solid rgba(255, 180, 0, 0.3);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 180, 0, 0.2);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffb400;
-            margin-bottom: 0.3rem;
-        }
-
-        .stat-label {
-            color: #a0a3b8;
-            font-size: 0.9rem;
-        }
-
-        .rank-display {
-            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
-            border: 2px solid rgba(255, 180, 0, 0.4);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .rank-title {
-            font-size: 0.9rem;
-            color: #a0a3b8;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .rank-name {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ffb400, #ff50a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .rank-progress {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .rank-bar {
-            height: 24px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid rgba(255, 180, 0, 0.3);
-        }
-
-        .rank-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffb400, #ff50a0);
-            border-radius: 12px;
-            transition: width 0.8s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rank-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shine 2s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .rank-text {
-            margin-top: 0.5rem;
-            color: #a0a3b8;
-            font-size: 0.9rem;
-        }
-
-        .filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-            justify-content: center;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #a0a3b8;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .filter-btn:hover {
-            background: rgba(255, 180, 0, 0.1);
-            color: #ffb400;
-        }
-
-        .filter-btn.active {
-            background: linear-gradient(135deg, #ffb400, #ff50a0);
-            color: white;
-            border-color: transparent;
-        }
-
-        .achievements-section {
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            color: #ffb400;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .achievement {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            position: relative;
-            transition: all 0.3s;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .achievement::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #7850ff, #00c8ff);
-        }
-
-        .achievement:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .achievement.common::before { background: linear-gradient(90deg, #a0a3b8, #c8cad8); }
-        .achievement.rare::before { background: linear-gradient(90deg, #00c8ff, #7850ff); }
-        .achievement.epic::before { background: linear-gradient(90deg, #7850ff, #ff50a0); }
-        .achievement.legendary::before { background: linear-gradient(90deg, #ffb400, #ff50a0); height: 4px; }
-
-        .achievement.unlocked {
-            background: rgba(255, 180, 0, 0.05);
-            border-color: rgba(255, 180, 0, 0.4);
-        }
-
-        .achievement.unlocked.common { border-color: rgba(160, 163, 184, 0.5); background: rgba(160, 163, 184, 0.05); }
-        .achievement.unlocked.rare { border-color: rgba(0, 200, 255, 0.5); background: rgba(0, 200, 255, 0.05); }
-        .achievement.unlocked.epic { border-color: rgba(120, 80, 255, 0.5); background: rgba(120, 80, 255, 0.05); }
-        .achievement.unlocked.legendary { 
-            border-color: rgba(255, 180, 0, 0.6); 
-            background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));
-            animation: legendaryGlow 3s infinite;
-        }
-
-        @keyframes legendaryGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 180, 0, 0.2); }
-            50% { box-shadow: 0 0 40px rgba(255, 180, 0, 0.4); }
-        }
-
-        .achievement.locked {
-            opacity: 0.5;
-            filter: grayscale(0.7);
-        }
-
-        .achievement.locked .achievement-icon {
-            filter: grayscale(1);
-        }
-
-        .achievement-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .achievement-icon {
-            font-size: 2.5rem;
-            flex-shrink: 0;
-        }
-
-        .achievement-info {
-            flex: 1;
-        }
-
-        .achievement-name {
-            font-weight: bold;
-            color: #fff;
-            font-size: 1.05rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .achievement-rarity {
-            display: inline-block;
-            padding: 0.1rem 0.6rem;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .rarity-common { background: rgba(160, 163, 184, 0.2); color: #c8cad8; }
-        .rarity-rare { background: rgba(0, 200, 255, 0.2); color: #00c8ff; }
-        .rarity-epic { background: rgba(120, 80, 255, 0.2); color: #b090ff; }
-        .rarity-legendary { background: linear-gradient(135deg, rgba(255, 180, 0, 0.3), rgba(255, 80, 160, 0.3)); color: #ffb400; }
-
-        .achievement-desc {
-            color: #a0a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .achievement-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-        }
-
-        .achievement-reward {
-            color: #ffb400;
-            font-weight: bold;
-        }
-
-        .achievement-status {
-            padding: 0.2rem 0.6rem;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .status-locked {
-            background: rgba(255, 80, 80, 0.2);
-            color: #ff5050;
-        }
-
-        .status-unlocked {
-            background: rgba(0, 200, 100, 0.2);
-            color: #00c864;
-        }
-
-        .notification {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: linear-gradient(135deg, rgba(255, 180, 0, 0.95), rgba(255, 80, 160, 0.95));
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(255, 180, 0, 0.4);
-            z-index: 1000;
-            display: none;
-            animation: slideIn 0.5s;
-            max-width: 350px;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .notification.show {
-            display: block;
-        }
-
-        .notification-title {
-            font-weight: bold;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .notification-text {
-            font-size: 0.9rem;
-            opacity: 0.95;
-        }
-
-        .reset-section {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 2rem;
-            background: rgba(255, 80, 80, 0.05);
-            border: 1px solid rgba(255, 80, 80, 0.2);
-            border-radius: 12px;
-        }
-
-        .reset-btn {
-            padding: 0.8rem 1.5rem;
-            background: rgba(255, 80, 80, 0.1);
-            border: 1px solid rgba(255, 80, 80, 0.4);
-            color: #ff5050;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-        }
-
-        .reset-btn:hover {
-            background: rgba(255, 80, 80, 0.2);
-            transform: translateY(-2px);
-        }
-
-        footer {
-            background: rgba(10, 14, 39, 0.95);
-            border-top: 1px solid rgba(255, 180, 0, 0.3);
-            padding: 2rem;
-            text-align: center;
-            color: #a0a3b8;
-            margin-top: 3rem;
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .rank-name { font-size: 1.8rem; }
-            .header-content { flex-direction: column; }
-            .container { padding: 1rem; }
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="header-content">
-        <a href="../index.html" class="logo">🏆 AI Creator</a>
-        <nav class="nav-links">
-            <a href="../index.html" class="nav-link">📚 Курс</a>
-            <a href="lesson-0-setup.html" class="nav-link">🎮 Урок 0</a>
-            <a href="lesson-1-1.html" class="nav-link">⚔️ Урок 1.1</a>
-            <a href="achievements.html" class="nav-link active"> Ачивки</a>
-        </nav>
-    </div>
-</header>
-
-<div class="container">
-
-    <div class="hero">
-        <h1>🏆 Зал Славы</h1>
-        <p>Собирай ачивки, прокачивай ранг и становись легендой AI Creator!</p>
-    </div>
-
-    <div class="player-stats">
-        <div class="stat-card">
-            <div class="stat-icon">🏆</div>
-            <div class="stat-value" id="unlocked-count">0</div>
-            <div class="stat-label">Открыто ачивок</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-value" id="total-xp">0</div>
-            <div class="stat-label">Всего XP</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-value" id="total-coins">0</div>
-            <div class="stat-label">AI-коинов</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-value" id="progress-percent">0%</div>
-            <div class="stat-label">Общий прогресс</div>
-        </div>
-    </div>
-
-    <div class="rank-display">
-        <div class="rank-title">ТВОЙ ТЕКУЩИЙ РАНГ</div>
-        <div class="rank-name" id="rank-name">🌱 Новичок</div>
-        <div class="rank-progress">
-            <div class="rank-bar">
-                <div class="rank-fill" id="rank-fill" style="width: 0%;"></div>
-            </div>
-            <div class="rank-text" id="rank-text">До следующего ранга: 0 / 500 XP</div>
-        </div>
-    </div>
-
-    <div class="filters">
-        <button class="filter-btn active" data-filter="all">🌟 Все</button>
-        <button class="filter-btn" data-filter="unlocked">✅ Полученные</button>
-        <button class="filter-btn" data-filter="locked">🔒 Закрытые</button>
-        <button class="filter-btn" data-filter="common">⚪ Обычные</button>
-        <button class="filter-btn" data-filter="rare">🔵 Редкие</button>
-        <button class="filter-btn" data-filter="epic">🟣 Эпические</button>
-        <button class="filter-btn" data-filter="legendary">🟡 Легендарные</button>
-    </div>
-
-    <div id="achievements-container"></div>
-
-    <div class="reset-section">
-        <p style="color: #a0a3b8; margin-bottom: 1rem;">⚠️ Сбросить весь прогресс? Это действие нельзя отменить.</p>
-        <button class="reset-btn" id="reset-btn">🗑 Сбросить прогресс</button>
-    </div>
-
-</div>
-
-<div class="notification" id="notification">
-    <div class="notification-title">
-        <span></span>
-        <span>Ачивка получена!</span>
-    </div>
-    <div class="notification-text" id="notification-text"></div>
-</div>
-
-<footer>
-    <p>© 2026 AI Creator. Курс по ИИ для школьников 10 класса.</p>
-</footer>
-
 <script>
     const ACHIEVEMENTS = [
         {
             id: 'lesson0_installed',
             name: 'Первые шаги',
             desc: 'Установил VS Code и Python',
-            icon: '',
+            icon: '🎒',
             rarity: 'common',
             xp: 50,
             coins: 10,
@@ -620,7 +48,7 @@
             id: 'lesson1_diplomat',
             name: 'Дипломат',
             desc: 'Написал диалог с NPC',
-            icon: '💬',
+            icon: '',
             rarity: 'common',
             xp: 40,
             coins: 15,
@@ -653,7 +81,7 @@
             id: 'lesson1_skillmaster',
             name: 'Мастер скиллов',
             desc: 'Написал 4 функции',
-            icon: '',
+            icon: '⚡',
             rarity: 'epic',
             xp: 70,
             coins: 30,
@@ -664,7 +92,7 @@
             id: 'lesson1_boss',
             name: 'Создатель ИИ',
             desc: 'Победил финального босса',
-            icon: '🤖',
+            icon: '',
             rarity: 'legendary',
             xp: 100,
             coins: 100,
@@ -686,7 +114,7 @@
             id: 'lesson1_2_gamedesigner',
             name: 'Геймдизайнер',
             desc: 'Создал 3 разных игровых персонажа с уникальными статами',
-            icon: '',
+            icon: '🎮',
             rarity: 'common',
             xp: 80,
             coins: 25,
@@ -697,7 +125,7 @@
             id: 'lesson1_2_fighter',
             name: 'Боец',
             desc: 'Реализовал метод атаки и устроил первую битву',
-            icon: '⚔️',
+            icon: '️',
             rarity: 'rare',
             xp: 100,
             coins: 30,
@@ -730,12 +158,67 @@
             id: 'lesson1_2_universe_creator',
             name: 'Создатель Вселенной',
             desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием',
-            icon: '',
+            icon: '👑',
             rarity: 'legendary',
             xp: 200,
             coins: 100,
             lesson: 1.2,
             section: 'Урок 1.2: Создаём свою игру'
+        },
+        {
+            id: 'lesson1_3_array_master',
+            name: 'Мастер массивов',
+            desc: 'Создал свой первый массив NumPy',
+            icon: '⚡',
+            rarity: 'common',
+            xp: 50,
+            coins: 15,
+            lesson: 1.3,
+            section: 'Урок 1.3: NumPy и матрицы'
+        },
+        {
+            id: 'lesson1_3_vector_hero',
+            name: 'Векторный герой',
+            desc: 'Вычислил длину вектора',
+            icon: '📐',
+            rarity: 'rare',
+            xp: 80,
+            coins: 25,
+            lesson: 1.3,
+            section: 'Урок 1.3: NumPy и матрицы'
+        },
+        {
+            id: 'lesson1_3_matrix_lord',
+            name: 'Повелитель матриц',
+            desc: 'Создал двумерный массив',
+            icon: '',
+            rarity: 'rare',
+            xp: 100,
+            coins: 30,
+            lesson: 1.3,
+            section: 'Урок 1.3: NumPy и матрицы'
+        },
+        {
+            id: 'lesson1_3_dot_product',
+            name: 'Мастер Dot Product',
+            desc: 'Выполнил скалярное произведение',
+            icon: '💥',
+            rarity: 'epic',
+            xp: 120,
+            coins: 50,
+            lesson: 1.3,
+            section: 'Урок 1.3: NumPy и матрицы'
+        },
+        {
+            id: 'lesson1_3_visionary',
+            name: 'Визионер',
+            desc: 'Обработал матрицу изображения',
+            icon: '️',
+            rarity: 'legendary',
+            xp: 200,
+            coins: 100,
+            lesson: 1.3,
+            section: 'Урок 1.3: NumPy и матрицы'
         },
         {
             id: 'polyglot',
@@ -780,18 +263,13 @@
             coins: 100,
             lesson: 'general',
             section: 'Общие достижения'
-        },
-           { id: 'lesson1_3_array_master', name: 'Мастер массивов', desc: 'Создал свой первый массив NumPy', icon: '⚡', rarity: 'common', xp: 50, coins: 15, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
-   { id: 'lesson1_3_vector_hero', name: 'Векторный герой', desc: 'Вычислил длину вектора', icon: '📐', rarity: 'rare', xp: 80, coins: 25, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
-   { id: 'lesson1_3_matrix_lord', name: 'Повелитель матриц', desc: 'Создал двумерный массив', icon: '', rarity: 'rare', xp: 100, coins: 30, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
-   { id: 'lesson1_3_dot_product', name: 'Мастер Dot Product', desc: 'Выполнил скалярное произведение', icon: '💥', rarity: 'epic', xp: 120, coins: 50, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
-   { id: 'lesson1_3_visionary', name: 'Визионер', desc: 'Обработал матрицу изображения', icon: '👑', rarity: 'legendary', xp: 200, coins: 100, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        }
     ];
 
     const RANKS = [
         { name: '🌱 Новичок', minXP: 0, color: '#a0a3b8' },
         { name: '⚔️ Ученик', minXP: 300, color: '#00c8ff' },
-        { name: '🛡️ Адепт', minXP: 800, color: '#7850ff' },
+        { name: '️ Адепт', minXP: 800, color: '#7850ff' },
         { name: '🔮 Мастер', minXP: 1500, color: '#ff50a0' },
         { name: '👑 Легенда', minXP: 2500, color: '#ffb400' }
     ];
@@ -962,6 +440,3 @@
     renderAchievements();
     updateStats();
 </script>
-
-</body>
-</html>
