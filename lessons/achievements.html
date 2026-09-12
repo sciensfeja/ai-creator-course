@@ -799,7 +799,18 @@
         unlockAchievement(unlockParam);
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-
+// Функция для переключения блоков кода по языку
+function updateCodeBlocks(lang) {
+    document.querySelectorAll('.code-block').forEach(block => {
+        if (lang === 'ru') {
+            // Для русского — показываем блоки с data-lang="ru"
+            block.style.display = block.dataset.lang === 'ru' ? 'block' : 'none';
+        } else {
+            // Для всех остальных — показываем блоки с data-lang="en"
+            block.style.display = block.dataset.lang === 'en' ? 'block' : 'none';
+        }
+    });
+}
     function unlockAchievement(id) {
         if (unlockedIds.includes(id)) return;
         
