@@ -973,35 +973,35 @@ else:
         </p>
 
         <h3 data-i18n="l6_for_title">🔁 for — когда знаем, сколько раз гриндить</h3>
-        <pre><code># Обрабатываем "датасет" из имён игроков
-players = ["Алия", "Болат", "Дима", "Ева"]
+        <pre><code># Processing a "dataset" of player names
+players = ["Alya", "Bolat", "Dima", "Eva"]
 
 for player in players:
-    print(f"👋 Привет, {player}! Добро пожаловать в AI Creator!")
+    print(f"👋 Hi, {player}! Welcome to AI Creator!")
 
-# Классический гринд: 10 раз
+# Classic grinding: 10 times
 for i in range(10):
-    print(f"⚔️ Убил моба #{i+1}. Лут +100 XP")</code></pre>
+    print(f"️ Killed mob #{i+1}. Loot +100 XP")</code></pre>
 
         <h3 data-i18n="l6_while_title">🔁 while — когда гриндим, пока не достигнем цели</h3>
-        <pre><code># Бот учится угадывать число
+        <pre><code># The bot learns to guess the number
 import random
-secret = random.randint(1, 10)  # Загаданное число от 1 до 10
+secret = random.randint(1, 10)  # Secret number from 1 to 10
 attempts = 0
 
-print("🤖 Я загадал число от 1 до 10. Угадай!")
+print(" I picked a number from 1 to 10. Guess it!")
 
 while True:
-    guess = int(input("Твоя догадка: "))
+    guess = int(input("Your guess: "))
     attempts += 1
     
     if guess == secret:
-        print(f"🤖 🎉 Угадал за {attempts} попыток! Ты гений!")
-        break  # Выход из цикла
+        print(f"🤖 🎉 Guessed it in {attempts} attempts! You're a genius!")
+        break  # Exit the loop
     elif guess < secret:
-        print("🤖 📈 Больше!")
+        print("🤖 📈 Higher!")
     else:
-        print("🤖 📉 Меньше!")</code></pre>
+        print(" 📉 Lower!")</code></pre>
 
         <div class="game-analogy">
             <div class="game-icon">🎮</div>
@@ -1035,27 +1035,27 @@ while True:
         </p>
 
         <h3 data-i18n="l7_list_title">📜 Списки — как инвентарь (упорядоченный)</h3>
-        <pre><code># Инвентарь героя
-inventory = ["меч", "зелье", "щит", "500 золота"]
+        <pre><code># Hero's inventory
+inventory = ["sword", "potion", "shield", "500 gold"]
 
-print(inventory[0])      # меч (нумерация с 0!)
-inventory.append("лук")  # Добавили новый предмет
-print(inventory)         # ['меч', 'зелье', 'щит', '500 золота', 'лук']</code></pre>
+print(inventory[0])      # sword (indexing starts at 0!)
+inventory.append("bow")  # Added a new item
+print(inventory)         # ['sword', 'potion', 'shield', '500 gold', 'bow']</code></pre>
 
         <h3 data-i18n="l7_dict_title">📖 Словари — как база знаний (ключ → значение)</h3>
-        <pre><code># База знаний бота
+        <pre><code># Bot's knowledge base
 bot_knowledge = {
-    "привет": "Здравствуй, герой! 👋",
-    "как дела": "Работаю, не жалуюсь! 🤖",
-    "пока": "До встречи, путник! 🚀"
+    "hello": "Hello, hero! 👋",
+    "how are you": "I'm doing great, thanks! ",
+    "bye": "See you later, traveler! 🚀"
 }
 
-# Ищем ответ в базе
-question = input("Спроси меня: ").lower()
+# Looking for an answer in the knowledge base
+question = input("Ask me something: ").lower()
 if question in bot_knowledge:
     print("🤖", bot_knowledge[question])
 else:
-    print("🤖 🤷 Не знаю такого. Научи меня!")</code></pre>
+    print("🤖 🤷 I don't know that one. Teach me!")</code></pre>
 
         <div class="meme-box">
             <span class="meme-emoji">🧠✨</span>
@@ -1088,35 +1088,36 @@ else:
 
         <h3 data-i18n="l8_code_title">📝 Пишем скиллы для бота</h3>
         <pre><code>def greet(name):
-    """Скилл №1: Приветствие"""
-    print(f"🤖 Привет, {name}! Я — твой ИИ-помощник.")
+   def greet(name):
+    """Skill #1: Greeting"""
+    print(f"🤖 Hi, {name}! I'm your AI assistant.")
 
 def ask_mood():
-    """Скилл №2: Спросить настроение"""
-    print("🤖 Как у тебя дела?")
+    """Skill #2: Ask about mood"""
+    print("🤖 How are you doing?")
     return input().lower()
 
 def classify_mood(text):
-    """Скилл №3: Определить настроение"""
-    if "отлично" in text or "супер" in text:
+    """Skill #3: Classify mood"""
+    if "great" in text or "super" in text:
         return "happy"
-    elif "норм" in text or "ок" in text:
+    elif "okay" in text or "ok" in text:
         return "neutral"
-    elif "плохо" in text or "грустно" in text:
+    elif "bad" in text or "sad" in text:
         return "sad"
     else:
         return "unknown"
 
 def respond(mood):
-    """Скилл №4: Ответить по настроению"""
+    """Skill #4: Respond based on mood"""
     if mood == "happy":
-        print("🤖 😄 Круто! Заряжайся этой энергией!")
+        print("🤖 😄 Cool! Keep this energy up!")
     elif mood == "neutral":
-        print("🤖 😌 Норм — это уже хорошо!")
+        print("🤖 😌 Okay is good enough!")
     elif mood == "sad":
-        print("🤖 🫂 Держись! Всё наладится.")
+        print(" 🫂 Hang in there! Everything will be fine.")
     else:
-        print("🤖 🤔 Не понял, но я рядом.")</code></pre>
+        print(" 🤔 Didn't get it, but I'm here.")</code></pre>
 
         <div class="info-box tip">
             <strong data-i18n="l8_tip_title">💡 Прокачка скиллов</strong>
@@ -1149,24 +1150,24 @@ def respond(mood):
 
         <h3 data-i18n="l9_code_title">📝 Финальный код бота</h3>
         <pre><code># ==========================================
-# 🤖 МОЙ ПЕРВЫЙ ИИ-БОТ
-# Автор: [твоё имя]
+# 🤖 MY FIRST AI BOT
+# Author: [your name]
 # ==========================================
 
 def greet(name):
-    print(f"🤖 Привет, {name}! Я — твой ИИ-бот.")
-    print("🤖 Давай пообщаемся!")
+    print(f"🤖 Hi, {name}! I am your AI bot.")
+    print("🤖 Let's chat!")
 
 def ask_mood():
-    print("\n🤖 Как у тебя сегодня дела?")
+    print("\n How are you doing today?")
     return input("→ ").lower()
 
 def classify_mood(text):
-    if any(word in text for word in ["отлично", "супер", "класс", "круто"]):
+    if any(word in text for word in ["great", "super", "awesome", "cool"]):
         return "happy"
-    elif any(word in text for word in ["норм", "ок", "сойдёт"]):
+    elif any(word in text for word in ["okay", "ok", "fine", "alright"]):
         return "neutral"
-    elif any(word in text for word in ["плохо", "грустно", "устал", "беда"]):
+    elif any(word in text for word in ["bad", "sad", "tired", "terrible"]):
         return "sad"
     else:
         return "unknown"
@@ -1174,30 +1175,30 @@ def classify_mood(text):
 def respond(mood):
     print()
     if mood == "happy":
-        print("🤖 😄 Круто! Рад за тебя! Эта энергия — твой суперскилл.")
+        print("🤖 😄 Awesome! Happy for you! This energy is your superpower.")
     elif mood == "neutral":
-        print("🤖 😌 Стабильность — признак мастерства.")
+        print(" 😌 Stability is a sign of mastery.")
     elif mood == "sad":
-        print("🤖 🫂 Эй, я рядом. Хочешь, расскажу шутку про программистов?")
-        print("   — Почему программист ушёл с работы? Потому что он не получил массив (массу удовольствия)! 😄")
+        print(" 🫂 Hey, I'm here. Want to hear a programmer joke?")
+        print("   — Why do programmers prefer dark mode? Because light attracts bugs! 😄")
     else:
-        print("🤖 🤔 Хм, интересно. Расскажи подробнее?")
+        print("🤖 🤔 Hmm, interesting. Tell me more?")
 
 def main():
     print("=" * 40)
-    print("🎮 ЗАПУСК ИИ-БОТА v1.0")
+    print(" LAUNCHING AI BOT v1.0")
     print("=" * 40)
     
-    name = input("🤖 Как тебя зовут? → ")
+    name = input("🤖 What's your name? → ")
     greet(name)
     
     mood_text = ask_mood()
     mood = classify_mood(mood_text)
     respond(mood)
     
-    print(f"\n🤖 Спасибо за общение, {name}! Возвращайся! 🚀")
+    print(f"\n🤖 Thanks for chatting, {name}! Come back soon! 🚀")
 
-# Запускаем бота!
+# Let's launch the bot!
 if __name__ == "__main__":
     main()</code></pre>
 
