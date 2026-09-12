@@ -130,7 +130,38 @@
             <div class="progress-fill" style="width: 16%;"></div>
         </div>
     </div>
+    <!-- LEVEL 0: Installation -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🛠️</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Подготовка: Установка NumPy</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Добавляем математический DLC к Python</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+30 XP</div>
+        </div>
 
+        <p data-i18n="l0_p1">NumPy не встроен в Python по умолчанию. Это как базовая игра, к которой нужно скачать математическое DLC. Установим его через терминал VS Code.</p>
+
+        <h3 data-i18n="l0_code_title">📝 Команда установки</h3>
+        <pre><code># Open the terminal in VS Code (Ctrl + `) and run:
+pip install numpy</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l0_tip_title">💡 Как проверить?</strong>
+            <span data-i18n="l0_tip_text">Создай файл <code>test_numpy.py</code>, напиши <code>import numpy as np</code> и запусти его. Если ошибок нет — поздравляю, DLC установлено!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📦</span>
+            <h3 data-i18n="ach0_name">Ачивка: Инженер зависимостей</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Успешно установил библиотеку NumPy через терминал</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+30 XP · +10 💰 · ⚪ Обычная</div>
+            <!-- Обратите внимание: ссылка без ../, так как achievements.html в той же папке lessons/ -->
+            <a href="achievements.html?unlock=lesson1_3_installer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если терминал не выдал красных ошибок!</p>
+        </div>
+    </div>
     <!-- LEVEL 1 -->
     <div class="level">
         <div class="level-header">
