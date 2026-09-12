@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 1.3: NumPy и матрицы — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 20%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo"> AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷 RU</button>
+            <button class="lang-btn" data-lang="en">🇬 EN</button>
+            <button class="lang-btn" data-lang="es">🇪 ES</button>
+            <button class="lang-btn" data-lang="de">🇩 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 1.3 • МОДУЛЬ 1</span>
+        <h1 data-i18n="title">NumPy и матрицы</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 3! 🎯 Сегодня ты заглянешь под капот нейросетей. Ты узнаешь, как ИИ «видит» картинки и почему матрицы — это главный инструмент в арсенале Data Scientist.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 2 часа</span>
+            <span class="meta-tag" data-i18n="level">📘 Средний</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +600 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +200 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 5 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title"> Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 1 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 16%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title"> Почему Python-списков мало?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Знакомство с библиотекой NumPy</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+40 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Обычные списки в Python хороши для хранения данных, но они медленные для математики. Представь, что тебе нужно умножить 1000 чисел на 2. В обычном списке придётся писать цикл. В <strong>NumPy</strong> это делается в одну строку и работает в 100 раз быстрее!</p>
+
+        <div class="game-analogy">
+            <div class="game-icon"></div>
+            <div class="game-text">
+                <strong data-i18n="l1_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l1_analogy_text">Обычный список — это как идти пешком. NumPy — это как телепорт. Нейросети обрабатывают миллионы чисел, и без NumPy обучение ChatGPT заняло бы не месяцы, а тысячи лет!</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l1_code_title">📝 Твой первый массив NumPy</h3>
+        <pre><code>import numpy as np
+
+# Creating a simple Python list
+python_list = [1, 2, 3, 4, 5]
+
+# Converting it to a NumPy array
+numpy_array = np.array(python_list)
+
+print("Python list:", python_list)
+print("NumPy array:", numpy_array)
+
+# Math magic: multiply all elements by 2 at once!
+print("Multiplied by 2:", numpy_array * 2)</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Правило импорта</strong>
+            <span data-i18n="l1_tip_text">В мире Python библиотеку NumPy всегда импортируют как <code>np</code>. Это как универсальный никнейм. Если увидишь в чужом коде <code>np.array()</code> — знай, это NumPy.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚡</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер массивов</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Создал свой первый массив NumPy и умножил его</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+50 XP · +15 💰 · ⚪ Обычная</div>
+            <a href="../achievements.html?unlock=lesson1_3_array_master" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если запустил код и увидел результат!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">📐 Векторы: Стрелки в пространстве</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Связь с геометрией</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">В геометрии вектор — это стрелка, у которой есть направление и длина. В программировании вектор — это просто <strong>одномерный массив</strong> (список чисел). Координаты точки (x, y) — это вектор!</p>
+
+        <h3 data-i18n="l2_code_title">📝 Считаем длину вектора</h3>
+        <pre><code># A 1D array represents a vector in geometry
+# Vector coordinates: x=3, y=4
+vector = np.array([3, 4])
+
+# Calculate the magnitude (length) of the vector
+# Using the Pythagorean theorem: sqrt(3^2 + 4^2) = 5
+magnitude = np.linalg.norm(vector)
+
+print(f"Vector: {vector}")
+print(f"Magnitude (length): {magnitude}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title"> Лор для гиков</strong>
+            <span data-i18n="l2_lore_text">В нейросетях каждое слово превращается в вектор из сотен чисел (эмбеддинг). Смысл слов определяется «расстоянием» между их векторами. Векторы слов «король» и «королева» будут очень близко друг к другу!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📐</span>
+            <h3 data-i18n="ach2_name">Ачивка: Векторный герой</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Вычислил длину (норму) вектора</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+80 XP · +25 💰 · 🔵 Редкая</div>
+            <a href="../achievements.html?unlock=lesson1_3_vector_hero" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если получил магическое число 5.0!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🔲 Матрицы: Как ИИ видит картинки</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Двумерные массивы</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Матрица — это таблица чисел (строки и столбцы). В NumPy это <strong>двумерный массив</strong>. Самое важное: <strong>любая цифровая картинка — это матрица!</strong> Чёрно-белое фото — это матрица, где каждое число это яркость пикселя (от 0 до 255).</p>
+
+        <h3 data-i18n="l3_code_title">📝 Создаём матрицу 3x3</h3>
+        <pre><code># A 2D array represents a matrix
+# Think of it as a tiny 3x3 pixel image
+matrix = np.array([
+    [1, 0, 1],
+    [0, 1, 0],
+    [1, 0, 1]
+])
+
+print("Matrix shape (rows, cols):", matrix.shape)
+print("Our matrix:")
+print(matrix)</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">👁️</span>
+            <span data-i18n="l3_meme">Для тебя это крестик из единиц и нулей. Для нейросети — это полноценное изображение, которое она может классифицировать!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Повелитель матриц</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Создал двумерный массив (матрицу)</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+100 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="../achievements.html?unlock=lesson1_3_matrix_lord" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел shape (3, 3)!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4 -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">💥 Скалярное произведение: Сердце ИИ</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Самая важная операция в нейросетях</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Если ты запомнишь только одну вещь из этого урока — запомни <strong>скалярное произведение (dot product)</strong>. Это операция, при которой мы перемножаем соответствующие элементы двух векторов и складываем результаты. Именно так нейрон «принимает решение»!</p>
+
+        <h3 data-i18n="l4_code_title">📝 Считаем Dot Product</h3>
+        <pre><code># The dot product is the core operation in neural networks
+vector_a = np.array([1, 2, 3])
+vector_b = np.array([4, 5, 6])
+
+# Dot product: (1*4) + (2*5) + (3*6) = 4 + 10 + 18 = 32
+dot_product = np.dot(vector_a, vector_b)
+
+print(f"Vector A: {vector_a}")
+print(f"Vector B: {vector_b}")
+print(f"Dot Product: {dot_product}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l4_tip_title">💡 Как это работает в нейросети?</strong>
+            <span data-i18n="l4_tip_text">Вектор A — это входные данные (например, пиксели картинки). Вектор B — это «веса» нейрона (его память). Скалярное произведение показывает, насколько входные данные похожи на то, что нейрон «запомнил». Чем больше число — тем сильнее сигнал!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">💥</span>
+            <h3 data-i18n="ach4_name">Ачивка: Мастер Dot Product</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Выполнил скалярное произведение векторов</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+120 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="../achievements.html?unlock=lesson1_3_dot_product" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если получил 32!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Обработка изображений</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Применяем математику к картинке</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+200 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🖼️✨</span>
+            <span data-i18n="l5_meme">Ты уже знаешь, что картинка — это матрица. Давай применим к ней математическую магию, как это делают фоторедакторы и нейросети!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title"> Делаем картинку темнее</h3>
+        <pre><code># Imagine a tiny 4x4 grayscale image
+# 0 is black, 255 is white
+image_matrix = np.array([
+    [0, 0, 0, 0],
+    [0, 255, 255, 0],
+    [0, 255, 255, 0],
+    [0, 0, 0, 0]
+])
+
+# Apply a simple filter: make it darker by dividing by 2
+darker_image = image_matrix / 2
+
+print("Original image matrix:")
+print(image_matrix)
+print("\nDarker image matrix:")
+print(darker_image)</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l5_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l5_danger_text">Код запустился? Матрица стала в два раза меньше (максимум 127.5 вместо 255)? Поздравляю — ты только что написал алгоритм обработки изображений! 🏆</span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Визионер</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Обработал матрицу изображения и понял, как ИИ «видит» мир</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+200 XP · +100 💰 · 🟡 Легендарная</div>
+            <a href="../achievements.html?unlock=lesson1_3_visionary" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 10% игроков получают эту ачивку. Ты — в их числе!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Калькулятор»</h3>
+            <p data-i18n="sq1_text">Создай два массива NumPy по 5 чисел. Сложи их, вычти, умножь и раздели. Убедись, что операции применяются поэлементно.</p>
+            <div class="quest-reward" data-i18n="sq1_reward"> Награда: 40 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">🎲 Квест «Генератор лута»</h3>
+            <p data-i18n="sq2_text">Используй <code>np.random.randint(1, 100, size=(3, 3))</code> для создания случайной матрицы 3x3 (как будто это статы монстра). Найди максимальное и минимальное значение в матрице.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 80 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard"> СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🖼️ Квест «Размытие картинки»</h3>
+            <p data-i18n="sq3_text">Создай матрицу 5x5. Напиши цикл или используй срезы (slicing), чтобы «размыть» её: замени каждый элемент на среднее арифметическое его соседей. Это основа свёрточных сетей (CNN)!</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 150 AI-коинов + титул «CV Engineer»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ NumPy — супербыстрая математика для Python</li>
+            <li data-i18n="sum2">✅ Векторы — одномерные массивы (геометрия + ИИ)</li>
+            <li data-i18n="sum3">✅ Матрицы — двумерные массивы (картинки)</li>
+            <li data-i18n="sum4">✅ Скалярное произведение — сердце нейросетей</li>
+            <li data-i18n="sum5">✅ Обработка изображений через математику</li>
+            <li data-i18n="sum6">🏆 Финальный босс — матрица изображения побеждена!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Математик! В следующем квесте мы погрузимся в мир Pandas и научимся анализировать настоящие большие данные. Готовься — будет интересно!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-1-2.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">1.2 Создаём свою игру</span>
+        </a>
+        <a href="lesson-1-4.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">1.4 Pandas и таблицы</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 1.3 • МОДУЛЬ 1", title: "NumPy и матрицы",
+            subtitle: "Добро пожаловать на Уровень 3! 🎯 Сегодня ты заглянешь под капот нейросетей. Ты узнаешь, как ИИ «видит» картинки и почему матрицы — это главный инструмент в арсенале Data Scientist.",
+            duration: "⏱ 2 часа", level: "📘 Средний", xp: "⭐ +600 XP", loot: "💰 +200 AI-коинов", ach: "🏆 5 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 1 / 6",
+            l1_title: "⚡ Почему Python-списков мало?", l1_sub: "Знакомство с библиотекой NumPy", l1_xp: "+40 XP",
+            l1_p1: "Обычные списки в Python хороши для хранения данных, но они медленные для математики. Представь, что тебе нужно умножить 1000 чисел на 2. В обычном списке придётся писать цикл. В <strong>NumPy</strong> это делается в одну строку и работает в 100 раз быстрее!",
+            l1_analogy_title: "Игровая аналогия", l1_analogy_text: "Обычный список — это как идти пешком. NumPy — это как телепорт. Нейросети обрабатывают миллионы чисел, и без NumPy обучение ChatGPT заняло бы не месяцы, а тысячи лет!",
+            l1_code_title: "📝 Твой первый массив NumPy",
+            l1_tip_title: "💡 Правило импорта", l1_tip_text: "В мире Python библиотеку NumPy всегда импортируют как <code>np</code>. Это как универсальный никнейм. Если увидишь в чужом коде <code>np.array()</code> — знай, это NumPy.",
+            ach1_name: "Ачивка: Мастер массивов", ach1_desc: "Создал свой первый массив NumPy и умножил его", ach1_reward: "+50 XP · +15 💰 · ⚪ Обычная", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если запустил код и увидел результат!",
+            l2_title: "📐 Векторы: Стрелки в пространстве", l2_sub: "Связь с геометрией", l2_xp: "+60 XP",
+            l2_p1: "В геометрии вектор — это стрелка, у которой есть направление и длина. В программировании вектор — это просто <strong>одномерный массив</strong> (список чисел). Координаты точки (x, y) — это вектор!",
+            l2_code_title: "📝 Считаем длину вектора",
+            l2_lore_title: "📚 Лор для гиков", l2_lore_text: "В нейросетях каждое слово превращается в вектор из сотен чисел (эмбеддинг). Смысл слов определяется «расстоянием» между их векторами. Векторы слов «король» и «королева» будут очень близко друг к другу!",
+            ach2_name: "Ачивка: Векторный герой", ach2_desc: "Вычислил длину (норму) вектора", ach2_reward: "+80 XP · +25 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если получил магическое число 5.0!",
+            l3_title: "🔲 Матрицы: Как ИИ видит картинки", l3_sub: "Двумерные массивы", l3_xp: "+80 XP",
+            l3_p1: "Матрица — это таблица чисел (строки и столбцы). В NumPy это <strong>двумерный массив</strong>. Самое важное: <strong>любая цифровая картинка — это матрица!</strong> Чёрно-белое фото — это матрица, где каждое число это яркость пикселя (от 0 до 255).",
+            l3_code_title: "📝 Создаём матрицу 3x3",
+            l3_meme: "Для тебя это крестик из единиц и нулей. Для нейросети — это полноценное изображение, которое она может классифицировать!",
+            ach3_name: "Ачивка: Повелитель матриц", ach3_desc: "Создал двумерный массив (матрицу)", ach3_reward: "+100 XP · +30 💰 · 🔵 Редкая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел shape (3, 3)!",
+            l4_title: "💥 Скалярное произведение: Сердце ИИ", l4_sub: "Самая важная операция в нейросетях", l4_xp: "+100 XP",
+            l4_p1: "Если ты запомнишь только одну вещь из этого урока — запомни <strong>скалярное произведение (dot product)</strong>. Это операция, при которой мы перемножаем соответствующие элементы двух векторов и складываем результаты. Именно так нейрон «принимает решение»!",
+            l4_code_title: " Считаем Dot Product",
+            l4_tip_title: "💡 Как это работает в нейросети?", l4_tip_text: "Вектор A — это входные данные (например, пиксели картинки). Вектор B — это «веса» нейрона (его память). Скалярное произведение показывает, насколько входные данные похожи на то, что нейрон «запомнил». Чем больше число — тем сильнее сигнал!",
+            ach4_name: "Ачивка: Мастер Dot Product", ach4_desc: "Выполнил скалярное произведение векторов", ach4_reward: "+120 XP · +50 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если получил 32!",
+            l5_title: "БОСС-ФАЙТ: Обработка изображений", l5_sub: "Применяем математику к картинке", l5_xp: "+200 XP",
+            l5_meme: "Ты уже знаешь, что картинка — это матрица. Давай применим к ней математическую магию, как это делают фоторедакторы и нейросети!",
+            l5_code_title: "📝 Делаем картинку темнее",
+            l5_danger_title: "🚨 Проверь перед сдачей босса", l5_danger_text: "Код запустился? Матрица стала в два раза меньше (максимум 127.5 вместо 255)? Поздравляю — ты только что написал алгоритм обработки изображений! 🏆",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Визионер", ach5_desc: "Обработал матрицу изображения и понял, как ИИ «видит» мир", ach5_reward: "+200 XP · +100 💰 ·  Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 10% игроков получают эту ачивку. Ты — в их числе!",
+            sq_title: "📜 Побочные квесты (домашнее задание)", sq_easy: " ЛЁГКИЙ", sq_medium: " СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Калькулятор»", sq1_text: "Создай два массива NumPy по 5 чисел. Сложи их, вычти, умножь и раздели. Убедись, что операции применяются поэлементно.", sq1_reward: "💰 Награда: 40 AI-коинов",
+            sq2_title: " Квест «Генератор лута»", sq2_text: "Используй <code>np.random.randint(1, 100, size=(3, 3))</code> для создания случайной матрицы 3x3 (как будто это статы монстра). Найди максимальное и минимальное значение в матрице.", sq2_reward: "💰 Награда: 80 AI-коинов",
+            sq3_title: "🖼️ Квест «Размытие картинки»", sq3_text: "Создай матрицу 5x5. Напиши цикл или используй срезы (slicing), чтобы «размыть» её: замени каждый элемент на среднее арифметическое его соседей. Это основа свёрточных сетей (CNN)!", sq3_reward: "💰 Награда: 150 AI-коинов + титул «CV Engineer»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ NumPy — супербыстрая математика для Python", sum2: "✅ Векторы — одномерные массивы (геометрия + ИИ)",
+            sum3: "✅ Матрицы — двумерные массивы (картинки)", sum4: "✅ Скалярное произведение — сердце нейросетей",
+            sum5: "✅ Обработка изображений через математику", sum6: "🏆 Финальный босс — матрица изображения побеждена!",
+            sum_meme: "Поздравляю, Математик! В следующем квесте мы погрузимся в мир Pandas и научимся анализировать настоящие большие данные. Готовься — будет интересно!",
+            nav_back: "← Предыдущий квест", nav_back_title: "1.2 Создаём свою игру",
+            nav_next: "Следующий квест →", nav_next_title: "1.4 Pandas и таблицы",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 1.3 • MODULE 1", title: "NumPy and Matrices",
+            subtitle: "Welcome to Level 3!  Today you'll look under the hood of neural networks. You'll learn how AI «sees» images and why matrices are the main tool in a Data Scientist's arsenal.",
+            duration: "⏱ 2 hours", level: "📘 Intermediate", xp: "⭐ +600 XP", loot: " +200 AI-coins", ach: "🏆 5 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 1 / 6",
+            l1_title: "⚡ Why Python lists aren't enough?", l1_sub: "Intro to NumPy library", l1_xp: "+40 XP",
+            l1_p1: "Regular Python lists are good for storing data, but slow for math. Imagine multiplying 1000 numbers by 2. In a regular list you'd need a loop. In <strong>NumPy</strong> it's done in one line and works 100x faster!",
+            l1_analogy_title: "Game analogy", l1_analogy_text: "A regular list is like walking. NumPy is like a teleport. Neural networks process millions of numbers, and without NumPy, training ChatGPT would take not months, but thousands of years!",
+            l1_code_title: "📝 Your first NumPy array",
+            l1_tip_title: "💡 Import rule", l1_tip_text: "In the Python world, NumPy is always imported as <code>np</code>. It's like a universal nickname. If you see <code>np.array()</code> in someone's code — know it's NumPy.",
+            ach1_name: "Achievement: Array Master", ach1_desc: "Created your first NumPy array and multiplied it", ach1_reward: "+50 XP · +15 💰 · ⚪ Common", ach1_btn: " Get achievement", ach1_hint: "Click if you ran the code and saw the result!",
+            l2_title: "📐 Vectors: Arrows in space", l2_sub: "Connection to geometry", l2_xp: "+60 XP",
+            l2_p1: "In geometry, a vector is an arrow with direction and length. In programming, a vector is just a <strong>1D array</strong> (list of numbers). Point coordinates (x, y) are a vector!",
+            l2_code_title: "📝 Calculating vector length",
+            l2_lore_title: " Lore for geeks", l2_lore_text: "In neural networks, every word becomes a vector of hundreds of numbers (embedding). Word meaning is determined by the «distance» between their vectors. Vectors for «king» and «queen» will be very close!",
+            ach2_name: "Achievement: Vector Hero", ach2_desc: "Calculated vector magnitude (norm)", ach2_reward: "+80 XP · +25 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you got the magic number 5.0!",
+            l3_title: "🔲 Matrices: How AI sees images", l3_sub: "2D arrays", l3_xp: "+80 XP",
+            l3_p1: "A matrix is a table of numbers (rows and columns). In NumPy it's a <strong>2D array</strong>. Most importantly: <strong>any digital image is a matrix!</strong> A B&W photo is a matrix where each number is pixel brightness (0 to 255).",
+            l3_code_title: " Creating a 3x3 matrix",
+            l3_meme: "For you it's a cross of ones and zeros. For a neural network — it's a full image it can classify!",
+            ach3_name: "Achievement: Matrix Lord", ach3_desc: "Created a 2D array (matrix)", ach3_reward: "+100 XP · +30 💰 · 🔵 Rare", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw shape (3, 3)!",
+            l4_title: "💥 Dot Product: Heart of AI", l4_sub: "Most important operation in neural networks", l4_xp: "+100 XP",
+            l4_p1: "If you remember only one thing from this lesson — remember the <strong>dot product</strong>. It's an operation where we multiply corresponding elements of two vectors and sum the results. This is how a neuron «makes a decision»!",
+            l4_code_title: "📝 Calculating Dot Product",
+            l4_tip_title: "💡 How it works in a neural network?", l4_tip_text: "Vector A is input data (e.g., image pixels). Vector B is neuron «weights» (its memory). Dot product shows how similar inputs are to what the neuron «remembered». The bigger the number — the stronger the signal!",
+            ach4_name: "Achievement: Dot Product Master", ach4_desc: "Performed dot product of vectors", ach4_reward: "+120 XP · +50 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you got 32!",
+            l5_title: "BOSS FIGHT: Image Processing", l5_sub: "Applying math to an image", l5_xp: "+200 XP",
+            l5_meme: "You already know an image is a matrix. Let's apply math magic to it, like photo editors and neural networks do!",
+            l5_code_title: "📝 Making the image darker",
+            l5_danger_title: "🚨 Check before submitting boss", l5_danger_text: "Code ran? Matrix became half the size (max 127.5 instead of 255)? Congrats — you just wrote an image processing algorithm! 🏆",
+            ach5_name: "LEGENDARY: Visionary", ach5_desc: "Processed image matrix and understood how AI «sees» the world", ach5_reward: "+200 XP · +100 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 10% of players get this. You're one of them!",
+            sq_title: "📜 Side quests (homework)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Calculator»", sq1_text: "Create two NumPy arrays of 5 numbers. Add, subtract, multiply and divide them. Ensure operations are element-wise.", sq1_reward: "💰 Reward: 40 AI-coins",
+            sq2_title: " Quest «Loot Generator»", sq2_text: "Use <code>np.random.randint(1, 100, size=(3, 3))</code> to create a random 3x3 matrix (like monster stats). Find max and min values in the matrix.", sq2_reward: " Reward: 80 AI-coins",
+            sq3_title: "🖼️ Quest «Image Blur»", sq3_text: "Create a 5x5 matrix. Write a loop or use slicing to «blur» it: replace each element with the average of its neighbors. This is the foundation of CNNs!", sq3_reward: "💰 Reward: 150 AI-coins + title «CV Engineer»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ NumPy — superfast math for Python", sum2: "✅ Vectors — 1D arrays (geometry + AI)",
+            sum3: "✅ Matrices — 2D arrays (images)", sum4: "✅ Dot product — heart of neural networks",
+            sum5: "✅ Image processing through math", sum6: "🏆 Final boss — image matrix defeated!",
+            sum_meme: "Congrats, Mathematician! In the next quest we'll dive into Pandas and learn to analyze real big data. Get ready — it'll be fun!",
+            nav_back: "← Previous quest", nav_back_title: "1.2 Creating Your Own Game",
+            nav_next: "Next quest →", nav_next_title: "1.4 Pandas and Tables",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 1.3 • MÓDULO 1", title: "NumPy y matrices", subtitle: "¡Bienvenido al Nivel 3! 🎯 Hoy mirarás bajo el capó de las redes neuronales.", duration: "⏱ 2 horas", level: "📘 Intermedio", xp: "⭐ +600 XP", loot: "💰 +200 AI-monedas", ach: " 6 logros", progress_title: " Progreso", progress_counter: "Nivel 1 / 6", l1_title: " ¿Por qué las listas de Python no bastan?", l1_sub: "Intro a NumPy", l1_xp: "+40 XP", l1_p1: "Las listas regulares son buenas para guardar datos, pero lentas para matemáticas.", l1_analogy_title: "Analogía de juego", l1_analogy_text: "Una lista regular es como caminar. NumPy es como un teletransporte.", l1_code_title: " Tu primer array NumPy", l1_tip_title: "💡 Regla de importación", l1_tip_text: "En el mundo Python, NumPy siempre se importa como <code>np</code>.", ach1_name: "Logro: Maestro de arrays", ach1_desc: "Creó su primer array NumPy", ach1_reward: "+50 XP · +15 💰 · ⚪ Común", ach1_btn: " Obtener logro", ach1_hint: "¡Haz clic si ejecutaste el código!", l2_title: "📐 Vectores: Flechas en el espacio", l2_sub: "Conexión con geometría", l2_xp: "+60 XP", l2_p1: "En geometría, un vector es una flecha. En programación, es un <strong>array 1D</strong>.", l2_code_title: " Calculando longitud del vector", l2_lore_title: "📚 Lore para geeks", l2_lore_text: "En redes neuronales, cada palabra se convierte en un vector (embedding).", ach2_name: "Logro: Héroe vectorial", ach2_desc: "Calculó la magnitud del vector", ach2_reward: "+80 XP · +25 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si obtuviste 5.0!", l3_title: "🔲 Matrices: Cómo la IA ve imágenes", l3_sub: "Arrays 2D", l3_xp: "+80 XP", l3_p1: "Una matriz es una tabla. <strong>¡Cualquier imagen digital es una matriz!</strong>", l3_code_title: "📝 Creando matriz 3x3", l3_meme: "Para ti es una cruz de unos y ceros. Para la IA — ¡una imagen completa!", ach3_name: "Logro: Señor de matrices", ach3_desc: "Creó un array 2D (matriz)", ach3_reward: "+100 XP · +30 💰 ·  Raro", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si viste shape (3, 3)!", l4_title: "💥 Producto punto: Corazón de la IA", l4_sub: "Operación más importante", l4_xp: "+100 XP", l4_p1: "Recuerda el <strong>producto punto (dot product)</strong>. Así es como una neurona «decide».", l4_code_title: "📝 Calculando Dot Product", l4_tip_title: "💡 ¿Cómo funciona en una red neuronal?", l4_tip_text: "Vector A son datos de entrada. Vector B son «pesos». El producto punto muestra la similitud.", ach4_name: "Logro: Maestro del Dot Product", ach4_desc: "Realizó producto punto de vectores", ach4_reward: "+120 XP · +50 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si obtuviste 32!", l5_title: "¡PELEA JEFE: Procesamiento de imágenes!", l5_sub: "Aplicando mate a una imagen", l5_xp: "+200 XP", l5_meme: "Ya sabes que una imagen es una matriz. ¡Apliquemos magia matemática!", l5_code_title: "📝 Oscureciendo la imagen", l5_danger_title: "🚨 Revisa antes de entregar", l5_danger_text: "¿La matriz se redujo a la mitad? ¡Felicidades — escribiste un algoritmo de procesamiento de imágenes! 🏆", ach5_name: "LEGENDARIO: Visionario", ach5_desc: "Procesó matriz de imagen", ach5_reward: "+200 XP · +100 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 10% lo consigue!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Calculadora»", sq1_text: "Crea dos arrays NumPy de 5 números. Suma, resta, multiplica y divide.", sq1_reward: "💰 Recompensa: 40 AI-monedas", sq2_title: "🎲 Misión «Generador de loot»", sq2_text: "Usa <code>np.random.randint</code> para crear matriz 3x3 aleatoria. Encuentra max y min.", sq2_reward: "💰 Recompensa: 80 AI-monedas", sq3_title: "🖼️ Misión «Desenfoque»", sq3_text: "Crea matriz 5x5. «Desenfócala» reemplazando cada elemento con el promedio de sus vecinos.", sq3_reward: "💰 Recompensa: 150 AI-monedas + título «CV Engineer»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ NumPy — matemáticas súper rápidas", sum2: "✅ Vectores — arrays 1D", sum3: "✅ Matrices — arrays 2D", sum4: "✅ Producto punto — corazón de las redes", sum5: "✅ Procesamiento de imágenes", sum6: "🏆 ¡Jefe final derrotado!", sum_meme: "¡Felicidades, Matemático! En la próxima misión entraremos en Pandas.", nav_back: "← Misión anterior", nav_back_title: "1.2 Creando tu juego", nav_next: "Siguiente misión →", nav_next_title: "1.4 Pandas y tablas", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 1.3 • MODUL 1", title: "NumPy und Matrizen", subtitle: "Willkommen auf Level 3! 🎯 Heute schaust du unter die Haube von neuronalen Netzen.", duration: "⏱ 2,5 Stunden", level: "📘 Mittel", xp: "⭐ +600 XP", loot: "💰 +200 AI-Münzen", ach: "🏆 5 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 1 / 6", l1_title: "⚡ Warum Python-Listen nicht reichen?", l1_sub: "Intro zu NumPy", l1_xp: "+40 XP", l1_p1: "Normale Listen sind gut zum Speichern, aber langsam für Mathe.", l1_analogy_title: "Spiel-Analogie", l1_analogy_text: "Eine normale Liste ist wie Laufen. NumPy ist wie ein Teleport.", l1_code_title: "📝 Dein erstes NumPy-Array", l1_tip_title: "💡 Import-Regel", l1_tip_text: "In der Python-Welt wird NumPy immer als <code>np</code> importiert.", ach1_name: "Erfolg: Array-Meister", ach1_desc: "Erstes NumPy-Array erstellt", ach1_reward: "+50 XP · +15 💰 · ⚪ Gewöhnlich", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du den Code ausgeführt hast!", l2_title: "📐 Vektoren: Pfeile im Raum", l2_sub: "Verbindung zur Geometrie", l2_xp: "+60 XP", l2_p1: "In der Geometrie ist ein Vektor ein Pfeil. In der Programmierung ein <strong>1D-Array</strong>.", l2_code_title: "📝 Vektorlänge berechnen", l2_lore_title: "📚 Lore für Geeks", l2_lore_text: "In neuronalen Netzen wird jedes Wort zu einem Vektor (Embedding).", ach2_name: "Erfolg: Vektor-Held", ach2_desc: "Vektormagnitude berechnet", ach2_reward: "+80 XP · +25 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du 5.0 bekommen hast!", l3_title: "🔲 Matrizen: Wie KI Bilder sieht", l3_sub: "2D-Arrays", l3_xp: "+80 XP", l3_p1: "Eine Matrix ist eine Tabelle. <strong>Jedes digitale Bild ist eine Matrix!</strong>", l3_code_title: "📝 3x3 Matrix erstellen", l3_meme: "Für dich ein Kreuz aus Einsen und Nullen. Für die KI — ein volles Bild!", ach3_name: "Erfolg: Matrix-Lord", ach3_desc: "2D-Array (Matrix) erstellt", ach3_reward: "+100 XP · +30 💰 · 🔵 Selten", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du shape (3, 3) gesehen hast!", l4_title: "💥 Skalarprodukt: Herz der KI", l4_sub: "Wichtigste Operation", l4_xp: "+100 XP", l4_p1: "Merk dir das <strong>Skalarprodukt (dot product)</strong>. So «entscheidet» ein Neuron.", l4_code_title: "📝 Dot Product berechnen", l4_tip_title: "💡 Wie funktioniert das im neuronalen Netz?", l4_tip_text: "Vektor A sind Eingabedaten. Vektor B sind «Gewichte». Das Skalarprodukt zeigt die Ähnlichkeit.", ach4_name: "Erfolg: Dot-Product-Meister", ach4_desc: "Skalarprodukt von Vektoren berechnet", ach4_reward: "+120 XP · +50 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du 32 bekommen hast!", l5_title: "BOSSKAMPF: Bildverarbeitung!", l5_sub: "Mathe auf Bild anwenden", l5_xp: "+200 XP", l5_meme: "Du weißt, ein Bild ist eine Matrix. Wenden wir Mathe-Magie an!", l5_code_title: "📝 Bild dunkler machen", l5_danger_title: " Prüfe vor Boss-Abgabe", l5_danger_text: "Code lief? Matrix halbiert? Glückwunsch — du hast einen Bildverarbeitungsalgorithmus geschrieben! 🏆", ach5_name: "LEGENDÄR: Visionär", ach5_desc: "Bildmatrix verarbeitet", ach5_reward: "+200 XP · +100 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 10% schaffen das!", sq_title: " Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Taschenrechner»", sq1_text: "Erstelle zwei NumPy-Arrays mit 5 Zahlen. Addiere, subtrahiere, multipliziere, dividiere.", sq1_reward: "💰 Belohnung: 40 AI-Münzen", sq2_title: "🎲 Quest «Loot-Generator»", sq2_text: "Nutze <code>np.random.randint</code> für eine zufällige 3x3 Matrix. Finde Max und Min.", sq2_reward: "💰 Belohnung: 80 AI-Münzen", sq3_title: "🖼️ Quest «Bild-Unschärfe»", sq3_text: "Erstelle 5x5 Matrix. «Verschmiere» sie, indem du jedes Element durch den Durchschnitt seiner Nachbarn ersetzt.", sq3_reward: "💰 Belohnung: 150 AI-Münzen + Titel «CV Engineer»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ NumPy — superschnelle Mathe", sum2: "✅ Vektoren — 1D-Arrays", sum3: "✅ Matrizen — 2D-Arrays", sum4: "✅ Skalarprodukt — Herz der Netze", sum5: "✅ Bildverarbeitung", sum6: " Endboss besiegt!", sum_meme: "Glückwunsch, Mathematiker! Im nächsten Quest tauchen wir in Pandas ein.", nav_back: "← Vorheriger Quest", nav_back_title: "1.2 Spiel erstellen", nav_next: "Nächster Quest →", nav_next_title: "1.4 Pandas und Tabellen", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 1.3 • 1-МОДУЛЬ", title: "NumPy және матрицалар", subtitle: "3-деңгейге қош келдің! 🎯 Бүгін нейрондық желілердің ішіне үңілесің.", duration: "⏱ 2 сағат", level: "📘 Орташа", xp: "⭐ +600 XP", loot: "💰 +200 ЖИ-теңге", ach: "🏆 5 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "1-деңгей / 6", l1_title: "⚡ Неліктен Python тізімдері жеткіліксіз?", l1_sub: "NumPy кіріспесі", l1_xp: "+40 XP", l1_p1: "Қалыпты тізімдер деректерді сақтауға жақсы, бірақ математика үшін баяу.", l1_analogy_title: "Ойын аналогиясы", l1_analogy_text: "Қалыпты тізім — жаяу жүру сияқты. NumPy — телепорт сияқты.", l1_code_title: "📝 Бірінші NumPy массивің", l1_tip_title: "💡 Импорт ережесі", l1_tip_text: "Python әлемінде NumPy әрқашан <code>np</code> ретінде импортталады.", ach1_name: "Жетістік: Массив шебері", ach1_desc: "Бірінші NumPy массивін жасады", ach1_reward: "+50 XP · +15 💰 ·  Кәдімгі", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Кодты іске қоссаң — бас!", l2_title: "📐 Векторлар: Кеңістіктегі бағдарлар", l2_sub: "Геометриямен байланыс", l2_xp: "+60 XP", l2_p1: "Геометрияда вектор — бағдар. Программалауда — <strong>1D массив</strong>.", l2_code_title: "📝 Вектор ұзындығын есептеу", l2_lore_title: "📚 Гиктерге арналған лор", l2_lore_text: "Нейрондық желілерде әр сөз векторға айналады (эмбеддинг).", ach2_name: "Жетістік: Вектор батыры", ach2_desc: "Вектор магнитудасын есептеді", ach2_reward: "+80 XP · +25 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "5.0 алсаң — бас!", l3_title: "🔲 Матрицалар: ЖИ суреттерді қалай көреді", l3_sub: "2D массивтер", l3_xp: "+80 XP", l3_p1: "Матрица — кесте. <strong>Кез келген сандық сурет — матрица!</strong>", l3_code_title: " 3x3 матрица жасау", l3_meme: "Сен үшін бұл бірлер мен нөлдерден тұратын крест. ЖИ үшін — толық сурет!", ach3_name: "Жетістік: Матрица билеушісі", ach3_desc: "2D массив (матрица) жасады", ach3_reward: "+100 XP · +30 💰 · 🔵 Сирек", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "shape (3, 3) көрсең — бас!", l4_title: "💥 Скаляр көбейтінді: ЖИ жүрегі", l4_sub: "Ең маңызды операция", l4_xp: "+100 XP", l4_p1: "<strong>Скаляр көбейтіндіні (dot product)</strong> есте сақта. Нейрон осылай «шешім қабылдайды».", l4_code_title: "📝 Dot Product есептеу", l4_tip_title: "💡 Нейрондық желіде қалай жұмыс істейді?", l4_tip_text: "A векторы — кіріс деректер. B векторы — «салмақтар». Скаляр көбейтінді ұқсастықты көрсетеді.", ach4_name: "Жетістік: Dot Product шебері", ach4_desc: "Векторлардың скаляр көбейтіндісін орындады", ach4_reward: "+120 XP · +50 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "32 алсаң — бас!", l5_title: "БОСС-ФАЙТ: Суретті өңдеу!", l5_sub: "Суретке математика қолдану", l5_xp: "+200 XP", l5_meme: "Сурет матрица екенін білесің. Математикалық сиқыр қолданайық!", l5_code_title: "📝 Суретті күңгірттеу", l5_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l5_danger_text: "Код іске қосылды ма? Матрица екі есе азайды ма? Құттықтаймын — суретті өңдеу алгоритмін жаздың! 🏆", ach5_name: "АҢЫЗДЫҚ: Визионер", ach5_desc: "Сурет матрицасын өңдеді", ach5_reward: "+200 XP · +100  · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 10% ғана алады!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: " ОРТАША", sq_hard: " ҚИЫН", sq1_title: "🧮 Квест «Калькулятор»", sq1_text: "5 сандық екі NumPy массивін жаса. Қос, азайт, көбейт, бөл.", sq1_reward: "💰 Сыйлық: 40 ЖИ-теңге", sq2_title: "🎲 Квест «Лут генераторы»", sq2_text: "<code>np.random.randint</code> қолданып, кездейсоқ 3x3 матрица жаса. Max және min тап.", sq2_reward: "💰 Сыйлық: 80 ЖИ-теңге", sq3_title: "️ Квест «Суретті бұлдырату»", sq3_text: "5x5 матрица жаса. Әр элементті көршілерінің орташа мәнімен алмастырып, «бұлдырат».", sq3_reward: "💰 Сыйлық: 150 ЖИ-теңге + «CV Engineer» титулы", sum_title: "Мәре сызығы", sum_sub: "Нені деңгейіңді көтердің", sum1: "✅ NumPy — өте жылдам математика", sum2: "✅ Векторлар — 1D массивтер", sum3: "✅ Матрицалар — 2D массивтер", sum4: "✅ Скаляр көбейтінді — желілер жүрегі", sum5: "✅ Суретті өңдеу", sum6: "🏆 Финалды босс жеңілді!", sum_meme: "Құттықтаймын, Математик! Келесі квестте Pandas-қа батамыз.", nav_back: "← Алдыңғы квест", nav_back_title: "1.2 Ойын жасау", nav_next: "Келесі квест →", nav_next_title: "1.4 Pandas және кестелер", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
