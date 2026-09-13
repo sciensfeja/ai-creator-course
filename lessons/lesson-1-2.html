@@ -753,16 +753,16 @@
 
         <h3 data-i18n="l1_code_title">📝 Первый класс в Python</h3>
         <pre><code>class Hero:
-    """Это чертёж героя. Пока что пустой."""
+    """This is a blueprint for a hero. It's empty for now."""
     pass
 
-# Создаём объект по чертежу (это называется "инстанцирование")
+# Create an object from the blueprint (this is called "instantiation")
 hero1 = Hero()
 hero2 = Hero()
 
-print(hero1)  # &lt;__main__.Hero object at 0x...&gt;
-print(hero2)  # &lt;__main__.Hero object at 0x...&gt;
-# Это два РАЗНЫХ героя, но пока они абсолютно одинаковые</code></pre>
+print(hero1)  # <__main__.Hero object at 0x...>
+print(hero2)  # <__main__.Hero object at 0x...>
+# These are two DIFFERENT heroes, but for now they are absolutely identical</code></pre>
 
         <div class="info-box tip">
             <strong data-i18n="l1_tip_title">💡 Запомни правило</strong>
@@ -806,24 +806,20 @@ print(hero2)  # &lt;__main__.Hero object at 0x...&gt;
         <h3 data-i18n="l2_code_title">📝 Добавляем статы герою</h3>
         <pre><code>class Hero:
     def __init__(self, name, hp, attack):
-        # Это КОНСТРУКТОР — он вызывается при создании героя
-        self.name = name        # Имя героя
-        self.hp = hp            # Здоровье
-        self.attack = attack    # Сила атаки
-        self.level = 1          # Уровень (у всех начинается с 1)
-    
+        # This is the CONSTRUCTOR — it's called when a hero is created
+        self.name = name        # Hero's name
+        self.hp = hp            # Health
+        self.attack = attack    # Attack power
+        self.level = 1          # Level (starts at 1 for everyone)
+        
     def show_stats(self):
-        # Метод для вывода статов
-        print(f"🦸 {self.name} | Ур.{self.level} | HP: {self.hp} | ATK: {self.attack}")
+        # Method to display stats
+        print(f"🦸 {self.name} | Lvl.{self.level} | HP: {self.hp} | ATK: {self.attack}")
 
-# Создаём героев с разными статами
-warrior = Hero("Конан", 150, 25)
-mage = Hero("Гэндальф", 80, 40)
-archer = Hero("Леголас", 100, 30)
-
-warrior.show_stats()  # 🦸 Конан | Ур.1 | HP: 150 | ATK: 25
-mage.show_stats()     # 🦸 Гэндальф | Ур.1 | HP: 80 | ATK: 40
-archer.show_stats()   # 🦸 Леголас | Ур.1 | HP: 100 | ATK: 30</code></pre>
+# Create heroes with different stats
+warrior = Hero("Conan", 150, 25)
+mage = Hero("Gandalf", 80, 40)
+archer = Hero("Legolas", 100, 30)</code></pre>
 
         <div class="info-box warning">
             <strong data-i18n="l2_warn_title">⚠️ Магическое слово: self</strong>
@@ -861,58 +857,58 @@ archer.show_stats()   # 🦸 Леголас | Ур.1 | HP: 100 | ATK: 30</code><
     def __init__(self, name, hp, attack):
         self.name = name
         self.hp = hp
-        self.max_hp = hp  # Запоминаем максимум HP
+        self.max_hp = hp  # Remember max HP
         self.attack = attack
         self.level = 1
         self.xp = 0
     
     def show_stats(self):
-        print(f"🦸 {self.name} | Ур.{self.level} | HP: {self.hp}/{self.max_hp} | ATK: {self.attack}")
+        print(f"🦸 {self.name} | Lvl.{self.level} | HP: {self.hp}/{self.max_hp} | ATK: {self.attack}")
     
     def attack_enemy(self, enemy):
-        """Скилл: Атаковать врага"""
+        """Skill: Attack an enemy"""
         damage = self.attack
         enemy.hp -= damage
-        print(f"⚔️ {self.name} атакует {enemy.name} и наносит {damage} урона!")
+        print(f"⚔️ {self.name} attacks {enemy.name} and deals {damage} damage!")
         if enemy.hp <= 0:
-            print(f"💀 {enemy.name} повержен!")
+            print(f"💀 {enemy.name} is defeated!")
         else:
-            print(f"🩸 У {enemy.name} осталось {enemy.hp} HP")
+            print(f"🩸 {enemy.name} has {enemy.hp} HP left")
     
     def heal(self, amount):
-        """Скилл: Лечиться"""
+        """Skill: Heal"""
         self.hp = min(self.hp + amount, self.max_hp)
-        print(f"💚 {self.name} восстановил {amount} HP. Теперь HP: {self.hp}")
+        print(f"💚 {self.name} restored {amount} HP. Current HP: {self.hp}")
     
     def gain_xp(self, amount):
-        """Скилл: Получить опыт"""
+        """Skill: Gain experience"""
         self.xp += amount
-        print(f"⭐ {self.name} получил {amount} XP! Всего: {self.xp}")
+        print(f"⭐ {self.name} gained {amount} XP! Total: {self.xp}")
         
-        # Проверка уровня
+        # Check level
         if self.xp >= 100:
             self.level_up()
     
     def level_up(self):
-        """Скилл: Повысить уровень"""
+        """Skill: Level up"""
         self.level += 1
         self.max_hp += 20
         self.hp = self.max_hp
         self.attack += 5
         self.xp = 0
-        print(f"🎉 {self.name} достиг {self.level} уровня! HP и ATK выросли!")
+        print(f"🎉 {self.name} reached level {self.level}! HP and ATK increased!")
 
-# Создаём героев
-warrior = Hero("Конан", 150, 25)
-goblin = Hero("Гоблин", 50, 10)
+# Create heroes
+warrior = Hero("Conan", 150, 25)
+goblin = Hero("Goblin", 50, 10)
 
-# Битва!
+# Battle!
 warrior.show_stats()
 goblin.show_stats()
 
-warrior.attack_enemy(goblin)  # ⚔️ Конан атакует Гоблина...
-warrior.gain_xp(50)           # ⭐ Получаем опыт
-warrior.gain_xp(60)           # 🎉 Уровень повышен!</code></pre>
+warrior.attack_enemy(goblin)  # ⚔️ Conan attacks the Goblin...
+warrior.gain_xp(50)           # ⭐ Gaining experience
+warrior.gain_xp(60)           # 🎉 Level up!</code></pre>
 
         <div class="info-box lore">
             <strong data-i18n="l3_lore_title">📚 Лор для гиков</strong>
@@ -1026,7 +1022,7 @@ my_pet.status()</code></pre>
 
         <h3 data-i18n="l5_code_title">📝 Создаём классы-наследники</h3>
         <pre><code>class Character:
-    """Базовый класс — как базовый покемон"""
+    """Base class — like a basic Pokémon"""
     def __init__(self, name, hp):
         self.name = name
         self.hp = hp
@@ -1035,13 +1031,13 @@ my_pet.status()</code></pre>
         print(f"{self.name} | HP: {self.hp}")
 
 class Warrior(Character):
-    """Наследует от Character, но добавляет своё"""
+    """Inherits from Character, but adds its own features"""
     def __init__(self, name, hp, sword_power):
-        super().__init__(name, hp)  # Вызываем конструктор родителя
+        super().__init__(name, hp)  # Call the parent constructor
         self.sword_power = sword_power
     
     def slash(self):
-        print(f"⚔️ {self.name} делает мощный удар мечом! Урон: {self.sword_power}")
+        print(f"⚔️ {self.name} makes a powerful sword strike! Damage: {self.sword_power}")
 
 class Mage(Character):
     def __init__(self, name, hp, mana, spell_power):
@@ -1052,19 +1048,19 @@ class Mage(Character):
     def cast_fireball(self):
         if self.mana >= 20:
             self.mana -= 20
-            print(f"🔥 {self.name} кастует Огненный шар! Урон: {self.spell_power}")
+            print(f"🔥 {self.name} casts Fireball! Damage: {self.spell_power}")
         else:
-            print(f"😵 У {self.name} недостаточно маны!")
+            print(f"😵 {self.name} doesn't have enough mana!")
 
-# Создаём персонажей
-conan = Warrior("Конан", 150, 35)
-gandalf = Mage("Гэндальф", 80, 100, 50)
+# Create characters
+conan = Warrior("Conan", 150, 35)
+gandalf = Mage("Gandalf", 80, 100, 50)
 
-conan.show()        # Конан | HP: 150
-conan.slash()       # ⚔️ Конан делает мощный удар мечом! Урон: 35
+conan.show()        # Conan | HP: 150
+conan.slash()       # ⚔️ Conan makes a powerful sword strike! Damage: 35
 
-gandalf.show()      # Гэндальф | HP: 80
-gandalf.cast_fireball()  # 🔥 Гэндальф кастует Огненный шар! Урон: 50</code></pre>
+gandalf.show()      # Gandalf | HP: 80
+gandalf.cast_fireball()  # 🔥 Gandalf casts Fireball! Damage: 50</code></pre>
 
         <div class="info-box tip">
             <strong data-i18n="l5_tip_title">💡 Магия super()</strong>
@@ -1100,15 +1096,15 @@ gandalf.cast_fireball()  # 🔥 Гэндальф кастует Огненный
 
         <h3 data-i18n="l6_code_title">📝 Финальный код: Битва героев</h3>
         <pre><code># ==========================================
-# ⚔️ БИТВА ГЕРОЕВ — МИНИ-RPG
-# Автор: [твоё имя]
+# ⚔️ HERO BATTLE — MINI-RPG
+# Author: [your name]
 # ==========================================
 
 import random
 import time
 
 class Character:
-    """Базовый класс персонажа"""
+    """Base character class"""
     def __init__(self, name, hp, attack):
         self.name = name
         self.hp = hp
@@ -1128,16 +1124,16 @@ class Character:
 class Warrior(Character):
     def __init__(self, name):
         super().__init__(name, hp=150, attack=20)
-        self.shield_block = 0.2  # 20% шанс заблокировать удар
+        self.shield_block = 0.2  # 20% chance to block an attack
     
     def attack(self, enemy):
         damage = self.attack + random.randint(-5, 10)
         enemy.take_damage(damage)
-        print(f"⚔️ {self.name} атакует {enemy.name} на {damage} урона!")
+        print(f"⚔️ {self.name} attacks {enemy.name} for {damage} damage!")
     
     def defend(self):
         if random.random() < self.shield_block:
-            print(f"🛡️ {self.name} блокирует удар щитом!")
+            print(f"🛡️ {self.name} blocks the attack with a shield!")
             return True
         return False
 
@@ -1152,33 +1148,33 @@ class Mage(Character):
             damage = 40 + random.randint(0, 15)
             self.mana -= 30
             enemy.take_damage(damage)
-            print(f"🔥 {self.name} кастует огненный шар на {damage} урона!")
+            print(f"🔥 {self.name} casts a fireball for {damage} damage!")
         else:
             damage = self.attack
             enemy.take_damage(damage)
-            print(f"✨ {self.name} бьёт посохом на {damage} урона (мало маны)")
+            print(f"✨ {self.name} strikes with a staff for {damage} damage (low mana)")
     
     def meditate(self):
         self.mana = min(self.max_mana, self.mana + 40)
-        print(f"🧘 {self.name} медитирует. Мана: {self.mana}/{self.max_mana}")
+        print(f"🧘 {self.name} meditates. Mana: {self.mana}/{self.max_mana}")
 
 def battle(hero1, hero2):
-    """Главный цикл битвы"""
+    """Main battle loop"""
     print("=" * 50)
-    print(f"🎬 НАЧИНАЕТСЯ БИТВА: {hero1.name} VS {hero2.name}")
+    print(f"🎬 BATTLE BEGINS: {hero1.name} VS {hero2.name}")
     print("=" * 50)
     
     round_num = 1
     while hero1.is_alive() and hero2.is_alive():
-        print(f"\n--- Раунд {round_num} ---")
+        print(f"\n--- Round {round_num} ---")
         hero1.show()
         hero2.show()
         time.sleep(1)
         
-        # Ход первого героя
+        # First hero's turn
         attacker, defender = hero1, hero2
         if hasattr(defender, 'defend') and defender.defend():
-            print(f"🛡️ Атака заблокирована!")
+            print(f"🛡️ Attack blocked!")
         else:
             attacker.attack(defender)
         
@@ -1187,33 +1183,33 @@ def battle(hero1, hero2):
         
         time.sleep(1)
         
-        # Ход второго героя
+        # Second hero's turn
         attacker, defender = hero2, hero1
         if hasattr(defender, 'defend') and defender.defend():
-            print(f"🛡️ Атака заблокирована!")
+            print(f"🛡️ Attack blocked!")
         else:
             attacker.attack(defender)
         
-        # Медитация мага, если маны мало
+        # Mage meditates if mana is low
         if isinstance(hero2, Mage) and hero2.mana < 30:
             hero2.meditate()
         
         round_num += 1
         time.sleep(1)
     
-    # Определяем победителя
+    # Determine the winner
     print("\n" + "=" * 50)
     if hero1.is_alive():
-        print(f"🏆 ПОБЕДИТЕЛЬ: {hero1.name}!")
+        print(f"🏆 WINNER: {hero1.name}!")
     else:
-        print(f"🏆 ПОБЕДИТЕЛЬ: {hero2.name}!")
+        print(f"🏆 WINNER: {hero2.name}!")
     print("=" * 50)
 
-# Создаём героев
-conan = Warrior("Конан-Варвар")
-gandalf = Mage("Гэндальф-Серый")
+# Create heroes
+conan = Warrior("Conan the Barbarian")
+gandalf = Mage("Gandalf the Grey")
 
-# Битва!
+# Battle!
 battle(conan, gandalf)</code></pre>
 
         <div class="info-box danger">
