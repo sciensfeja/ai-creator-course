@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 2.1: Математика для ИИ — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 2.1 • МОДУЛЬ 2</span>
+        <h1 data-i18n="title">Математика для ИИ</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать в Модуль 2!  Сегодня мы заглянем под капот магии. Математика — это «физический движок» нейросетей. Без неё ИИ — просто генератор случайных чисел.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration"> 2.5 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +800 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +300 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Intro -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🧠</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Введение: Физика мира ИИ</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Зачем вообще нужна математика?</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+30 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">В видеоиграх есть физический движок (как в Unreal Engine), который просчитывает гравитацию и столкновения. В ИИ роль такого движка играет <strong>математика</strong>. Она говорит нейросети, в какую сторону «двигаться», чтобы стать умнее.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon"></div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Если Python — это контроллер, то Математика — это сама игра. Ты можешь нажимать кнопки сколько угодно, но без правил физики мяч не покатится. Сегодня мы выучим три главных правила: Линейная алгебра, Исчисление и Теория вероятностей.</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🧭</span>
+            <h3 data-i18n="ach0_name">Ачивка: Исследователь движка</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, зачем математика нужна в Machine Learning</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+30 XP · +10 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson2_1_explorer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если осознал мощь математики!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Linear Algebra -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">📐 Линейная алгебра: Язык данных</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Векторы, матрицы и скалярное произведение</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Ты уже знаком с векторами и матрицами из урока 1.3. Но теперь мы посмотрим на них под другим углом. В ML вектор — это не просто стрелка, а <strong>набор признаков</strong> (features) объекта. Например, вектор [150, 50, 2] может описывать дом: площадь, расстояние до центра, количество комнат.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Скалярное произведение как мера сходства</h3>
+        <pre><code>import numpy as np
+
+# Two vectors representing game characters' stats: [Strength, Agility, Magic]
+char_a = np.array([10, 5, 2])
+char_b = np.array([9, 6, 3])
+
+# Dot product measures how "similar" or "aligned" they are
+similarity = np.dot(char_a, char_b)
+
+print(f"Similarity score: {similarity}")
+
+# Cosine similarity (normalized dot product) is often used in AI
+cosine_sim = np.dot(char_a, char_b) / (np.linalg.norm(char_a) * np.linalg.norm(char_b))
+print(f"Cosine similarity: {cosine_sim:.4f}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l1_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l1_lore_text">Косинусное сходство (Cosine Similarity) — это то, как поисковики и рекомендательные системы (как в Netflix или TikTok) находят похожий контент. Если косинус равен 1 — объекты идентичны по «направлению».</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach1_name">Ачивка: Алгебраист</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Вычислил косинусное сходство между векторами</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+80 XP · +25 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson2_1_algebraist" class="ach-btn" data-i18n="ach1_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел число близкое к 1!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Derivatives -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">📉 Производные: Компас ИИ</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Как понять, в какую сторону двигаться?</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Производная показывает <strong>скорость изменения</strong> функции. Проще говоря, это <strong>уклон горы</strong> в конкретной точке. Если ты стоишь на склоне и хочешь спуститься в долину, тебе нужно знать, в какую сторону склон идёт вниз. Производная — это и есть твой компас!</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🏔️</div>
+            <div class="game-text">
+                <strong data-i18n="l2_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l2_analogy_text">Представь, что ты в VR-очках с завязанными глазами и должен найти самую низкую точку на карте. Ты ощупываешь ногами землю: если под правой ногой ниже — делаешь шаг вправо. Производная — это и есть «ощупывание земли» для нейросети.</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l2_code_title">📝 Численное вычисление производной</h3>
+        <pre><code>def f(x):
+    """Our function: a simple parabola f(x) = x^2"""
+    return x ** 2
+
+def derivative(x, h=0.0001):
+    """Calculate derivative numerically using the limit definition"""
+    return (f(x + h) - f(x)) / h
+
+# Test it at different points
+for x_val in [3, 0, -2]:
+    print(f"At x = {x_val}, slope (derivative) = {derivative(x_val):.4f}")</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach2_name">Ачивка: Серфер склонов</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Написал функцию для вычисления производной</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+100 XP · +35 💰 ·  Редкая</div>
+            <a href="achievements.html?unlock=lesson2_1_slope_surfer" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел правильный наклон (6.0, 0.0, -4.0)!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Gradient Descent -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title"> Градиентный спуск: Алгоритм обучения</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Как машина на самом деле «учится»</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Вот он — главный алгоритм Machine Learning! <strong>Градиентный спуск (Gradient Descent)</strong>. Мы берём производную (уклон) и делаем шаг в противоположную сторону. Повторяем это много раз, пока не окажемся в самой низкой точке (где ошибка минимальна).</p>
+
+        <h3 data-i18n="l3_code_title">📝 Реализуем градиентный спуск</h3>
+        <pre><code>import numpy as np
+
+# We want to find the minimum of f(x) = x^2
+# The minimum is obviously at x = 0, but let the algorithm find it!
+
+x = 10.0  # Start at a random point
+learning_rate = 0.1  # How big steps we take
+epochs = 20  # Number of steps
+
+print("Starting Gradient Descent...")
+for i in range(epochs):
+    gradient = 2 * x  # Derivative of x^2 is 2x
+    x = x - learning_rate * gradient  # Move against the gradient
+    print(f"Epoch {i+1:2d}: x = {x:7.4f}, f(x) = {x**2:8.4f}")
+
+print(f"\nMinimum found at x ≈ {x:.4f}")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l3_warn_title">⚠️ Ловушка Learning Rate</strong>
+            <span data-i18n="l3_warn_text">Если <code>learning_rate</code> слишком большой (например, 1.5), алгоритм будет перепрыгивать через долину и расходиться. Если слишком маленький (0.001) — будет идти очень долго. Подбор этого параметра — настоящее искусство в ML!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🚶</span>
+            <h3 data-i18n="ach3_name">Ачивка: Градиентный райдер</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал алгоритм градиентного спуска с нуля</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_1_gradient_rider" class="ach-btn" data-i18n="ach3_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если алгоритм сошёлся к нулю!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Probability -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🎲 Теория вероятностей: Туман войны</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Как ИИ принимает решения в условиях неопределённости</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">В реальном мире данные всегда зашумлены. ИИ не говорит «это точно кот», он говорит «это кот с вероятностью 94%». Основа этого — <strong>Теорема Байеса</strong>. Она позволяет обновлять наши убеждения по мере поступления новых данных.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Наивный байесовский классификатор (упрощённо)</h3>
+        <pre><code># Imagine we are building a spam filter
+# P(Spam) = 0.2 (20% of all emails are spam)
+# P("Free" | Spam) = 0.8 (80% of spam emails contain "Free")
+# P("Free" | Not Spam) = 0.1 (10% of normal emails contain "Free")
+
+p_spam = 0.2
+p_free_given_spam = 0.8
+p_free_given_not_spam = 0.1
+p_not_spam = 0.8
+
+# We received an email with the word "Free". What is P(Spam | "Free")?
+# Using Bayes' Theorem:
+p_free = (p_free_given_spam * p_spam) + (p_free_given_not_spam * p_not_spam)
+p_spam_given_free = (p_free_given_spam * p_spam) / p_free
+
+print(f"Probability of Spam given 'Free': {p_spam_given_free:.2%}")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">📧</span>
+            <span data-i18n="l4_meme">Именно так работали первые спам-фильтры в 90-х! Они просто считали вероятности слов. Сегодня нейросети делают то же самое, но с миллионами параметров.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach4_name">Ачивка: Мастер вероятностей</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Применил теорему Байеса на практике</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+120 XP · +40 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_1_probability_master" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел 66.67%!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Линейная регрессия</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Собираем всё вместе: первая ML-модель</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+300 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🏠📈</span>
+            <span data-i18n="l5_meme">Ты знаешь векторы, производные и градиентный спуск. Пришло время написать свою первую настоящую ML-модель, которая предсказывает числа!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title"> Предсказываем урон от уровня персонажа</h3>
+        <pre><code>import numpy as np
+
+# Dataset: Character Level (X) vs Max Damage (Y)
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+Y = np.array([12, 14, 15, 19, 20, 22, 25, 27, 28, 30])
+
+# Model parameters (weights)
+m = 0.0  # slope (weight)
+b = 0.0  # intercept (bias)
+
+# Hyperparameters
+learning_rate = 0.01
+epochs = 1000
+n = len(X)
+
+print("Training Linear Regression...")
+for i in range(epochs):
+    # 1. Forward pass: make predictions
+    Y_pred = m * X + b
+    
+    # 2. Calculate error (Mean Squared Error)
+    error = Y_pred - Y
+    
+    # 3. Calculate gradients (derivatives)
+    dm = (2/n) * np.sum(error * X)
+    db = (2/n) * np.sum(error)
+    
+    # 4. Update weights (Gradient Descent)
+    m -= learning_rate * dm
+    b -= learning_rate * db
+
+print(f"\nTraining complete!")
+print(f"Formula: Damage = {m:.2f} * Level + {b:.2f}")
+
+# Test the model
+new_level = 15
+predicted_damage = m * new_level + b
+print(f"Predicted damage for Level {new_level}: {predicted_damage:.2f}")</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l5_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l5_danger_text">Модель обучилась? Формула выглядит логично (около 2 * Level + 10)? Предсказание для 15 уровня адекватное? Поздравляю — ты написал свой первый алгоритм машинного обучения с нуля! </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: ML-Инженер</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Написал алгоритм линейной регрессии с градиентным спуском</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+300 XP · +150 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson2_1_ml_engineer" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% игроков получают эту ачивку на первом модуле ML. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">📐 Квест «Векторный бой»</h3>
+            <p data-i18n="sq1_text">Создай 3 вектора, описывающих разных монстров (HP, Атака, Защита). Вычисли косинусное сходство между ними и найди самого «похожего» на игрока.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 50 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title"> Квест «Разные скорости»</h3>
+            <p data-i18n="sq2_text">Запусти код градиентного спуска с разными <code>learning_rate</code> (0.01, 0.1, 0.5, 1.5). Запиши, при каком значении алгоритм «разваливается» (выдаёт бесконечность).</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard"> СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title"> Квест «Предсказатель цен»</h3>
+            <p data-i18n="sq3_text">Найди в интернете простой CSV-датасет (например, цены на квартиры). Загрузи его через Pandas, выбери один признак (например, площадь) и примени к нему свой код линейной регрессии, чтобы предсказать цену.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 200 AI-коинов + титул «Junior Data Scientist»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял роль математики как «физики» ИИ</li>
+            <li data-i18n="sum2">✅ Освоил косинусное сходство векторов</li>
+            <li data-i18n="sum3">✅ Научился вычислять производные численно</li>
+            <li data-i18n="sum4">✅ Реализовал градиентный спуск</li>
+            <li data-i18n="sum5">✅ Применил теорему Байеса</li>
+            <li data-i18n="sum6">🏆 Финальный босс — Линейная регрессия побеждена!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Математик! Теперь ты знаешь, как ИИ учится на самом деле. В следующем уроке мы возьмём готовые инструменты из Scikit-Learn и решим настоящую задачу классификации!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-1-5.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">1.5 Визуализация данных</span>
+        </a>
+        <a href="lesson-2-2.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">2.2 Линейная регрессия</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 2.1 • МОДУЛЬ 2", title: "Математика для ИИ",
+            subtitle: "Добро пожаловать в Модуль 2! 🎯 Сегодня мы заглянем под капот магии. Математика — это «физический движок» нейросетей. Без неё ИИ — просто генератор случайных чисел.",
+            duration: "⏱ 2.5 часа", level: "📙 Продвинутый", xp: "⭐ +800 XP", loot: "💰 +300 AI-коинов", ach: " 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🧠 Введение: Физика мира ИИ", l0_sub: "Зачем вообще нужна математика?", l0_xp: "+30 XP",
+            l0_p1: "В видеоиграх есть физический движок (как в Unreal Engine), который просчитывает гравитацию и столкновения. В ИИ роль такого движка играет <strong>математика</strong>. Она говорит нейросети, в какую сторону «двигаться», чтобы стать умнее.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Если Python — это контроллер, то Математика — это сама игра. Ты можешь нажимать кнопки сколько угодно, но без правил физики мяч не покатится. Сегодня мы выучим три главных правила: Линейная алгебра, Исчисление и Теория вероятностей.",
+            ach0_name: "Ачивка: Исследователь движка", ach0_desc: "Понял, зачем математика нужна в Machine Learning", ach0_reward: "+30 XP · +10 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если осознал мощь математики!",
+            l1_title: " Линейная алгебра: Язык данных", l1_sub: "Векторы, матрицы и скалярное произведение", l1_xp: "+80 XP",
+            l1_p1: "Ты уже знаком с векторами и матрицами из урока 1.3. Но теперь мы посмотрим на них под другим углом. В ML вектор — это не просто стрелка, а <strong>набор признаков</strong> (features) объекта. Например, вектор [150, 50, 2] может описывать дом: площадь, расстояние до центра, количество комнат.",
+            l1_code_title: " Скалярное произведение как мера сходства",
+            l1_lore_title: " Лор для гиков", l1_lore_text: "Косинусное сходство (Cosine Similarity) — это то, как поисковики и рекомендательные системы (как в Netflix или TikTok) находят похожий контент. Если косинус равен 1 — объекты идентичны по «направлению».",
+            ach1_name: "Ачивка: Алгебраист", ach1_desc: "Вычислил косинусное сходство между векторами", ach1_reward: "+80 XP · +25 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если увидел число близкое к 1!",
+            l2_title: "📉 Производные: Компас ИИ", l2_sub: "Как понять, в какую сторону двигаться?", l2_xp: "+100 XP",
+            l2_p1: "Производная показывает <strong>скорость изменения</strong> функции. Проще говоря, это <strong>уклон горы</strong> в конкретной точке. Если ты стоишь на склоне и хочешь спуститься в долину, тебе нужно знать, в какую сторону склон идёт вниз. Производная — это и есть твой компас!",
+            l2_analogy_title: "Игровая аналогия", l2_analogy_text: "Представь, что ты в VR-очках с завязанными глазами и должен найти самую низкую точку на карте. Ты ощупываешь ногами землю: если под правой ногой ниже — делаешь шаг вправо. Производная — это и есть «ощупывание земли» для нейросети.",
+            l2_code_title: "📝 Численное вычисление производной",
+            ach2_name: "Ачивка: Серфер склонов", ach2_desc: "Написал функцию для вычисления производной", ach2_reward: "+100 XP · +35 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел правильный наклон (6.0, 0.0, -4.0)!",
+            l3_title: "🚶 Градиентный спуск: Алгоритм обучения", l3_sub: "Как машина на самом деле «учится»", l3_xp: "+150 XP",
+            l3_p1: "Вот он — главный алгоритм Machine Learning! <strong>Градиентный спуск (Gradient Descent)</strong>. Мы берём производную (уклон) и делаем шаг в противоположную сторону. Повторяем это много раз, пока не окажемся в самой низкой точке (где ошибка минимальна).",
+            l3_code_title: "📝 Реализуем градиентный спуск",
+            l3_warn_title: "⚠️ Ловушка Learning Rate", l3_warn_text: "Если <code>learning_rate</code> слишком большой (например, 1.5), алгоритм будет перепрыгивать через долину и расходиться. Если слишком маленький (0.001) — будет идти очень долго. Подбор этого параметра — настоящее искусство в ML!",
+            ach3_name: "Ачивка: Градиентный райдер", ach3_desc: "Реализовал алгоритм градиентного спуска с нуля", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если алгоритм сошёлся к нулю!",
+            l4_title: "🎲 Теория вероятностей: Туман войны", l4_sub: "Как ИИ принимает решения в условиях неопределённости", l4_xp: "+120 XP",
+            l4_p1: "В реальном мире данные всегда зашумлены. ИИ не говорит «это точно кот», он говорит «это кот с вероятностью 94%». Основа этого — <strong>Теорема Байеса</strong>. Она позволяет обновлять наши убеждения по мере поступления новых данных.",
+            l4_code_title: "📝 Наивный байесовский классификатор (упрощённо)",
+            l4_meme: "Именно так работали первые спам-фильтры в 90-х! Они просто считали вероятности слов. Сегодня нейросети делают то же самое, но с миллионами параметров.",
+            ach4_name: "Ачивка: Мастер вероятностей", ach4_desc: "Применил теорему Байеса на практике", ach4_reward: "+120 XP · +40 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел 66.67%!",
+            l5_title: "БОСС-ФАЙТ: Линейная регрессия", l5_sub: "Собираем всё вместе: первая ML-модель", l5_xp: "+300 XP",
+            l5_meme: "Ты знаешь векторы, производные и градиентный спуск. Пришло время написать свою первую настоящую ML-модель, которая предсказывает числа!",
+            l5_code_title: "📝 Предсказываем урон от уровня персонажа",
+            l5_danger_title: "🚨 Проверь перед сдачей босса", l5_danger_text: "Модель обучилась? Формула выглядит логично (около 2 * Level + 10)? Предсказание для 15 уровня адекватное? Поздравляю — ты написал свой первый алгоритм машинного обучения с нуля! ",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: ML-Инженер", ach5_desc: "Написал алгоритм линейной регрессии с градиентным спуском", ach5_reward: "+300 XP · +150 💰 ·  Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% игроков получают эту ачивку на первом модуле ML. Ты — элита!",
+            sq_title: "📜 Побочные квесты (домашнее задание)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "📐 Квест «Векторный бой»", sq1_text: "Создай 3 вектора, описывающих разных монстров (HP, Атака, Защита). Вычисли косинусное сходство между ними и найди самого «похожего» на игрока.", sq1_reward: "💰 Награда: 50 AI-коинов",
+            sq2_title: "📉 Квест «Разные скорости»", sq2_text: "Запусти код градиентного спуска с разными <code>learning_rate</code> (0.01, 0.1, 0.5, 1.5). Запиши, при каком значении алгоритм «разваливается» (выдаёт бесконечность).", sq2_reward: "💰 Награда: 100 AI-коинов",
+            sq3_title: "🏠 Квест «Предсказатель цен»", sq3_text: "Найди в интернете простой CSV-датасет (например, цены на квартиры). Загрузи его через Pandas, выбери один признак (например, площадь) и примени к нему свой код линейной регрессии, чтобы предсказать цену.", sq3_reward: " Награда: 200 AI-коинов + титул «Junior Data Scientist»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял роль математики как «физики» ИИ", sum2: "✅ Освоил косинусное сходство векторов",
+            sum3: "✅ Научился вычислять производные численно", sum4: "✅ Реализовал градиентный спуск",
+            sum5: "✅ Применил теорему Байеса", sum6: "🏆 Финальный босс — Линейная регрессия побеждена!",
+            sum_meme: "Поздравляю, Математик! Теперь ты знаешь, как ИИ учится на самом деле. В следующем уроке мы возьмём готовые инструменты из Scikit-Learn и решим настоящую задачу классификации!",
+            nav_back: "← Предыдущий квест", nav_back_title: "1.5 Визуализация данных",
+            nav_next: "Следующий квест →", nav_next_title: "2.2 Линейная регрессия",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 2.1 • MODULE 2", title: "Math for AI",
+            subtitle: "Welcome to Module 2! 🎯 Today we look under the hood of the magic. Math is the «physics engine» of neural networks. Without it, AI is just a random number generator.",
+            duration: "⏱ 2.5 hours", level: "📙 Advanced", xp: "⭐ +800 XP", loot: "💰 +300 AI-coins", ach: "🏆 6 achievements",
+            progress_title: " Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: " Intro: Physics of the AI world", l0_sub: "Why do we even need math?", l0_xp: "+30 XP",
+            l0_p1: "Video games have a physics engine (like in Unreal Engine) that calculates gravity and collisions. In AI, <strong>math</strong> plays the role of such an engine. It tells the neural network which way to «move» to become smarter.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "If Python is the controller, then Math is the game itself. You can press buttons all you want, but without physics rules, the ball won't roll. Today we'll learn three main rules: Linear Algebra, Calculus, and Probability Theory.",
+            ach0_name: "Achievement: Engine Explorer", ach0_desc: "Understood why math is needed in Machine Learning", ach0_reward: "+30 XP · +10 💰 ·  Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you realized the power of math!",
+            l1_title: "📐 Linear Algebra: Language of data", l1_sub: "Vectors, matrices, and dot product", l1_xp: "+80 XP",
+            l1_p1: "You're already familiar with vectors and matrices from lesson 1.3. But now we'll look at them from a different angle. In ML, a vector is not just an arrow, but a <strong>set of features</strong> of an object. For example, vector [150, 50, 2] can describe a house: area, distance to center, number of rooms.",
+            l1_code_title: "📝 Dot product as a similarity measure",
+            l1_lore_title: "📚 Lore for geeks", l1_lore_text: "Cosine Similarity is how search engines and recommendation systems (like Netflix or TikTok) find similar content. If cosine equals 1 — objects are identical in «direction».",
+            ach1_name: "Achievement: Algebraist", ach1_desc: "Calculated cosine similarity between vectors", ach1_reward: "+80 XP · +25 💰 · 🔵 Rare", ach1_btn: " Get achievement", ach1_hint: "Click if you saw a number close to 1!",
+            l2_title: "📉 Derivatives: AI's compass", l2_sub: "How to know which way to move?", l2_xp: "+100 XP",
+            l2_p1: "A derivative shows the <strong>rate of change</strong> of a function. Simply put, it's the <strong>slope of the hill</strong> at a specific point. If you're standing on a slope and want to go down to the valley, you need to know which way the slope goes down. The derivative is your compass!",
+            l2_analogy_title: "Game analogy", l2_analogy_text: "Imagine you're in VR goggles with a blindfold and must find the lowest point on the map. You feel the ground with your feet: if it's lower under your right foot — step right. The derivative is the neural network «feeling the ground».",
+            l2_code_title: "📝 Numerical derivative calculation",
+            ach2_name: "Achievement: Slope Surfer", ach2_desc: "Wrote a function to calculate the derivative", ach2_reward: "+100 XP · +35 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw the correct slope (6.0, 0.0, -4.0)!",
+            l3_title: "🚶 Gradient Descent: The learning algorithm", l3_sub: "How a machine actually «learns»", l3_xp: "+150 XP",
+            l3_p1: "Here it is — the main Machine Learning algorithm! <strong>Gradient Descent</strong>. We take the derivative (slope) and take a step in the opposite direction. We repeat this many times until we reach the lowest point (where error is minimal).",
+            l3_code_title: "📝 Implementing gradient descent",
+            l3_warn_title: "️ Learning Rate trap", l3_warn_text: "If <code>learning_rate</code> is too big (e.g., 1.5), the algorithm will jump over the valley and diverge. If too small (0.001) — it will take forever. Tuning this parameter is a true art in ML!",
+            ach3_name: "Achievement: Gradient Rider", ach3_desc: "Implemented gradient descent algorithm from scratch", ach3_reward: "+150 XP · +50 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if the algorithm converged to zero!",
+            l4_title: "🎲 Probability Theory: Fog of War", l4_sub: "How AI makes decisions under uncertainty", l4_xp: "+120 XP",
+            l4_p1: "In the real world, data is always noisy. AI doesn't say «it's definitely a cat», it says «it's a cat with 94% probability». The foundation of this is <strong>Bayes' Theorem</strong>. It allows us to update our beliefs as new data arrives.",
+            l4_code_title: "📝 Naive Bayesian classifier (simplified)",
+            l4_meme: "That's exactly how the first spam filters worked in the 90s! They just counted word probabilities. Today neural networks do the same, but with millions of parameters.",
+            ach4_name: "Achievement: Probability Master", ach4_desc: "Applied Bayes' theorem in practice", ach4_reward: "+120 XP · +40 💰 ·  Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you saw 66.67%!",
+            l5_title: "BOSS FIGHT: Linear Regression", l5_sub: "Putting it all together: first ML model", l5_xp: "+300 XP",
+            l5_meme: "You know vectors, derivatives, and gradient descent. Time to write your first real ML model that predicts numbers!",
+            l5_code_title: "📝 Predicting damage from character level",
+            l5_danger_title: "🚨 Check before submitting boss", l5_danger_text: "Did the model train? Does the formula look logical (around 2 * Level + 10)? Is the prediction for level 15 adequate? Congrats — you wrote your first machine learning algorithm from scratch! 🏆",
+            ach5_name: "LEGENDARY: ML Engineer", ach5_desc: "Wrote linear regression algorithm with gradient descent", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of players get this achievement in the first ML module. You're elite!",
+            sq_title: "📜 Side quests (homework)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "📐 Quest «Vector battle»", sq1_text: "Create 3 vectors describing different monsters (HP, Attack, Defense). Calculate cosine similarity between them and find the one most «similar» to the player.", sq1_reward: "💰 Reward: 50 AI-coins",
+            sq2_title: "📉 Quest «Different speeds»", sq2_text: "Run the gradient descent code with different <code>learning_rate</code> (0.01, 0.1, 0.5, 1.5). Record at which value the algorithm «breaks» (outputs infinity).", sq2_reward: "💰 Reward: 100 AI-coins",
+            sq3_title: "🏠 Quest «Price predictor»", sq3_text: "Find a simple CSV dataset online (e.g., apartment prices). Load it via Pandas, pick one feature (e.g., area) and apply your linear regression code to predict the price.", sq3_reward: "💰 Reward: 200 AI-coins + title «Junior Data Scientist»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood math's role as AI «physics»", sum2: "✅ Mastered cosine similarity of vectors",
+            sum3: "✅ Learned to calculate derivatives numerically", sum4: "✅ Implemented gradient descent",
+            sum5: "✅ Applied Bayes' theorem", sum6: "🏆 Final boss — Linear Regression defeated!",
+            sum_meme: "Congrats, Mathematician! Now you know how AI actually learns. In the next lesson, we'll take ready-made tools from Scikit-Learn and solve a real classification task!",
+            nav_back: "← Previous quest", nav_back_title: "1.5 Data Visualization",
+            nav_next: "Next quest →", nav_next_title: "2.2 Linear Regression",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 2.1 • MÓDULO 2", title: "Matemáticas para IA", subtitle: "¡Bienvenido al Módulo 2! 🎯 Hoy miramos bajo el capó de la magia. Las matemáticas son el «motor físico» de las redes neuronales.", duration: "⏱ 2.5 horas", level: "📙 Avanzado", xp: "⭐ +800 XP", loot: "💰 +300 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: " Intro: Física del mundo IA", l0_sub: "¿Por qué necesitamos matemáticas?", l0_xp: "+30 XP", l0_p1: "Los videojuegos tienen un motor físico. En la IA, las <strong>matemáticas</strong> juegan ese papel.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Si Python es el controlador, las Matemáticas son el juego. Hoy aprenderemos tres reglas: Álgebra Lineal, Cálculo y Probabilidad.", ach0_name: "Logro: Explorador del motor", ach0_desc: "Entendió por qué se necesitan matemáticas en ML", ach0_reward: "+30 XP · +10 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste el poder de las matemáticas!", l1_title: "📐 Álgebra Lineal: Lenguaje de datos", l1_sub: "Vectores y producto punto", l1_xp: "+80 XP", l1_p1: "En ML, un vector es un <strong>conjunto de características</strong> de un objeto.", l1_code_title: "📝 Producto punto como medida de similitud", l1_lore_title: "📚 Lore para geeks", l1_lore_text: "La similitud del coseno es cómo los motores de búsqueda encuentran contenido similar.", ach1_name: "Logro: Algebraísta", ach1_desc: "Calculó la similitud del coseno entre vectores", ach1_reward: "+80 XP · +25 💰 ·  Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si viste un número cerca de 1!", l2_title: "📉 Derivadas: La brújula de la IA", l2_sub: "¿Cómo saber hacia dónde moverse?", l2_xp: "+100 XP", l2_p1: "Una derivada muestra la <strong>pendiente de la colina</strong> en un punto específico.", l2_analogy_title: "Analogía de juego", l2_analogy_text: "Imagina que estás vendado y debes encontrar el punto más bajo. La derivada es la IA «palpando el suelo».", l2_code_title: "📝 Cálculo numérico de derivadas", ach2_name: "Logro: Surfista de pendientes", ach2_desc: "Escribió una función para calcular la derivada", ach2_reward: "+100 XP · +35 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste la pendiente correcta!", l3_title: " Descenso de gradiente: Algoritmo de aprendizaje", l3_sub: "Cómo una máquina realmente «aprende»", l3_xp: "+150 XP", l3_p1: "¡El algoritmo principal de ML! <strong>Descenso de gradiente</strong>. Tomamos la derivada y damos un paso en dirección opuesta.", l3_code_title: "📝 Implementando descenso de gradiente", l3_warn_title: "️ Trampa del Learning Rate", l3_warn_text: "Si <code>learning_rate</code> es muy grande, el algoritmo divergirá. Si es muy pequeño, tardará una eternidad.", ach3_name: "Logro: Jinete del gradiente", ach3_desc: "Implementó descenso de gradiente desde cero", ach3_reward: "+150 XP · +50 💰 ·  Épico", ach3_btn: " Obtener logro", ach3_hint: "¡Haz clic si el algoritmo convergió a cero!", l4_title: "🎲 Teoría de probabilidades: Niebla de guerra", l4_sub: "Cómo la IA toma decisiones bajo incertidumbre", l4_xp: "+120 XP", l4_p1: "La IA no dice «es definitivamente un gato», dice «es un gato con 94% de probabilidad». La base es el <strong>Teorema de Bayes</strong>.", l4_code_title: "📝 Clasificador bayesiano ingenuo", l4_meme: "¡Así funcionaban los primeros filtros de spam en los 90s!", ach4_name: "Logro: Maestro de probabilidades", ach4_desc: "Aplicó el teorema de Bayes en la práctica", ach4_reward: "+120 XP · +40 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste 66.67%!", l5_title: "¡PELEA JEFE: Regresión Lineal!", l5_sub: "Juntando todo: primer modelo ML", l5_xp: "+300 XP", l5_meme: "Conoces vectores, derivadas y descenso de gradiente. ¡Es hora de escribir tu primer modelo ML real!", l5_code_title: "📝 Prediciendo daño por nivel de personaje", l5_danger_title: "🚨 Revisa antes de entregar", l5_danger_text: "¿La fórmula se ve lógica? ¿La predicción es adecuada? ¡Felicidades — escribiste tu primer algoritmo ML desde cero! 🏆", ach5_name: "LEGENDARIO: Ingeniero ML", ach5_desc: "Escribió regresión lineal con descenso de gradiente", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% lo consigue!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "📐 Misión «Batalla de vectores»", sq1_text: "Crea 3 vectores de monstruos. Calcula similitud del coseno.", sq1_reward: "💰 Recompensa: 50 AI-monedas", sq2_title: "📉 Misión «Diferentes velocidades»", sq2_text: "Ejecuta el código con diferentes <code>learning_rate</code>. Registra cuándo se rompe.", sq2_reward: "💰 Recompensa: 100 AI-monedas", sq3_title: "🏠 Misión «Predictor de precios»", sq3_text: "Carga un CSV de precios de apartamentos y aplica tu regresión lineal.", sq3_reward: "💰 Recompensa: 200 AI-monedas + título «Junior Data Scientist»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste el rol de las matemáticas", sum2: "✅ Dominaste similitud del coseno", sum3: "✅ Calculaste derivadas numéricamente", sum4: "✅ Implementaste descenso de gradiente", sum5: "✅ Aplicaste teorema de Bayes", sum6: " ¡Jefe final derrotado!", sum_meme: "¡Felicidades, Matemático! Ahora sabes cómo aprende la IA.", nav_back: "← Misión anterior", nav_back_title: "1.5 Visualización", nav_next: "Siguiente misión →", nav_next_title: "2.2 Regresión Lineal", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 2.1 • MODUL 2", title: "Mathematik für KI", subtitle: "Willkommen in Modul 2! 🎯 Heute schauen wir unter die Haube der Magie. Mathematik ist die «Physik-Engine» neuronaler Netze.", duration: " 2,5 Stunden", level: " Fortgeschritten", xp: "⭐ +800 XP", loot: "💰 +300 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🧠 Intro: Physik der KI-Welt", l0_sub: "Warum brauchen wir Mathematik?", l0_xp: "+30 XP", l0_p1: "Videospiele haben eine Physik-Engine. In der KI spielt <strong>Mathematik</strong> diese Rolle.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Wenn Python der Controller ist, ist Mathematik das Spiel selbst. Heute lernen wir drei Regeln: Lineare Algebra, Analysis und Wahrscheinlichkeit.", ach0_name: "Erfolg: Engine-Explorer", ach0_desc: "Verstand, warum Mathematik in ML nötig ist", ach0_reward: "+30 XP · +10 💰 ·  Gewöhnlich", ach0_btn: " Erfolg erhalten", ach0_hint: "Klicke, wenn du die Macht der Mathematik erkannt hast!", l1_title: "📐 Lineare Algebra: Sprache der Daten", l1_sub: "Vektoren und Skalarprodukt", l1_xp: "+80 XP", l1_p1: "In ML ist ein Vektor ein <strong>Satz von Merkmalen</strong> eines Objekts.", l1_code_title: "📝 Skalarprodukt als Ähnlichkeitsmaß", l1_lore_title: "📚 Lore für Geeks", l1_lore_text: "Kosinus-Ähnlichkeit ist, wie Suchmaschinen ähnliche Inhalte finden.", ach1_name: "Erfolg: Algebraist", ach1_desc: "Kosinus-Ähnlichkeit zwischen Vektoren berechnet", ach1_reward: "+80 XP · +25 💰 · 🔵 Selten", ach1_btn: " Erfolg erhalten", ach1_hint: "Klicke, wenn du eine Zahl nahe 1 sahst!", l2_title: "📉 Ableitungen: Der Kompass der KI", l2_sub: "Wie weiß man, wohin man sich bewegen soll?", l2_xp: "+100 XP", l2_p1: "Eine Ableitung zeigt die <strong>Steigung des Hügels</strong> an einem bestimmten Punkt.", l2_analogy_title: "Spiel-Analogie", l2_analogy_text: "Stell dir vor, du bist blind und musst den tiefsten Punkt finden. Die Ableitung ist die KI, die «den Boden fühlt».", l2_code_title: "📝 Numerische Ableitungsberechnung", ach2_name: "Erfolg: Hang-Surfer", ach2_desc: "Funktion zur Ableitungsberechnung geschrieben", ach2_reward: "+100 XP · +35 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du die richtige Steigung sahst!", l3_title: "🚶 Gradientenabstieg: Der Lernalgorithmus", l3_sub: "Wie eine Maschine wirklich «lernt»", l3_xp: "+150 XP", l3_p1: "Der Hauptalgorithmus des ML! <strong>Gradientenabstieg</strong>. Wir nehmen die Ableitung und machen einen Schritt in die entgegengesetzte Richtung.", l3_code_title: "📝 Gradientenabstieg implementieren", l3_warn_title: "⚠️ Learning Rate Falle", l3_warn_text: "Wenn <code>learning_rate</code> zu groß ist, divergiert der Algorithmus. Wenn zu klein, dauert es ewig.", ach3_name: "Erfolg: Gradienten-Reiter", ach3_desc: "Gradientenabstieg von Grund auf implementiert", ach3_reward: "+150 XP · +50 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn der Algorithmus gegen Null konvergierte!", l4_title: "🎲 Wahrscheinlichkeitstheorie: Nebel des Krieges", l4_sub: "Wie KI unter Unsicherheit entscheidet", l4_xp: "+120 XP", l4_p1: "KI sagt nicht «es ist definitiv eine Katze», sondern «es ist eine Katze mit 94% Wahrscheinlichkeit». Die Basis ist der <strong>Satz von Bayes</strong>.", l4_code_title: "📝 Naiver Bayes-Klassifikator", l4_meme: "So funktionierten die ersten Spam-Filter in den 90ern!", ach4_name: "Erfolg: Wahrscheinlichkeitsmeister", ach4_desc: "Satz von Bayes in der Praxis angewendet", ach4_reward: "+120 XP · +40 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du 66.67% sahst!", l5_title: "BOSSKAMPF: Lineare Regression", l5_sub: "Alles zusammen: erstes ML-Modell", l5_xp: "+300 XP", l5_meme: "Du kennst Vektoren, Ableitungen und Gradientenabstieg. Zeit, dein erstes echtes ML-Modell zu schreiben!", l5_code_title: "📝 Schaden basierend auf Level vorhersagen", l5_danger_title: "🚨 Prüfe vor Boss-Abgabe", l5_danger_text: "Sieht die Formel logisch aus? Ist die Vorhersade adäquat? Glückwunsch — du hast deinen ersten ML-Algorithmus von Grund auf geschrieben! 🏆", ach5_name: "LEGENDÄR: ML-Ingenieur", ach5_desc: "Lineare Regression mit Gradientenabstieg geschrieben", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% schaffen das!", sq_title: " Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "📐 Quest «Vektor-Kampf»", sq1_text: "Erstelle 3 Monster-Vektoren. Berechne Kosinus-Ähnlichkeit.", sq1_reward: " Belohnung: 50 AI-Münzen", sq2_title: "📉 Quest «Verschiedene Geschwindigkeiten»", sq2_text: "Führe den Code mit verschiedenen <code>learning_rate</code> aus. Notiere, wann er abbricht.", sq2_reward: "💰 Belohnung: 100 AI-Münzen", sq3_title: "🏠 Quest «Preisvorhersager»", sq3_text: "Lade einen CSV-Datensatz mit Wohnungspreisen und wende deine lineare Regression an.", sq3_reward: "💰 Belohnung: 200 AI-Münzen + Titel «Junior Data Scientist»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Rolle der Mathematik verstanden", sum2: "✅ Kosinus-Ähnlichkeit gemeistert", sum3: "✅ Ableitungen numerisch berechnet", sum4: "✅ Gradientenabstieg implementiert", sum5: "✅ Satz von Bayes angewendet", sum6: "🏆 Endboss besiegt!", sum_meme: "Glückwunsch, Mathematiker! Jetzt weißt du, wie KI wirklich lernt.", nav_back: "← Vorheriger Quest", nav_back_title: "1.5 Datenvisualisierung", nav_next: "Nächster Quest →", nav_next_title: "2.2 Lineare Regression", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 2.1 • 2-МОДУЛЬ", title: "ЖИ үшін математика", subtitle: "2-модульге қош келдің! 🎯 Бүгін сиқырдың ішіне үңілеміз. Математика — нейрондық желілердің «физикалық движогі».", duration: " 2,5 сағат", level: "📙 Озық", xp: "⭐ +800 XP", loot: "💰 +300 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🧠 Кіріспе: ЖИ әлемінің физикасы", l0_sub: "Математика неге керек?", l0_xp: "+30 XP", l0_p1: "Бейне ойындарда физикалық движок бар. ЖИ-де <strong>математика</strong> осы рөлді атқарады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Python — контроллер болса, Математика — ойынның өзі. Бүгін үш ережені үйренеміз: Сызықтық алгебра, Анализ және қтималдық.", ach0_name: "Жетістік: Движок зерттеушісі", ach0_desc: "ML-де математиканың неге керек екенін түсінді", ach0_reward: "+30 XP · +10  · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Математиканың күшін түсінсең — бас!", l1_title: "📐 Сызықтық алгебра: Деректер тілі", l1_sub: "Векторлар және скаляр көбейтінді", l1_xp: "+80 XP", l1_p1: "ML-де вектор — объектінің <strong>белгілер жиынтығы</strong>.", l1_code_title: "📝 Ұқсастық өлшемі ретінде скаляр көбейтінді", l1_lore_title: "📚 Гиктерге арналған лор", l1_lore_text: "Косинустық ұқсастық — іздеу жүйелері ұқсас контентті қалай табатыны.", ach1_name: "Жетістік: Алгебраист", ach1_desc: "Векторлар арасындағы косинустық ұқсастықты есептеді", ach1_reward: "+80 XP · +25 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "1-ге жақын санды көрсең — бас!", l2_title: "📉 Туындылар: ЖИ компасы", l2_sub: "Қай жаққа қозғалу керек?", l2_xp: "+100 XP", l2_p1: "Туынды — нақты нүктедегі <strong>төбенің еңісі</strong>.", l2_analogy_title: "Ойын аналогиясы", l2_analogy_text: "Көзің байланулы ең төменгі нүктені табу керек делік. Туынды — ЖИ-дің «жерді сипалауы».", l2_code_title: "📝 Туындыны сандық есептеу", ach2_name: "Жетістік: Еңіс серфері", ach2_desc: "Туындыны есептеу функциясын жазды", ach2_reward: "+100 XP · +35 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Дұрыс еңісті көрсең — бас!", l3_title: "🚶 Градиенттік түсу: Оқыту алгоритмі", l3_sub: "Машина қалай «оқиды»", l3_xp: "+150 XP", l3_p1: "ML-дің негізгі алгоритмі! <strong>Градиенттік түсу</strong>. Туындыны алып, қарама-қарсы бағытта қадам жасаймыз.", l3_code_title: "📝 Градиенттік түсуді жүзеге асыру", l3_warn_title: "⚠️ Learning Rate тұзағы", l3_warn_text: "Егер <code>learning_rate</code> тым үлкен болса, алгоритм алшақтайды. Тым кіші болса — өте ұзақ жүреді.", ach3_name: "Жетістік: Градиент райдері", ach3_desc: "Градиенттік түсуді нөлден жүзеге асырды", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Алгоритм нөлге жинақталса — бас!", l4_title: "🎲 Ықтималдық теориясы: Соғыс тұманы", l4_sub: "ЖИ белгісіздікте қалай шешім қабылдайды", l4_xp: "+120 XP", l4_p1: "ЖИ «бұл нақты мысық» демейді, «бұл 94% ықтималдықпен мысық» дейді. Негізі — <strong>Байес теоремасы</strong>.", l4_code_title: " Наивті байестік классификатор", l4_meme: "90-жылдардағы алғашқы спам-сүзгілер дәл осылай жұмыс істеді!", ach4_name: "Жетістік: Ықтималдық шебері", ach4_desc: "Байес теоремасын тәжірибеде қолданды", ach4_reward: "+120 XP · +40  · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "66.67% көрсең — бас!", l5_title: "БОСС-ФАЙТ: Сызықтық регрессия", l5_sub: "Бәрін біріктіру: бірінші ML моделі", l5_xp: "+300 XP", l5_meme: "Векторларды, туындыларды және градиенттік түсуді білесің. Бірінші нақты ML моделін жазу уақыты келді!", l5_code_title: "📝 Кейіпкер деңгейінен зақымды болжау", l5_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l5_danger_text: "Формула логикалық көріне ме? Болжам дұрыс па? Құттықтаймын — бірінші ML алгоритміңді нөлден жаздың! 🏆", ach5_name: "АҢЫЗДЫҚ: ML-Инженер", ach5_desc: "Градиенттік түсумен сызықтық регрессия жазды", ach5_reward: "+300 XP · +150 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% ғана алады!", sq_title: " Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "📐 Квест «Векторлық шайқас»", sq1_text: "3 монстр векторын жаса. Косинустық ұқсастықты есепте.", sq1_reward: "💰 Сыйлық: 50 ЖИ-теңге", sq2_title: " Квест «Әртүрлі жылдамдықтар»", sq2_text: "Кодты әртүрлі <code>learning_rate</code> мәндерімен іске қос. Қай жерде бұзылатынын жаз.", sq2_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq3_title: "🏠 Квест «Баға болжаушы»", sq3_text: "Пәтер бағалары бар CSV жүктеп, сызықтық регрессияны қолдан.", sq3_reward: "💰 Сыйлық: 200 ЖИ-теңге + «Junior Data Scientist» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Математиканың рөлін түсіндің", sum2: "✅ Косинустық ұқсастықты игердің", sum3: "✅ Туындыларды сандық есептедің", sum4: "✅ Градиенттік түсуді жүзеге асырдың", sum5: "✅ Байес теоремасын қолдандың", sum6: "🏆 Финалды босс — Сызықтық регрессия жеңілді!", sum_meme: "Құттықтаймын, Математик! Енді ЖИ-дің қалай оқитынын білесің.", nav_back: "← Алдыңғы квест", nav_back_title: "1.5 Визуализация", nav_next: "Келесі квест →", nav_next_title: "2.2 Сызықтық регрессия", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
