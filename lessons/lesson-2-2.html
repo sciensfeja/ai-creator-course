@@ -428,7 +428,7 @@ print("=" * 50)
 new_areas = np.array([[50], [100], [150]])
 predictions = model.predict(new_areas)
 for area, price in zip(new_areas, predictions):
-    print(f"Apartment {area[0]} sqm → ${price[0]*1000:.0f}")
+    print(f"Apartment {area[0]} sqm → ${price*1000:.0f}")
 
 # Visualize
 plt.figure(figsize=(10, 6))
