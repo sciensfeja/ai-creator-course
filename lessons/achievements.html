@@ -64,55 +64,46 @@
             flex-shrink: 0;
         }
 
-        /* УЛУЧШЕННАЯ НАВИГАЦИЯ */
-        .nav-links {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            overflow-x: auto;
-            padding: 0.3rem 0;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 180, 0, 0.5) transparent;
-            -ms-overflow-style: none;
-        }
+      /* Горизонтальная навигация со скроллом */
+.nav-links {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 180, 0, 0.5) transparent;
+    padding: 0.5rem 0;
+    -webkit-overflow-scrolling: touch; /* для iOS */
+}
 
-        .nav-links::-webkit-scrollbar {
-            height: 4px;
-        }
+.nav-links::-webkit-scrollbar {
+    height: 4px;
+}
 
-        .nav-links::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-        }
+.nav-links::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-        .nav-links::-webkit-scrollbar-thumb {
-            background: rgba(255, 180, 0, 0.5);
-            border-radius: 2px;
-        }
+.nav-links::-webkit-scrollbar-thumb {
+    background: rgba(255, 180, 0, 0.5);
+    border-radius: 2px;
+}
 
-        .nav-links::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 180, 0, 0.8);
-        }
+.nav-link {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
-        .nav-link {
-            color: #a0a3b8;
-            text-decoration: none;
-            padding: 0.4rem 0.7rem;
-            border-radius: 6px;
-            transition: all 0.3s;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 180, 0, 0.1);
-            color: #ffb400;
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, #ffb400, #ff50a0);
-            color: white;
-        }
+/* Для мобильных */
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 0.3rem;
+        font-size: 0.85rem;
+    }
+    
+    .nav-link {
+        padding: 0.3rem 0.6rem;
+    }
+}
 
         /* ВЫПАДАЮЩЕЕ МЕНЮ */
         .dropdown {
