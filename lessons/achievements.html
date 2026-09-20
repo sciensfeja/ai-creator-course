@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆Зал Славы — AI Creator</title>
+    <title>🏆 Зал Славы — AI Creator</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <style>
         * {
             margin: 0;
@@ -64,115 +65,51 @@
             flex-shrink: 0;
         }
 
-      /* Горизонтальная навигация со скроллом */
-.nav-links {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 180, 0, 0.5) transparent;
-    padding: 0.5rem 0;
-    -webkit-overflow-scrolling: touch; /* для iOS */
-}
-
-.nav-links::-webkit-scrollbar {
-    height: 4px;
-}
-
-.nav-links::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.nav-links::-webkit-scrollbar-thumb {
-    background: rgba(255, 180, 0, 0.5);
-    border-radius: 2px;
-}
-
-.nav-link {
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-/* Для мобильных */
-@media (max-width: 768px) {
-    .nav-links {
-        gap: 0.3rem;
-        font-size: 0.85rem;
-    }
-    
-    .nav-link {
-        padding: 0.3rem 0.6rem;
-    }
-}
-
-        /* ВЫПАДАЮЩЕЕ МЕНЮ */
-        .dropdown {
-            position: relative;
-            display: inline-block;
+        /* Горизонтальная навигация со скроллом */
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 180, 0, 0.5) transparent;
+            padding: 0.5rem 0;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .dropdown-toggle {
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-family: inherit;
-            color: #a0a3b8;
-            padding: 0.4rem 0.7rem;
-            border-radius: 6px;
-            transition: all 0.3s;
-            font-size: 0.85rem;
+        .nav-links::-webkit-scrollbar {
+            height: 4px;
         }
 
-        .dropdown-toggle:hover {
-            background: rgba(255, 180, 0, 0.1);
-            color: #ffb400;
+        .nav-links::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: rgba(10, 14, 39, 0.98);
-            border: 1px solid rgba(255, 180, 0, 0.3);
-            border-radius: 8px;
-            min-width: 200px;
-            z-index: 1000;
-            margin-top: 0.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
+        .nav-links::-webkit-scrollbar-thumb {
+            background: rgba(255, 180, 0, 0.5);
+            border-radius: 2px;
         }
 
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .dropdown-item {
-            display: block;
-            padding: 0.6rem 1rem;
+        .nav-link {
+            white-space: nowrap;
+            flex-shrink: 0;
             color: #a0a3b8;
             text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
             transition: all 0.3s;
             font-size: 0.9rem;
         }
 
-        .dropdown-item:hover {
+        .nav-link:hover {
             background: rgba(255, 180, 0, 0.1);
             color: #ffb400;
         }
 
-        .dropdown-item.active {
-            background: linear-gradient(135deg, rgba(255, 180, 0, 0.2), rgba(255, 80, 160, 0.2));
-            color: #ffb400;
+        .nav-link.active {
+            background: linear-gradient(135deg, #ffb400, #ff50a0);
+            color: white;
         }
 
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
-        /* МОБИЛЬНОЕ МЕНЮ */
         .mobile-menu-btn {
             display: none;
             background: none;
@@ -601,7 +538,6 @@
             .nav-links {
                 display: none;
             }
-            
             .mobile-menu-btn {
                 display: block;
             }
@@ -621,41 +557,37 @@
     <div class="header-content">
         <a href="../index.html" class="logo">🏆 AI Creator</a>
         
-        <!-- ДЕСКТОПНАЯ НАВИГАЦИЯ С ВЫПАДАЮЩИМ МЕНЮ -->
-    <nav class="nav-links">
-    <a href="../index.html" class="nav-link">📚 Курс</a>
-    <a href="lesson-0-setup.html" class="nav-link">0</a>
-    <a href="lesson-1-1.html" class="nav-link">1.1</a>
-    <a href="lesson-1-2.html" class="nav-link">1.2</a>
-    <a href="lesson-1-3.html" class="nav-link">1.3</a>
-    <a href="lesson-1-4.html" class="nav-link">1.4</a>
-    <a href="lesson-1-5.html" class="nav-link">1.5</a>
-    <a href="lesson-2-1.html" class="nav-link">2.1</a>
-    <a href="lesson-2-2.html" class="nav-link">2.2</a>
-    <a href="achievements.html" class="nav-link active">🏆</a>
-</nav>
+        <nav class="nav-links">
+            <a href="../index.html" class="nav-link">📚 Курс</a>
+            <a href="lesson-0-setup.html" class="nav-link">0</a>
+            <a href="lesson-1-1.html" class="nav-link">1.1</a>
+            <a href="lesson-1-2.html" class="nav-link">1.2</a>
+            <a href="lesson-1-3.html" class="nav-link">1.3</a>
+            <a href="lesson-1-4.html" class="nav-link">1.4</a>
+            <a href="lesson-1-5.html" class="nav-link">1.5</a>
+            <a href="lesson-2-1.html" class="nav-link">2.1</a>
+            <a href="lesson-2-2.html" class="nav-link">2.2</a>
+            <a href="achievements.html" class="nav-link active">🏆</a>
+        </nav>
 
-        <!-- КНОПКА МОБИЛЬНОГО МЕНЮ -->
         <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
     </div>
 </header>
 
-<!-- МОБИЛЬНОЕ МЕНЮ -->
 <div class="mobile-menu" id="mobile-menu">
     <a href="../index.html" class="nav-link">📚 Курс</a>
     <a href="lesson-0-setup.html" class="nav-link">🎮 Урок 0: Установка</a>
     <a href="lesson-1-1.html" class="nav-link">⚔️ Урок 1.1: Первый ИИ-бот</a>
     <a href="lesson-1-2.html" class="nav-link">🎲 Урок 1.2: Своя игра</a>
     <a href="lesson-1-3.html" class="nav-link">📐 Урок 1.3: NumPy</a>
-    <a href="lesson-1-4.html" class="nav-link"> Урок 1.4: Pandas</a>
+    <a href="lesson-1-4.html" class="nav-link">📊 Урок 1.4: Pandas</a>
     <a href="lesson-1-5.html" class="nav-link">📈 Урок 1.5: Визуализация</a>
     <a href="lesson-2-1.html" class="nav-link">🧮 Урок 2.1: Математика для ИИ</a>
-    <a href="lesson-2-2.html" class="nav-link"> Урок 2.2: Линейная регрессия</a>
-    <a href="achievements.html" class="nav-link active"> Ачивки</a>
+    <a href="lesson-2-2.html" class="nav-link">🤖 Урок 2.2: Линейная регрессия</a>
+    <a href="achievements.html" class="nav-link active">🏆 Ачивки</a>
 </div>
 
 <div class="container">
-
     <div class="hero">
         <h1>🏆 Зал Славы</h1>
         <p>Собирай ачивки, прокачивай ранг и становись легендой AI Creator!</p>
@@ -711,7 +643,6 @@
         <p style="color: #a0a3b8; margin-bottom: 1rem;">⚠️ Сбросить весь прогресс? Это действие нельзя отменить.</p>
         <button class="reset-btn" id="reset-btn">🔄 Сбросить прогресс</button>
     </div>
-
 </div>
 
 <div class="notification" id="notification">
@@ -728,554 +659,59 @@
 
 <script>
     const ACHIEVEMENTS = [
-        // Урок 0: Установка VS Code
-        {
-            id: 'lesson0_installed',
-            name: 'Первые шаги',
-            desc: 'Установил VS Code и Python',
-            icon: '🎒',
-            rarity: 'common',
-            xp: 50,
-            coins: 10,
-            lesson: 0,
-            section: 'Урок 0: Установка VS Code'
-        },
-        {
-            id: 'lesson0_hello',
-            name: 'Hello, AI!',
-            desc: 'Написал первую программу',
-            icon: '👋',
-            rarity: 'common',
-            xp: 50,
-            coins: 10,
-            lesson: 0,
-            section: 'Урок 0: Установка VS Code'
-        },
-        {
-            id: 'lesson0_hotkeys',
-            name: 'Скоростной',
-            desc: 'Выучил 8 горячих клавиш',
-            icon: '⌨️',
-            rarity: 'rare',
-            xp: 100,
-            coins: 20,
-            lesson: 0,
-            section: 'Урок 0: Установка VS Code'
-        },
-
-        // Урок 1.1: Первый ИИ-бот
-        {
-            id: 'lesson1_inventory',
-            name: 'Мастер инвентаря',
-            desc: 'Создал 5 переменных',
-            icon: '🎒',
-            rarity: 'common',
-            xp: 30,
-            coins: 10,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-        {
-            id: 'lesson1_diplomat',
-            name: 'Дипломат',
-            desc: 'Написал диалог с NPC',
-            icon: '',
-            rarity: 'common',
-            xp: 40,
-            coins: 15,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-        {
-            id: 'lesson1_screenwriter',
-            name: 'Сценарист',
-            desc: 'Сделал ветвление сюжета',
-            icon: '🌳',
-            rarity: 'rare',
-            xp: 50,
-            coins: 20,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-        {
-            id: 'lesson1_grinder',
-            name: 'Гриндер',
-            desc: 'Освоил циклы',
-            icon: '🔄',
-            rarity: 'rare',
-            xp: 60,
-            coins: 20,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-        {
-            id: 'lesson1_skillmaster',
-            name: 'Мастер скиллов',
-            desc: 'Написал 4 функции',
-            icon: '⚡',
-            rarity: 'epic',
-            xp: 70,
-            coins: 30,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-        {
-            id: 'lesson1_boss',
-            name: 'Создатель ИИ',
-            desc: 'Победил финального босса',
-            icon: '',
-            rarity: 'legendary',
-            xp: 100,
-            coins: 100,
-            lesson: 1.1,
-            section: 'Урок 1.1: Первый ИИ-бот'
-        },
-
-        // Урок 1.2: Создаём свою игру
-        {
-            id: 'lesson1_2_architect',
-            name: 'Архитектор',
-            desc: 'Создал свой первый класс в Python',
-            icon: '🏗️',
-            rarity: 'common',
-            xp: 50,
-            coins: 15,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-        {
-            id: 'lesson1_2_gamedesigner',
-            name: 'Геймдизайнер',
-            desc: 'Создал 3 разных игровых персонажа с уникальными статами',
-            icon: '🎮',
-            rarity: 'common',
-            xp: 80,
-            coins: 25,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-        {
-            id: 'lesson1_2_fighter',
-            name: 'Боец',
-            desc: 'Реализовал метод атаки и устроил первую битву',
-            icon: '⚔️',
-            rarity: 'rare',
-            xp: 100,
-            coins: 30,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-        {
-            id: 'lesson1_2_tamer',
-            name: 'Укротитель',
-            desc: 'Создал своего виртуального питомца',
-            icon: '🐾',
-            rarity: 'rare',
-            xp: 100,
-            coins: 40,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-        {
-            id: 'lesson1_2_geneticist',
-            name: 'Генетик',
-            desc: 'Создал класс-наследник с уникальными скиллами',
-            icon: '🧬',
-            rarity: 'epic',
-            xp: 120,
-            coins: 50,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-        {
-            id: 'lesson1_2_universe_creator',
-            name: 'Создатель Вселенной',
-            desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием',
-            icon: '🌌',
-            rarity: 'legendary',
-            xp: 200,
-            coins: 100,
-            lesson: 1.2,
-            section: 'Урок 1.2: Создаём свою игру'
-        },
-
-        // Урок 1.3: NumPy и матрицы
-        {
-            id: 'lesson1_3_array_master',
-            name: 'Мастер массивов',
-            desc: 'Создал свой первый массив NumPy',
-            icon: '📊',
-            rarity: 'common',
-            xp: 50,
-            coins: 15,
-            lesson: 1.3,
-            section: 'Урок 1.3: NumPy и матрицы'
-        },
-        {
-            id: 'lesson1_3_vector_hero',
-            name: 'Векторный герой',
-            desc: 'Вычислил длину вектора',
-            icon: '📐',
-            rarity: 'rare',
-            xp: 80,
-            coins: 25,
-            lesson: 1.3,
-            section: 'Урок 1.3: NumPy и матрицы'
-        },
-        {
-            id: 'lesson1_3_matrix_lord',
-            name: 'Повелитель матриц',
-            desc: 'Создал двумерный массив',
-            icon: '🔢',
-            rarity: 'rare',
-            xp: 100,
-            coins: 30,
-            lesson: 1.3,
-            section: 'Урок 1.3: NumPy и матрицы'
-        },
-        {
-            id: 'lesson1_3_dot_product',
-            name: 'Мастер Dot Product',
-            desc: 'Выполнил скалярное произведение',
-            icon: '',
-            rarity: 'epic',
-            xp: 120,
-            coins: 50,
-            lesson: 1.3,
-            section: 'Урок 1.3: NumPy и матрицы'
-        },
-        {
-            id: 'lesson1_3_visionary',
-            name: 'Визионер',
-            desc: 'Обработал матрицу изображения',
-            icon: '👁️',
-            rarity: 'legendary',
-            xp: 200,
-            coins: 100,
-            lesson: 1.3,
-            section: 'Урок 1.3: NumPy и матрицы'
-        },
-        
-        // Урок 1.4: Pandas и таблицы
-        {
-            id: 'lesson1_4_installer',
-            name: 'Инженер зависимостей',
-            desc: 'Успешно установил библиотеку Pandas через терминал',
-            icon: '📦',
-            rarity: 'common',
-            xp: 30,
-            coins: 10,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        {
-            id: 'lesson1_4_archivist',
-            name: 'Архивариус',
-            desc: 'Создал свой первый DataFrame из словаря',
-            icon: '📜',
-            rarity: 'common',
-            xp: 50,
-            coins: 15,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        {
-            id: 'lesson1_4_miner',
-            name: 'Дата-майнер',
-            desc: 'Успешно загрузил данные из CSV файла',
-            icon: '⛏️',
-            rarity: 'rare',
-            xp: 80,
-            coins: 25,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        {
-            id: 'lesson1_4_analyst',
-            name: 'Аналитик',
-            desc: 'Использовал .head(), .shape и .describe()',
-            icon: '',
-            rarity: 'rare',
-            xp: 100,
-            coins: 30,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        {
-            id: 'lesson1_4_filter_master',
-            name: 'Мастер фильтров',
-            desc: 'Отфильтровал и отсортировал данные по условию',
-            icon: '️',
-            rarity: 'epic',
-            xp: 120,
-            coins: 50,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        {
-            id: 'lesson1_4_data_lord',
-            name: 'Повелитель Данных',
-            desc: 'Загрузил, отфильтровал и нашёл ответ в реальном датасете',
-            icon: '👑',
-            rarity: 'legendary',
-            xp: 200,
-            coins: 100,
-            lesson: 1.4,
-            section: 'Урок 1.4: Pandas и таблицы'
-        },
-        
-        // Урок 1.5: Визуализация данных
-        {
-            id: 'lesson1_5_installer',
-            name: 'Инженер зависимостей',
-            desc: 'Успешно установил библиотеки Matplotlib и Seaborn',
-            icon: '📦',
-            rarity: 'common',
-            xp: 30,
-            coins: 10,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        {
-            id: 'lesson1_5_artist',
-            name: 'Художник данных',
-            desc: 'Построил свой первый линейный график',
-            icon: '🎨',
-            rarity: 'common',
-            xp: 60,
-            coins: 20,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        {
-            id: 'lesson1_5_comparator',
-            name: 'Мастер сравнений',
-            desc: 'Построил столбчатую диаграмму с кастомизацией',
-            icon: '📊',
-            rarity: 'rare',
-            xp: 80,
-            coins: 25,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        {
-            id: 'lesson1_5_cartographer',
-            name: 'Картограф',
-            desc: 'Построил scatter plot с цветовой картой',
-            icon: '🎯',
-            rarity: 'rare',
-            xp: 100,
-            coins: 35,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        {
-            id: 'lesson1_5_visual_mage',
-            name: 'Визуальный маг',
-            desc: 'Использовал Seaborn для создания красивого графика',
-            icon: '🔮',
-            rarity: 'epic',
-            xp: 120,
-            coins: 50,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        {
-            id: 'lesson1_5_viz_master',
-            name: 'Мастер визуализации',
-            desc: 'Создал профессиональный многопанельный дашборд',
-            icon: '👑',
-            rarity: 'legendary',
-            xp: 250,
-            coins: 100,
-            lesson: 1.5,
-            section: 'Урок 1.5: Визуализация данных'
-        },
-        
-        // Урок 2.1: Математика для ИИ и ML
-        {
-            id: 'lesson2_1_explorer',
-            name: 'Исследователь движка',
-            desc: 'Понял, зачем математика нужна в Machine Learning',
-            icon: '🧭',
-            rarity: 'common',
-            xp: 30,
-            coins: 10,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },
-        {
-            id: 'lesson2_1_algebraist',
-            name: 'Алгебраист',
-            desc: 'Вычислил косинусное сходство между векторами',
-            icon: '📐',
-            rarity: 'rare',
-            xp: 80,
-            coins: 25,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },
-        {
-            id: 'lesson2_1_slope_surfer',
-            name: 'Серфер склонов',
-            desc: 'Написал функцию для вычисления производной',
-            icon: '🏄',
-            rarity: 'rare',
-            xp: 100,
-            coins: 35,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },
-        {
-            id: 'lesson2_1_gradient_rider',
-            name: 'Градиентный райдер',
-            desc: 'Реализовал алгоритм градиентного спуска с нуля',
-            icon: '🚶',
-            rarity: 'epic',
-            xp: 150,
-            coins: 50,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },
-        {
-            id: 'lesson2_1_probability_master',
-            name: 'Мастер вероятностей',
-            desc: 'Применил теорему Байеса на практике',
-            icon: '🎲',
-            rarity: 'epic',
-            xp: 120,
-            coins: 40,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },
-        {
-            id: 'lesson2_1_ml_engineer',
-            name: 'ML-Инженер',
-            desc: 'Написал алгоритм линейной регрессии с градиентным спуском',
-            icon: '👑',
-            rarity: 'legendary',
-            xp: 300,
-            coins: 150,
-            lesson: 2.1,
-            section: 'Урок 2.1: Математика для ИИ'
-        },  // <-- ВАЖНО: запятая здесь!
-                // Урок 2.2: Линейная регрессия
-        {
-            id: 'lesson2_2_installer',
-            name: 'Инженер зависимостей',
-            desc: 'Успешно установил библиотеку Scikit-Learn',
-            icon: '',
-            rarity: 'common',
-            xp: 30,
-            coins: 10,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        {
-            id: 'lesson2_2_theorist',
-            name: 'Теоретик ML',
-            desc: 'Понял разницу между регрессией и классификацией',
-            icon: '📚',
-            rarity: 'common',
-            xp: 60,
-            coins: 20,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        {
-            id: 'lesson2_2_sklearn_user',
-            name: 'Пользователь sklearn',
-            desc: 'Обучил первую модель с помощью Scikit-Learn',
-            icon: '🔧',
-            rarity: 'rare',
-            xp: 100,
-            coins: 30,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        {
-            id: 'lesson2_2_evaluator',
-            name: 'Оценщик моделей',
-            desc: 'Посчитал MSE и R² для модели',
-            icon: '📏',
-            rarity: 'rare',
-            xp: 120,
-            coins: 40,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        {
-            id: 'lesson2_2_visualizer',
-            name: 'Визуализатор ML',
-            desc: 'Визуализировал линию регрессии на графике',
-            icon: '🎨',
-            rarity: 'epic',
-            xp: 120,
-            coins: 50,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        {
-            id: 'lesson2_2_data_scientist',
-            name: 'Data Scientist',
-            desc: 'Решил реальную задачу предсказания с полным ML-пайплайном',
-            icon: '👑',
-            rarity: 'legendary',
-            xp: 250,
-            coins: 100,
-            lesson: 2.2,
-            section: 'Урок 2.2: Линейная регрессия'
-        },
-        // Общие достижения
-        {
-            id: 'polyglot',
-            name: 'Полиглот',
-            desc: 'Переключил все 5 языков на сайте',
-            icon: '',
-            rarity: 'rare',
-            xp: 50,
-            coins: 25,
-            lesson: 'general',
-            section: 'Общие достижения'
-        },
-        {
-            id: 'explorer',
-            name: 'Исследователь',
-            desc: 'Открыл все страницы курса',
-            icon: '️',
-            rarity: 'epic',
-            xp: 100,
-            coins: 50,
-            lesson: 'general',
-            section: 'Общие достижения'
-        },
-        {
-            id: 'homework_hero',
-            name: 'Герой домашки',
-            desc: 'Выполнил все 3 побочных квеста',
-            icon: '📜',
-            rarity: 'epic',
-            xp: 150,
-            coins: 75,
-            lesson: 'general',
-            section: 'Общие достижения'
-        },
-        {
-            id: 'ai_master',
-            name: 'AI Master',
-            desc: 'Сделал бота с памятью',
-            icon: '🧠',
-            rarity: 'legendary',
-            xp: 200,
-            coins: 100,
-            lesson: 'general',
-            section: 'Общие достижения'
-        }
+        { id: 'lesson0_installed', name: 'Первые шаги', desc: 'Установил VS Code и Python', icon: '🎒', rarity: 'common', xp: 50, coins: 10, lesson: 0, section: 'Урок 0: Установка VS Code' },
+        { id: 'lesson0_hello', name: 'Hello, AI!', desc: 'Написал первую программу', icon: '👋', rarity: 'common', xp: 50, coins: 10, lesson: 0, section: 'Урок 0: Установка VS Code' },
+        { id: 'lesson0_hotkeys', name: 'Скоростной', desc: 'Выучил 8 горячих клавиш', icon: '⌨️', rarity: 'rare', xp: 100, coins: 20, lesson: 0, section: 'Урок 0: Установка VS Code' },
+        { id: 'lesson1_inventory', name: 'Мастер инвентаря', desc: 'Создал 5 переменных', icon: '🎒', rarity: 'common', xp: 30, coins: 10, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_diplomat', name: 'Дипломат', desc: 'Написал диалог с NPC', icon: '💬', rarity: 'common', xp: 40, coins: 15, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_screenwriter', name: 'Сценарист', desc: 'Сделал ветвление сюжета', icon: '🌳', rarity: 'rare', xp: 50, coins: 20, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_grinder', name: 'Гриндер', desc: 'Освоил циклы', icon: '🔄', rarity: 'rare', xp: 60, coins: 20, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_skillmaster', name: 'Мастер скиллов', desc: 'Написал 4 функции', icon: '⚡', rarity: 'epic', xp: 70, coins: 30, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_boss', name: 'Создатель ИИ', desc: 'Победил финального босса', icon: '🤖', rarity: 'legendary', xp: 100, coins: 100, lesson: 1.1, section: 'Урок 1.1: Первый ИИ-бот' },
+        { id: 'lesson1_2_architect', name: 'Архитектор', desc: 'Создал свой первый класс в Python', icon: '🏗️', rarity: 'common', xp: 50, coins: 15, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_2_gamedesigner', name: 'Геймдизайнер', desc: 'Создал 3 разных игровых персонажа с уникальными статами', icon: '🎮', rarity: 'common', xp: 80, coins: 25, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_2_fighter', name: 'Боец', desc: 'Реализовал метод атаки и устроил первую битву', icon: '⚔️', rarity: 'rare', xp: 100, coins: 30, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_2_tamer', name: 'Укротитель', desc: 'Создал своего виртуального питомца', icon: '🐾', rarity: 'rare', xp: 100, coins: 40, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_2_geneticist', name: 'Генетик', desc: 'Создал класс-наследник с уникальными скиллами', icon: '🧬', rarity: 'epic', xp: 120, coins: 50, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_2_universe_creator', name: 'Создатель Вселенной', desc: 'Создал полноценную мини-RPG с битвой, классами и наследованием', icon: '🌌', rarity: 'legendary', xp: 200, coins: 100, lesson: 1.2, section: 'Урок 1.2: Создаём свою игру' },
+        { id: 'lesson1_3_array_master', name: 'Мастер массивов', desc: 'Создал свой первый массив NumPy', icon: '📊', rarity: 'common', xp: 50, coins: 15, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        { id: 'lesson1_3_vector_hero', name: 'Векторный герой', desc: 'Вычислил длину вектора', icon: '📐', rarity: 'rare', xp: 80, coins: 25, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        { id: 'lesson1_3_matrix_lord', name: 'Повелитель матриц', desc: 'Создал двумерный массив', icon: '🔢', rarity: 'rare', xp: 100, coins: 30, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        { id: 'lesson1_3_dot_product', name: 'Мастер Dot Product', desc: 'Выполнил скалярное произведение', icon: '💥', rarity: 'epic', xp: 120, coins: 50, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        { id: 'lesson1_3_visionary', name: 'Визионер', desc: 'Обработал матрицу изображения', icon: '👁️', rarity: 'legendary', xp: 200, coins: 100, lesson: 1.3, section: 'Урок 1.3: NumPy и матрицы' },
+        { id: 'lesson1_4_installer', name: 'Инженер зависимостей', desc: 'Успешно установил библиотеку Pandas через терминал', icon: '📦', rarity: 'common', xp: 30, coins: 10, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_4_archivist', name: 'Архивариус', desc: 'Создал свой первый DataFrame из словаря', icon: '📜', rarity: 'common', xp: 50, coins: 15, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_4_miner', name: 'Дата-майнер', desc: 'Успешно загрузил данные из CSV файла', icon: '⛏️', rarity: 'rare', xp: 80, coins: 25, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_4_analyst', name: 'Аналитик', desc: 'Использовал .head(), .shape и .describe()', icon: '🔍', rarity: 'rare', xp: 100, coins: 30, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_4_filter_master', name: 'Мастер фильтров', desc: 'Отфильтровал и отсортировал данные по условию', icon: '🌪️', rarity: 'epic', xp: 120, coins: 50, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_4_data_lord', name: 'Повелитель Данных', desc: 'Загрузил, отфильтровал и нашёл ответ в реальном датасете', icon: '👑', rarity: 'legendary', xp: 200, coins: 100, lesson: 1.4, section: 'Урок 1.4: Pandas и таблицы' },
+        { id: 'lesson1_5_installer', name: 'Инженер зависимостей', desc: 'Успешно установил библиотеки Matplotlib и Seaborn', icon: '📦', rarity: 'common', xp: 30, coins: 10, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson1_5_artist', name: 'Художник данных', desc: 'Построил свой первый линейный график', icon: '🎨', rarity: 'common', xp: 60, coins: 20, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson1_5_comparator', name: 'Мастер сравнений', desc: 'Построил столбчатую диаграмму с кастомизацией', icon: '📊', rarity: 'rare', xp: 80, coins: 25, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson1_5_cartographer', name: 'Картограф', desc: 'Построил scatter plot с цветовой картой', icon: '🎯', rarity: 'rare', xp: 100, coins: 35, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson1_5_visual_mage', name: 'Визуальный маг', desc: 'Использовал Seaborn для создания красивого графика', icon: '🔮', rarity: 'epic', xp: 120, coins: 50, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson1_5_viz_master', name: 'Мастер визуализации', desc: 'Создал профессиональный многопанельный дашборд', icon: '👑', rarity: 'legendary', xp: 250, coins: 100, lesson: 1.5, section: 'Урок 1.5: Визуализация данных' },
+        { id: 'lesson2_1_explorer', name: 'Исследователь движка', desc: 'Понял, зачем математика нужна в Machine Learning', icon: '🧭', rarity: 'common', xp: 30, coins: 10, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_1_algebraist', name: 'Алгебраист', desc: 'Вычислил косинусное сходство между векторами', icon: '📐', rarity: 'rare', xp: 80, coins: 25, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_1_slope_surfer', name: 'Серфер склонов', desc: 'Написал функцию для вычисления производной', icon: '🏄', rarity: 'rare', xp: 100, coins: 35, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_1_gradient_rider', name: 'Градиентный райдер', desc: 'Реализовал алгоритм градиентного спуска с нуля', icon: '🚶', rarity: 'epic', xp: 150, coins: 50, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_1_probability_master', name: 'Мастер вероятностей', desc: 'Применил теорему Байеса на практике', icon: '🎲', rarity: 'epic', xp: 120, coins: 40, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_1_ml_engineer', name: 'ML-Инженер', desc: 'Написал алгоритм линейной регрессии с градиентным спуском', icon: '👑', rarity: 'legendary', xp: 300, coins: 150, lesson: 2.1, section: 'Урок 2.1: Математика для ИИ' },
+        { id: 'lesson2_2_installer', name: 'Инженер зависимостей', desc: 'Успешно установил библиотеку Scikit-Learn', icon: '📦', rarity: 'common', xp: 30, coins: 10, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'lesson2_2_theorist', name: 'Теоретик ML', desc: 'Понял разницу между регрессией и классификацией', icon: '📚', rarity: 'common', xp: 60, coins: 20, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'lesson2_2_sklearn_user', name: 'Пользователь sklearn', desc: 'Обучил первую модель с помощью Scikit-Learn', icon: '🔧', rarity: 'rare', xp: 100, coins: 30, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'lesson2_2_evaluator', name: 'Оценщик моделей', desc: 'Посчитал MSE и R² для модели', icon: '📏', rarity: 'rare', xp: 120, coins: 40, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'lesson2_2_visualizer', name: 'Визуализатор ML', desc: 'Визуализировал линию регрессии на графике', icon: '🎨', rarity: 'epic', xp: 120, coins: 50, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'lesson2_2_data_scientist', name: 'Data Scientist', desc: 'Решил реальную задачу предсказания с полным ML-пайплайном', icon: '👑', rarity: 'legendary', xp: 250, coins: 100, lesson: 2.2, section: 'Урок 2.2: Линейная регрессия' },
+        { id: 'polyglot', name: 'Полиглот', desc: 'Переключил все 5 языков на сайте', icon: '🌍', rarity: 'rare', xp: 50, coins: 25, lesson: 'general', section: 'Общие достижения' },
+        { id: 'explorer', name: 'Исследователь', desc: 'Открыл все страницы курса', icon: '🗺️', rarity: 'epic', xp: 100, coins: 50, lesson: 'general', section: 'Общие достижения' },
+        { id: 'homework_hero', name: 'Герой домашки', desc: 'Выполнил все 3 побочных квеста', icon: '📜', rarity: 'epic', xp: 150, coins: 75, lesson: 'general', section: 'Общие достижения' },
+        { id: 'ai_master', name: 'AI Master', desc: 'Сделал бота с памятью', icon: '🧠', rarity: 'legendary', xp: 200, coins: 100, lesson: 'general', section: 'Общие достижения' }
     ];
 
     const RANKS = [
         { name: '🌱 Новичок', minXP: 0 },
-        { name: ' Ученик', minXP: 300 },
+        { name: '⚔️ Ученик', minXP: 300 },
         { name: '🛡️ Адепт', minXP: 800 },
         { name: '🔮 Мастер', minXP: 1500 },
         { name: '👑 Легенда', minXP: 2200 }
@@ -1283,17 +719,18 @@
 
     let unlockedIds = JSON.parse(localStorage.getItem('ai_creator_achievements') || '[]');
 
-    // Проверка параметра unlock в URL
     const urlParams = new URLSearchParams(window.location.search);
     const unlockParam = urlParams.get('unlock');
     if (unlockParam && !unlockedIds.includes(unlockParam)) {
-        unlockAchievement(unlockParam);
+        // Небольшая задержка, чтобы DOM успел отрисоваться перед уведомлением
+        setTimeout(() => {
+            unlockAchievement(unlockParam);
+        }, 100);
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     function unlockAchievement(id) {
         if (unlockedIds.includes(id)) return;
-        
         const achievement = ACHIEVEMENTS.find(a => a.id === id);
         if (!achievement) return;
 
@@ -1427,7 +864,6 @@
         return names[rarity] || rarity;
     }
 
-    // Обработчики фильтров
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1436,7 +872,6 @@
         });
     });
 
-    // Обработчик сброса прогресса
     document.getElementById('reset-btn').addEventListener('click', () => {
         if (confirm('Точно сбросить весь прогресс? Это действие нельзя отменить!')) {
             localStorage.removeItem('ai_creator_achievements');
@@ -1447,29 +882,18 @@
         }
     });
 
-    // Выпадающее меню
-    document.querySelector('.dropdown-toggle').addEventListener('click', function(e) {
-        e.stopPropagation();
-        this.nextElementSibling.classList.toggle('show');
-    });
-
-    document.addEventListener('click', function() {
-        document.querySelector('.dropdown-menu').classList.remove('show');
-    });
-
     // Мобильное меню
     document.getElementById('mobile-menu-btn').addEventListener('click', function() {
         document.getElementById('mobile-menu').classList.toggle('show');
     });
 
-    // Закрытие мобильного меню при клике на ссылку
     document.querySelectorAll('.mobile-menu .nav-link').forEach(link => {
         link.addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.remove('show');
         });
     });
 
-    // Инициализация
+    // Инициализация (теперь гарантированно сработает)
     renderAchievements();
     updateStats();
 </script>
