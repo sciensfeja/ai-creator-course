@@ -263,11 +263,25 @@ print(f"Predictions for levels 11, 15, 20: {predictions}")</code></pre>
         <p data-i18n="l3_p1">Обучить модель — это полдела. Нужно ещё понять, насколько хорошо она работает. Для регрессии есть две главные метрики: <strong>MSE</strong> (средняя квадратичная ошибка) и <strong>R²</strong> (коэффициент детерминации).</p>
 
         <h3 data-i18n="l3_code_title">📝 Считаем метрики</h3>
-        <pre><code>from sklearn.metrics import mean_squared_error, r2_score
+        <pre><code>import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+# ==========================================
+#  First step
+# ==========================================
+# X - this is the feature variable (e.g., character levels). It must be a 2D array (samples, features), so we reshape it
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).reshape(-1, 1)
+
+# y - this is the target variable (e.g., damage). It is a 1D array.
+y = np.array([12, 14, 15, 19, 20, 22, 25, 27, 28, 30])
+
+# ==========================================
+# Second step
+# ==========================================
 
 # Split data into training and testing sets
-from sklearn.model_selection import train_test_split
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train on training set
