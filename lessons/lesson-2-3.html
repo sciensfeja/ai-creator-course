@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 2.3: Деревья решений — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 2.3 • МОДУЛЬ 2</span>
+        <h1 data-i18n="title">Деревья решений и Random Forest</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 2.3! 🎯 Сегодня мы решим самую известную задачу в мире Data Science: предскажем, кто выжил на «Титанике», используя алгоритмы классификации.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📘 Средний</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +850 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +300 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Dataset -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Подготовка: Датасет «Титаник»</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Загружаем данные для анализа</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+40 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">«Титаник» — это "Hello World" в машинном обучении. У нас есть данные о пассажирах: класс билета, возраст, пол, цена билета. Наша задача — предсказать, выжил пассажир (1) или нет (0).</p>
+
+        <h3 data-i18n="l0_code_title">📝 Загрузка и первый взгляд на данные</h3>
+        <pre><code>import pandas as pd
+
+# Load the Titanic dataset from a URL
+url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
+df = pd.read_csv(url)
+
+# Display the first 5 rows
+print(df.head())
+
+# Check for missing values
+print("\nMissing values:")
+print(df.isnull().sum())</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l0_tip_title">💡 Обработка пропусков</strong>
+            <span data-i18n="l0_tip_text">В колонке <code>Age</code> есть пропуски. Для простоты мы заполним их медианным возрастом: <code>df['Age'].fillna(df['Age'].median(), inplace=True)</code>.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🚢</span>
+            <h3 data-i18n="ach0_name">Ачивка: Исследователь Титаника</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Загрузил и изучил датасет Титаника</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+40 XP · +15 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson2_3_explorer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если увидел таблицу с пассажирами!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Decision Tree Theory -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🌳 Что такое Дерево решений?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Алгоритм классификации</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Дерево решений (Decision Tree) работает как игра в «20 вопросов» или дерево диалогов в RPG. Оно задает последовательные вопросы о данных (например, «Пол = мужской?»), чтобы разделить пассажиров на группы и сделать прогноз.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🗣️</div>
+            <div class="game-text">
+                <strong data-i18n="l1_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l1_analogy_text">Представь NPC-стражника у ворот. Он спрашивает: «У тебя есть пропуск?» (Да/Нет). Если Нет, он спрашивает: «Ты платишь золотом?». Это и есть узлы дерева решений. Каждый вопрос сужает круг возможностей, пока не будет вынесен вердикт.</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🌳</span>
+            <h3 data-i18n="ach1_name">Ачивка: Строитель деревьев</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Понял принцип работы алгоритма Decision Tree</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+80 XP · +25 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson2_3_tree_builder" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если представил дерево диалогов!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Training -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">⚙️ Обучение первого дерева</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Используем Scikit-Learn</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">В Scikit-Learn есть готовый класс <code>DecisionTreeClassifier</code>. Нам нужно выбрать признаки (features) и целевую переменную (target), разделить данные на обучающую и тестовую выборки, а затем вызвать метод <code>.fit()</code>.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Код обучения модели</h3>
+        <pre><code>from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+
+# 1. Prepare features (X) and target (y)
+# We use Pclass, Sex, Age, and Fare. (Sex needs to be encoded to 0/1)
+df['Sex'] = df['Sex'].map({'male': 0, 'female': 1})
+df['Age'].fillna(df['Age'].median(), inplace=True)
+
+X = df[['Pclass', 'Sex', 'Age', 'Fare']]
+y = df['Survived']
+
+# 2. Split data: 80% for training, 20% for testing
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 3. Create and train the model
+tree_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+tree_model.fit(X_train, y_train)
+
+# 4. Make predictions and evaluate
+y_pred = tree_model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f"Decision Tree Accuracy: {accuracy:.4f}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l2_lore_text">Параметр <code>max_depth=3</code> ограничивает глубину дерева, чтобы оно не «запомнило» обучающие данные слишком точно (это называется переобучением или overfitting). Мы хотим, чтобы модель обобщала, а не зубрила!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚙️</span>
+            <h3 data-i18n="ach2_name">Ачивка: Оценщик моделей</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Обучил дерево решений и посчитал Accuracy</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+120 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson2_3_evaluator" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если точность получилась выше 75%!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Evaluation -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">📊 Матрица ошибок (Confusion Matrix)</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Глубокий анализ предсказаний</h2>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Accuracy (точность) — это хорошо, но она не рассказывает всю историю. Матрица ошибок показывает, <strong>какие именно</strong> ошибки делает модель: кого она спасла ошибочно, а кого погубила.</p>
+
+        <h3 data-i18n="l3_code_title">📝 Визуализация матрицы ошибок</h3>
+        <pre><code>from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Calculate confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# Plot it
+plt.figure(figsize=(6, 4))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Died', 'Survived'], 
+            yticklabels=['Died', 'Survived'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📊</span>
+            <h3 data-i18n="ach3_name">Ачивка: Аналитик ошибок</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Построил и интерпретировал матрицу ошибок</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+100 XP · +40 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_3_error_analyst" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел тепловую карту!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Random Forest -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🌲 Random Forest: Сила ансамбля</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Когда одно дерево — это мало</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Одно дерево решений склонно к переобучению. Что если создать <strong>сотни</strong> деревьев, каждое из которых обучается на случайной подвыборке данных, а затем заставить их «голосовать» за итоговый прогноз? Это и есть <strong>Random Forest</strong> (Случайный лес).</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🏰</div>
+            <div class="game-text">
+                <strong data-i18n="l4_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l4_analogy_text">Одно дерево — это один советник короля, который может ошибаться. Random Forest — это Совет Мудрецов из 100 человек. Каждый голосует, и итоговое решение принимается большинством. Это намного надежнее!</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l4_code_title">📝 Применяем Random Forest</h3>
+        <pre><code>from sklearn.ensemble import RandomForestClassifier
+
+# Create a forest of 100 trees
+rf_model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
+
+# Train the model
+rf_model.fit(X_train, y_train)
+
+# Predict and evaluate
+rf_pred = rf_model.predict(X_test)
+rf_accuracy = accuracy_score(y_test, rf_pred)
+
+print(f"Random Forest Accuracy: {rf_accuracy:.4f}")
+print(f"Improvement over single tree: {rf_accuracy - accuracy:.4f}")</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🌲</span>
+            <h3 data-i18n="ach4_name">Ачивка: Хранитель леса</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Применил алгоритм Random Forest</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_3_forest_master" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если точность Random Forest выше, чем у одного дерева!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Kaggle «Титаник»</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Генерируем файл для отправки на соревнование</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+300 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🏆🚢</span>
+            <span data-i18n="l5_meme">Ты знаешь теорию, умеешь оценивать модели и знаешь силу ансамблей. Пришло время сделать то, что делают настоящие Data Scientists: создать файл сабмита для Kaggle!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Финальный код: Генерация submission.csv</h3>
+        <pre><code># Assume we have a separate test dataset from Kaggle called 'test_df'
+# For this lesson, we simulate it by predicting on our held-out X_test
+
+# 1. Make predictions on the test set
+final_predictions = rf_model.predict(X_test)
+
+# 2. Create a submission DataFrame
+# In a real Kaggle scenario, you would use the actual PassengerId from test_df
+submission = pd.DataFrame({
+    'PassengerId': df.loc[X_test.index, 'PassengerId'],
+    'Survived': final_predictions
+})
+
+# 3. Save to CSV (index=False prevents saving row numbers)
+submission.to_csv('titanic_submission.csv', index=False)
+
+print("✅ Success! File 'titanic_submission.csv' has been created.")
+print("You can now upload this file to Kaggle and check your leaderboard score!")
+
+# Show first few rows of the submission
+print("\nSubmission preview:")
+print(submission.head())</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l5_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l5_danger_text">Файл <code>titanic_submission.csv</code> создался в твоей папке? В нем две колонки: <code>PassengerId</code> и <code>Survived</code>? Поздравляю — ты прошел классический путь Data Scientist от загрузки данных до сабмита! 🏆</span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Выживший на Титанике</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Успешно решил задачу классификации и сгенерировал Kaggle-сабмит</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+300 XP · +150 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson2_3_titanic_survivor" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% игроков получают эту ачивку. Ты — элита Data Science!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🌳 Квест «Визуализация дерева»</h3>
+            <p data-i18n="sq1_text">Используй <code>sklearn.tree.plot_tree</code>, чтобы нарисовать настоящее дерево решений (глубиной 3 уровня) и посмотреть, какие вопросы оно задает.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 50 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚙️ Квест «Настройка гиперпараметров»</h3>
+            <p data-i18n="sq2_text">Попробуй изменить <code>n_estimators</code> (10, 50, 200) и <code>max_depth</code> в Random Forest. Запиши, как меняется точность на тестовой выборке.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🏆 Квест «Настоящий Kaggle»</h3>
+            <p data-i18n="sq3_text">Зарегистрируйся на Kaggle.com, найди соревнование «Titanic - Machine Learning from Disaster». Загрузи свои предсказания и сделай скриншот своего места в таблице лидеров (Leaderboard).</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 250 AI-коинов + титул «Kaggle Competitor»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Загрузил и подготовил датасет «Титаник»</li>
+            <li data-i18n="sum2">✅ Понял принцип работы Деревьев решений</li>
+            <li data-i18n="sum3">✅ Обучил модель и оценил её через Accuracy</li>
+            <li data-i18n="sum4">✅ Проанализировал ошибки через Confusion Matrix</li>
+            <li data-i18n="sum5">✅ Применил мощный алгоритм Random Forest</li>
+            <li data-i18n="sum6">🏆 Финальный босс — Kaggle-сабмит создан!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Data Scientist! Ты освоил классическое машинное обучение. В следующем модуле мы погрузимся в мир Нейронных Сетей и Компьютерного Зрения. Готовься — будет по-настоящему круто!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-2-2.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">2.2 Линейная регрессия</span>
+        </a>
+        <a href="lesson-3-1.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий модуль →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.1 Введение в нейросети</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 2.3 • МОДУЛЬ 2", title: "Деревья решений и Random Forest",
+            subtitle: "Добро пожаловать на Уровень 2.3! 🎯 Сегодня мы решим самую известную задачу в мире Data Science: предскажем, кто выжил на «Титанике», используя алгоритмы классификации.",
+            duration: "⏱ 3 часа", level: "📘 Средний", xp: "⭐ +850 XP", loot: "💰 +300 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🚢 Подготовка: Датасет «Титаник»", l0_sub: "Загружаем данные для анализа", l0_xp: "+40 XP",
+            l0_p1: "«Титаник» — это 'Hello World' в машинном обучении. У нас есть данные о пассажирах: класс билета, возраст, пол, цена билета. Наша задача — предсказать, выжил пассажир (1) или нет (0).",
+            l0_code_title: "📝 Загрузка и первый взгляд на данные",
+            l0_tip_title: "💡 Обработка пропусков", l0_tip_text: "В колонке <code>Age</code> есть пропуски. Для простоты мы заполним их медианным возрастом: <code>df['Age'].fillna(df['Age'].median(), inplace=True)</code>.",
+            ach0_name: "Ачивка: Исследователь Титаника", ach0_desc: "Загрузил и изучил датасет Титаника", ach0_reward: "+40 XP · +15 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если увидел таблицу с пассажирами!",
+            l1_title: "🌳 Что такое Дерево решений?", l1_sub: "Алгоритм классификации", l1_xp: "+80 XP",
+            l1_p1: "Дерево решений (Decision Tree) работает как игра в «20 вопросов» или дерево диалогов в RPG. Оно задает последовательные вопросы о данных, чтобы разделить пассажиров на группы и сделать прогноз.",
+            l1_analogy_title: "Игровая аналогия", l1_analogy_text: "Представь NPC-стражника у ворот. Он спрашивает: «У тебя есть пропуск?» (Да/Нет). Если Нет, он спрашивает: «Ты платишь золотом?». Это и есть узлы дерева решений.",
+            ach1_name: "Ачивка: Строитель деревьев", ach1_desc: "Понял принцип работы алгоритма Decision Tree", ach1_reward: "+80 XP · +25 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если представил дерево диалогов!",
+            l2_title: "⚙️ Обучение первого дерева", l2_sub: "Используем Scikit-Learn", l2_xp: "+120 XP",
+            l2_p1: "В Scikit-Learn есть готовый класс <code>DecisionTreeClassifier</code>. Нам нужно выбрать признаки и целевую переменную, разделить данные, а затем вызвать метод <code>.fit()</code>.",
+            l2_code_title: "📝 Код обучения модели",
+            l2_lore_title: "📚 Лор для гиков", l2_lore_text: "Параметр <code>max_depth=3</code> ограничивает глубину дерева, чтобы оно не «запомнило» данные слишком точно (переобучение). Мы хотим, чтобы модель обобщала!",
+            ach2_name: "Ачивка: Оценщик моделей", ach2_desc: "Обучил дерево решений и посчитал Accuracy", ach2_reward: "+120 XP · +30 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если точность получилась выше 75%!",
+            l3_title: "📊 Матрица ошибок", l3_sub: "Глубокий анализ предсказаний", l3_xp: "+100 XP",
+            l3_p1: "Accuracy — это хорошо, но она не рассказывает всю историю. Матрица ошибок показывает, какие именно ошибки делает модель: кого она спасла ошибочно, а кого погубила.",
+            l3_code_title: "📝 Визуализация матрицы ошибок",
+            ach3_name: "Ачивка: Аналитик ошибок", ach3_desc: "Построил и интерпретировал матрицу ошибок", ach3_reward: "+100 XP · +40 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел тепловую карту!",
+            l4_title: "🌲 Random Forest: Сила ансамбля", l4_sub: "Когда одно дерево — это мало", l4_xp: "+150 XP",
+            l4_p1: "Одно дерево склонно к переобучению. Что если создать сотни деревьев, каждое из которых обучается на случайной подвыборке, а затем заставить их «голосовать»? Это и есть Random Forest.",
+            l4_analogy_title: "Игровая аналогия", l4_analogy_text: "Одно дерево — это один советник короля. Random Forest — это Совет Мудрецов из 100 человек. Каждый голосует, и итоговое решение принимается большинством. Это намного надежнее!",
+            l4_code_title: "📝 Применяем Random Forest",
+            ach4_name: "Ачивка: Хранитель леса", ach4_desc: "Применил алгоритм Random Forest", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если точность RF выше, чем у одного дерева!",
+            l5_title: "БОСС-ФАЙТ: Kaggle «Титаник»", l5_sub: "Генерируем файл для отправки на соревнование", l5_xp: "+300 XP",
+            l5_meme: "Ты знаешь теорию, умеешь оценивать модели и знаешь силу ансамблей. Пришло время сделать то, что делают настоящие Data Scientists: создать файл сабмита для Kaggle!",
+            l5_code_title: "📝 Финальный код: Генерация submission.csv",
+            l5_danger_title: "🚨 Проверь перед сдачей босса", l5_danger_text: "Файл titanic_submission.csv создался? В нем две колонки: PassengerId и Survived? Поздравляю — ты прошел классический путь Data Scientist! 🏆",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Выживший на Титанике", ach5_desc: "Успешно решил задачу классификации и сгенерировал Kaggle-сабмит", ach5_reward: "+300 XP · +150 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% игроков получают эту ачивку. Ты — элита Data Science!",
+            sq_title: "📜 Побочные квесты (домашнее задание)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🌳 Квест «Визуализация дерева»", sq1_text: "Используй <code>sklearn.tree.plot_tree</code>, чтобы нарисовать настоящее дерево решений и посмотреть, какие вопросы оно задает.", sq1_reward: "💰 Награда: 50 AI-коинов",
+            sq2_title: "⚙️ Квест «Настройка гиперпараметров»", sq2_text: "Попробуй изменить <code>n_estimators</code> и <code>max_depth</code> в Random Forest. Запиши, как меняется точность.", sq2_reward: "💰 Награда: 100 AI-коинов",
+            sq3_title: "🏆 Квест «Настоящий Kaggle»", sq3_text: "Зарегистрируйся на Kaggle.com, найди соревнование «Titanic». Загрузи свои предсказания и сделай скриншот своего места в Leaderboard.", sq3_reward: "💰 Награда: 250 AI-коинов + титул «Kaggle Competitor»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Загрузил и подготовил датасет «Титаник»", sum2: "✅ Понял принцип работы Деревьев решений",
+            sum3: "✅ Обучил модель и оценил её через Accuracy", sum4: "✅ Проанализировал ошибки через Confusion Matrix",
+            sum5: "✅ Применил мощный алгоритм Random Forest", sum6: "🏆 Финальный босс — Kaggle-сабмит создан!",
+            sum_meme: "Поздравляю, Data Scientist! Ты освоил классическое машинное обучение. В следующем модуле мы погрузимся в мир Нейронных Сетей. Готовься!",
+            nav_back: "← Предыдущий квест", nav_back_title: "2.2 Линейная регрессия",
+            nav_next: "Следующий модуль →", nav_next_title: "3.1 Введение в нейросети",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 2.3 • MODULE 2", title: "Decision Trees & Random Forest",
+            subtitle: "Welcome to Level 2.3! 🎯 Today we'll solve the most famous task in Data Science: predict who survived the Titanic using classification algorithms.",
+            duration: "⏱ 3 hours", level: "📘 Intermediate", xp: "⭐ +850 XP", loot: "💰 +300 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🚢 Preparation: Titanic Dataset", l0_sub: "Loading data for analysis", l0_xp: "+40 XP",
+            l0_p1: "Titanic is the 'Hello World' of machine learning. We have passenger data: ticket class, age, sex, fare. Our task is to predict if a passenger survived (1) or not (0).",
+            l0_code_title: "📝 Loading and viewing data",
+            l0_tip_title: "💡 Handling missing values", l0_tip_text: "The <code>Age</code> column has missing values. For simplicity, we'll fill them with the median age.",
+            ach0_name: "Achievement: Titanic Explorer", ach0_desc: "Loaded and explored the Titanic dataset", ach0_reward: "+40 XP · +15 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you saw the passenger table!",
+            l1_title: "🌳 What is a Decision Tree?", l1_sub: "Classification algorithm", l1_xp: "+80 XP",
+            l1_p1: "A Decision Tree works like a game of '20 questions' or an RPG dialogue tree. It asks sequential questions about the data to split passengers into groups and make a prediction.",
+            l1_analogy_title: "Game analogy", l1_analogy_text: "Imagine an NPC guard at the gate. He asks: 'Do you have a pass?' (Yes/No). If No, he asks: 'Are you paying in gold?'. These are the nodes of a decision tree.",
+            ach1_name: "Achievement: Tree Builder", ach1_desc: "Understood how the Decision Tree algorithm works", ach1_reward: "+80 XP · +25 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you imagined a dialogue tree!",
+            l2_title: "⚙️ Training the first tree", l2_sub: "Using Scikit-Learn", l2_xp: "+120 XP",
+            l2_p1: "Scikit-Learn has a ready-made <code>DecisionTreeClassifier</code>. We need to select features and target, split the data, and then call the <code>.fit()</code> method.",
+            l2_code_title: "📝 Model training code",
+            l2_lore_title: "📚 Lore for geeks", l2_lore_text: "The <code>max_depth=3</code> parameter limits the tree depth so it doesn't 'memorize' the data too precisely (overfitting). We want the model to generalize!",
+            ach2_name: "Achievement: Model Evaluator", ach2_desc: "Trained a decision tree and calculated Accuracy", ach2_reward: "+120 XP · +30 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if accuracy was above 75%!",
+            l3_title: "📊 Confusion Matrix", l3_sub: "Deep prediction analysis", l3_xp: "+100 XP",
+            l3_p1: "Accuracy is good, but it doesn't tell the whole story. The confusion matrix shows exactly what mistakes the model makes: who it saved wrongly, and who it doomed.",
+            l3_code_title: "📝 Visualizing the confusion matrix",
+            ach3_name: "Achievement: Error Analyst", ach3_desc: "Built and interpreted a confusion matrix", ach3_reward: "+100 XP · +40 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw the heatmap!",
+            l4_title: "🌲 Random Forest: Ensemble Power", l4_sub: "When one tree is not enough", l4_xp: "+150 XP",
+            l4_p1: "A single tree is prone to overfitting. What if we create hundreds of trees, each trained on a random subset of data, and then make them 'vote'? This is Random Forest.",
+            l4_analogy_title: "Game analogy", l4_analogy_text: "One tree is like a single king's advisor. Random Forest is a Council of 100 Wise Men. Each votes, and the final decision is made by majority. Much more reliable!",
+            l4_code_title: "📝 Applying Random Forest",
+            ach4_name: "Achievement: Forest Keeper", ach4_desc: "Applied the Random Forest algorithm", ach4_reward: "+150 XP · +50 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if RF accuracy is higher than a single tree!",
+            l5_title: "BOSS FIGHT: Kaggle Titanic", l5_sub: "Generating a submission file", l5_xp: "+300 XP",
+            l5_meme: "You know the theory, can evaluate models, and know the power of ensembles. Time to do what real Data Scientists do: create a Kaggle submission file!",
+            l5_code_title: "📝 Final code: Generating submission.csv",
+            l5_danger_title: "🚨 Check before submitting boss", l5_danger_text: "Did titanic_submission.csv get created? Does it have two columns: PassengerId and Survived? Congrats — you've walked the classic Data Scientist path! 🏆",
+            ach5_name: "LEGENDARY: Titanic Survivor", ach5_desc: "Successfully solved the classification task and generated a Kaggle submission", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of players get this. You're Data Science elite!",
+            sq_title: "📜 Side quests (homework)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🌳 Quest «Tree visualization»", sq1_text: "Use <code>sklearn.tree.plot_tree</code> to draw a real decision tree and see what questions it asks.", sq1_reward: "💰 Reward: 50 AI-coins",
+            sq2_title: "⚙️ Quest «Hyperparameter tuning»", sq2_text: "Try changing <code>n_estimators</code> and <code>max_depth</code> in Random Forest. Record how accuracy changes.", sq2_reward: "💰 Reward: 100 AI-coins",
+            sq3_title: "🏆 Quest «Real Kaggle»", sq3_text: "Register on Kaggle.com, find the 'Titanic' competition. Upload your predictions and screenshot your Leaderboard rank.", sq3_reward: "💰 Reward: 250 AI-coins + title «Kaggle Competitor»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Loaded and prepared the Titanic dataset", sum2: "✅ Understood Decision Tree principles",
+            sum3: "✅ Trained a model and evaluated via Accuracy", sum4: "✅ Analyzed errors via Confusion Matrix",
+            sum5: "✅ Applied the powerful Random Forest algorithm", sum6: "🏆 Final boss — Kaggle submission created!",
+            sum_meme: "Congrats, Data Scientist! You've mastered classical machine learning. In the next module, we dive into Neural Networks. Get ready!",
+            nav_back: "← Previous quest", nav_back_title: "2.2 Linear Regression",
+            nav_next: "Next module →", nav_next_title: "3.1 Intro to Neural Networks",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 2.3 • MÓDULO 2", title: "Árboles de Decisión y Random Forest", subtitle: "¡Bienvenido al Nivel 2.3! 🎯 Hoy resolveremos la tarea más famosa de Data Science: predecir quién sobrevivió al Titanic.", duration: "⏱ 3 horas", level: "📘 Intermedio", xp: "⭐ +850 XP", loot: "💰 +300 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🚢 Preparación: Dataset Titanic", l0_sub: "Cargando datos", l0_xp: "+40 XP", l0_p1: "Titanic es el 'Hello World' del machine learning.", l0_code_title: "📝 Cargando datos", l0_tip_title: "💡 Manejo de valores faltantes", l0_tip_text: "La columna <code>Age</code> tiene valores faltantes. Los llenaremos con la mediana.", ach0_name: "Logro: Explorador del Titanic", ach0_desc: "Cargó y exploró el dataset", ach0_reward: "+40 XP · +15 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si viste la tabla!", l1_title: "🌳 ¿Qué es un Árbol de Decisión?", l1_sub: "Algoritmo de clasificación", l1_xp: "+80 XP", l1_p1: "Funciona como un juego de '20 preguntas'. Hace preguntas secuenciales para dividir los datos.", l1_analogy_title: "Analogía de juego", l1_analogy_text: "Imagina un guardia NPC. Pregunta: '¿Tienes pase?'. Si no, '¿Pagas con oro?'. Estos son los nodos del árbol.", ach1_name: "Logro: Constructor de árboles", ach1_desc: "Entendió cómo funciona el Árbol de Decisión", ach1_reward: "+80 XP · +25 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si imaginaste un árbol de diálogo!", l2_title: "⚙️ Entrenando el primer árbol", l2_sub: "Usando Scikit-Learn", l2_xp: "+120 XP", l2_p1: "Scikit-Learn tiene <code>DecisionTreeClassifier</code>. Seleccionamos características, dividimos datos y llamamos a <code>.fit()</code>.", l2_code_title: "📝 Código de entrenamiento", l2_lore_title: "📚 Lore para geeks", l2_lore_text: "<code>max_depth=3</code> limita la profundidad para evitar el sobreajuste (overfitting).", ach2_name: "Logro: Evaluador de modelos", ach2_desc: "Entrenó un árbol y calculó Accuracy", ach2_reward: "+120 XP · +30 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si la precisión fue > 75%!", l3_title: "📊 Matriz de Confusión", l3_sub: "Análisis profundo", l3_xp: "+100 XP", l3_p1: "Accuracy es buena, pero la matriz de confusión muestra exactamente qué errores comete el modelo.", l3_code_title: "📝 Visualizando la matriz", ach3_name: "Logro: Analista de errores", ach3_desc: "Construyó e interpretó una matriz de confusión", ach3_reward: "+100 XP · +40 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si viste el mapa de calor!", l4_title: "🌲 Random Forest: Poder del Ensemble", l4_sub: "Cuando un árbol no es suficiente", l4_xp: "+150 XP", l4_p1: "Un solo árbol tiende al sobreajuste. ¿Y si creamos cientos de árboles y los hacemos 'votar'? Eso es Random Forest.", l4_analogy_title: "Analogía de juego", l4_analogy_text: "Un árbol es un consejero. Random Forest es un Consejo de 100 Sabios. La decisión final es por mayoría. ¡Mucho más confiable!", l4_code_title: "📝 Aplicando Random Forest", ach4_name: "Logro: Guardián del bosque", ach4_desc: "Aplicó el algoritmo Random Forest", ach4_reward: "+150 XP · +50 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si la precisión de RF es mayor!", l5_title: "¡PELEA JEFE: Kaggle Titanic!", l5_sub: "Generando archivo de envío", l5_xp: "+300 XP", l5_meme: "Conoces la teoría y el poder de los ensembles. ¡Es hora de crear un archivo de envío para Kaggle!", l5_code_title: "📝 Código final: Generando submission.csv", l5_danger_title: "🚨 Revisa antes de entregar", l5_danger_text: "¿Se creó titanic_submission.csv? ¿Tiene dos columnas: PassengerId y Survived? ¡Felicidades! 🏆", ach5_name: "LEGENDARIO: Sobreviviente del Titanic", ach5_desc: "Resolvió la tarea de clasificación y generó un submission de Kaggle", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% lo consigue!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🌳 Misión «Visualización de árbol»", sq1_text: "Usa <code>sklearn.tree.plot_tree</code> para dibujar un árbol de decisión real.", sq1_reward: "💰 Recompensa: 50 AI-monedas", sq2_title: "⚙️ Misión «Ajuste de hiperparámetros»", sq2_text: "Cambia <code>n_estimators</code> y <code>max_depth</code>. Registra cómo cambia la precisión.", sq2_reward: "💰 Recompensa: 100 AI-monedas", sq3_title: "🏆 Misión «Kaggle real»", sq3_text: "Regístrate en Kaggle, encuentra la competencia 'Titanic'. Sube tus predicciones y toma una captura del Leaderboard.", sq3_reward: "💰 Recompensa: 250 AI-monedas + título «Kaggle Competitor»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Cargaste el dataset Titanic", sum2: "✅ Entendiste los Árboles de Decisión", sum3: "✅ Entrenaste un modelo y evaluaste Accuracy", sum4: "✅ Analizaste errores con Matriz de Confusión", sum5: "✅ Aplicaste Random Forest", sum6: "🏆 ¡Jefe final derrotado: submission creado!", sum_meme: "¡Felicidades, Data Scientist! Dominaste el machine learning clásico.", nav_back: "← Misión anterior", nav_back_title: "2.2 Regresión Lineal", nav_next: "Siguiente módulo →", nav_next_title: "3.1 Intro a Redes Neuronales", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 2.3 • MODUL 2", title: "Entscheidungsbäume & Random Forest", subtitle: "Willkommen auf Level 2.3! 🎯 Heute lösen wir die berühmteste Aufgabe im Data Science: Vorhersage, wer auf der Titanic überlebt hat.", duration: " 3 Stunden", level: "📘 Mittel", xp: "⭐ +850 XP", loot: "💰 +300 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🚢 Vorbereitung: Titanic-Datensatz", l0_sub: "Daten laden", l0_xp: "+40 XP", l0_p1: "Titanic ist das 'Hello World' des Machine Learning.", l0_code_title: "📝 Daten laden und ansehen", l0_tip_title: "💡 Fehlende Werte behandeln", l0_tip_text: "Die Spalte <code>Age</code> hat fehlende Werte. Wir füllen sie mit dem Median.", ach0_name: "Erfolg: Titanic-Entdecker", ach0_desc: "Titanic-Datensatz geladen und erkundet", ach0_reward: "+40 XP · +15 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Tabelle gesehen hast!", l1_title: "🌳 Was ist ein Entscheidungsbaum?", l1_sub: "Klassifikationsalgorithmus", l1_xp: "+80 XP", l1_p1: "Ein Entscheidungsbaum funktioniert wie ein '20 Fragen'-Spiel. Er stellt sequentielle Fragen, um die Daten zu teilen.", l1_analogy_title: "Spiel-Analogie", l1_analogy_text: "Stell dir einen NPC-Wächter vor. Er fragt: 'Hast du einen Pass?'. Wenn nein: 'Zahlst du mit Gold?'. Das sind die Knoten des Baumes.", ach1_name: "Erfolg: Baum-Erbauer", ach1_desc: "Verstand, wie Entscheidungsbäume funktionieren", ach1_reward: "+80 XP · +25 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du einen Dialogbaum imaginiert hast!", l2_title: "⚙️ Training des ersten Baumes", l2_sub: "Scikit-Learn nutzen", l2_xp: "+120 XP", l2_p1: "Scikit-Learn hat einen <code>DecisionTreeClassifier</code>. Wir wählen Merkmale, teilen Daten und rufen <code>.fit()</code> auf.", l2_code_title: "📝 Trainingscode", l2_lore_title: "📚 Lore für Geeks", l2_lore_text: "<code>max_depth=3</code> begrenzt die Tiefe, um Overfitting zu vermeiden.", ach2_name: "Erfolg: Modell-Bewerter", ach2_desc: "Entscheidungsbaum trainiert und Accuracy berechnet", ach2_reward: "+120 XP · +30 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn die Genauigkeit > 75% war!", l3_title: "📊 Konfusionsmatrix", l3_sub: "Tiefgehende Analyse", l3_xp: "+100 XP", l3_p1: "Accuracy ist gut, aber die Konfusionsmatrix zeigt genau, welche Fehler das Modell macht.", l3_code_title: "📝 Konfusionsmatrix visualisieren", ach3_name: "Erfolg: Fehler-Analyst", ach3_desc: "Konfusionsmatrix erstellt und interpretiert", ach3_reward: "+100 XP · +40 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du die Heatmap gesehen hast!", l4_title: "🌲 Random Forest: Ensemble-Power", l4_sub: "Wenn ein Baum nicht reicht", l4_xp: "+150 XP", l4_p1: "Ein einzelner Baum neigt zu Overfitting. Was, wenn wir hunderte Bäume erstellen und sie 'abstimmen' lassen? Das ist Random Forest.", l4_analogy_title: "Spiel-Analogie", l4_analogy_text: "Ein Baum ist ein Berater. Random Forest ist ein Rat von 100 Weisen. Die Entscheidung wird per Mehrheit getroffen. Viel zuverlässiger!", l4_code_title: "📝 Random Forest anwenden", ach4_name: "Erfolg: Waldhüter", ach4_desc: "Random Forest-Algorithmus angewendet", ach4_reward: "+150 XP · +50 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn die RF-Genauigkeit höher ist!", l5_title: "BOSSKAMPF: Kaggle Titanic", l5_sub: "Submission-Datei generieren", l5_xp: "+300 XP", l5_meme: "Du kennst die Theorie und die Power von Ensembles. Zeit, eine Kaggle-Submission-Datei zu erstellen!", l5_code_title: "📝 Finaler Code: submission.csv generieren", l5_danger_title: "🚨 Prüfe vor Boss-Abgabe", l5_danger_text: "Wurde titanic_submission.csv erstellt? Hat es zwei Spalten: PassengerId und Survived? Glückwunsch! 🏆", ach5_name: "LEGENDÄR: Titanic-Überlebender", ach5_desc: "Klassifikationsaufgabe gelöst und Kaggle-Submission generiert", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% schaffen das!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🌳 Quest «Baum-Visualisierung»", sq1_text: "Nutze <code>sklearn.tree.plot_tree</code>, um einen echten Entscheidungsbaum zu zeichnen.", sq1_reward: "💰 Belohnung: 50 AI-Münzen", sq2_title: "⚙️ Quest «Hyperparameter-Tuning»", sq2_text: "Ändere <code>n_estimators</code> und <code>max_depth</code>. Notiere, wie sich die Genauigkeit ändert.", sq2_reward: "💰 Belohnung: 100 AI-Münzen", sq3_title: "🏆 Quest «Echtes Kaggle»", sq3_text: "Registriere dich auf Kaggle, finde den 'Titanic'-Wettbewerb. Lade Vorhersagen hoch und mache einen Screenshot des Leaderboards.", sq3_reward: "💰 Belohnung: 250 AI-Münzen + Titel «Kaggle Competitor»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Titanic-Datensatz geladen", sum2: "✅ Entscheidungsbaum-Prinzipien verstanden", sum3: "✅ Modell trainiert und Accuracy evaluiert", sum4: "✅ Fehler mit Konfusionsmatrix analysiert", sum5: "✅ Random Forest angewendet", sum6: "🏆 Endboss besiegt: Submission erstellt!", sum_meme: "Glückwunsch, Data Scientist! Du hast klassisches Machine Learning gemeistert.", nav_back: "← Vorheriger Quest", nav_back_title: "2.2 Lineare Regression", nav_next: "Nächstes Modul →", nav_next_title: "3.1 Intro zu Neuronalen Netzen", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 2.3 • 2-МОДУЛЬ", title: "Шешім ағаштары және Random Forest", subtitle: "2.3 деңгейге қош келдің! 🎯 Бүгін Data Science-тегі ең атақты тапсырманы шешеміз: классификация алгоритмдерін қолданып, Титаникте кімнің аман қалғанын болжаймыз.", duration: "⏱ 3 сағат", level: "📘 Орташа", xp: "⭐ +850 XP", loot: "💰 +300 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🚢 Дайындық: Титаник деректер жиынтығы", l0_sub: "Талдау үшін деректерді жүктеу", l0_xp: "+40 XP", l0_p1: "Титаник — машиналық оқытудың 'Hello World' і.", l0_code_title: "📝 Деректерді жүктеу және қарау", l0_tip_title: "💡 Жетіспейтін мәндерді өңдеу", l0_tip_text: "<code>Age</code> бағанында жетіспейтін мәндер бар. Оларды медианамен толтырамыз.", ach0_name: "Жетістік: Титаник зерттеушісі", ach0_desc: "Титаник деректер жиынтығын жүктеді және зерттеді", ach0_reward: "+40 XP · +15 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Кестені көрсең — бас!", l1_title: "🌳 Шешім ағашы деген не?", l1_sub: "Классификация алгоритмі", l1_xp: "+80 XP", l1_p1: "Шешім ағашы '20 сұрақ' ойыны сияқты жұмыс істейді. Болжам жасау үшін деректер туралы ретті сұрақтар қояды.", l1_analogy_title: "Ойын аналогиясы", l1_analogy_text: "Қақпадағы NPC күзетшісін елестет. Ол сұрайды: 'Рұқсат қағазың бар ма?'. Жоқ болса: 'Алтынмен төлейсің бе?'. Бұл шешім ағашының түйіндері.", ach1_name: "Жетістік: Ағаш құрушысы", ach1_desc: "Шешім ағашы алгоритмінің жұмыс істеу принципін түсінді", ach1_reward: "+80 XP · +25 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Диалог ағашын елестетсең — бас!", l2_title: "⚙️ Бірінші ағашты оқыту", l2_sub: "Scikit-Learn қолдану", l2_xp: "+120 XP", l2_p1: "Scikit-Learn-де <code>DecisionTreeClassifier</code> бар. Белгілер мен мақсатты таңдап, деректерді бөліп, <code>.fit()</code> әдісін шақырамыз.", l2_code_title: "📝 Модельді оқыту коды", l2_lore_title: "📚 Гиктерге арналған лор", l2_lore_text: "<code>max_depth=3</code> параметрі ағаш тым қатты жаттап алмауы үшін (overfitting) тереңдікті шектейді.", ach2_name: "Жетістік: Модель бағалаушысы", ach2_desc: "Шешім ағашын оқытып, Accuracy есептеді", ach2_reward: "+120 XP · +30 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Дәлдік 75%-дан жоғары болса — бас!", l3_title: "📊 Қателер матрицасы", l3_sub: "Болжамдарды терең талдау", l3_xp: "+100 XP", l3_p1: "Accuracy жақсы, бірақ қателер матрицасы модельдің қандай қателер жіберетінін нақты көрсетеді.", l3_code_title: "📝 Қателер матрицасын визуализациялау", ach3_name: "Жетістік: Қате талдаушысы", ach3_desc: "Қателер матрицасын құрды және түсіндірді", ach3_reward: "+100 XP · +40 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Жылу картасын көрсең — бас!", l4_title: "🌲 Random Forest: Ансамбль күші", l4_sub: "Бір ағаш жеткіліксіз болғанда", l4_xp: "+150 XP", l4_p1: "Жеке ағаш overfitting-ке бейім. Егер жүздеген ағаш жасап, оларды 'дауыс беруге' мәжбүрлесек ше? Бұл — Random Forest.", l4_analogy_title: "Ойын аналогиясы", l4_analogy_text: "Бір ағаш — патшаның бір кеңесшісі. Random Forest — 100 данагөйден тұратын кеңес. Шешім көпшілік дауысымен қабылданады. Әлдеқайда сенімді!", l4_code_title: "📝 Random Forest қолдану", ach4_name: "Жетістік: Орман қорғаушысы", ach4_desc: "Random Forest алгоритмін қолданды", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "RF дәлдігі жеке ағаштан жоғары болса — бас!", l5_title: "БОСС-ФАЙТ: Kaggle Титаник", l5_sub: "Жарысқа жіберу үшін файл жасау", l5_xp: "+300 XP", l5_meme: "Теорияны білесің, модельдерді бағалай аласың және ансамбльдер күшін түсінесің. Нағыз Data Scientist-тер жасайтын нәрсені жасау уақыты келді: Kaggle сабмит файлын жаса!", l5_code_title: "📝 Финалды код: submission.csv жасау", l5_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l5_danger_text: "titanic_submission.csv жасалды ма? Онда PassengerId және Survived деген екі баған бар ма? Құттықтаймын — сен Data Scientist-тің классикалық жолынан өттің! 🏆", ach5_name: "АҢЫЗДЫҚ: Титаникте аман қалушы", ach5_desc: "Классификация тапсырмасын сәтті шешіп, Kaggle сабмит жасады", ach5_reward: "+300 XP · +150 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% ғана алады. Сен — Data Science элитасы!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🌳 Квест «Ағашты визуализациялау»", sq1_text: "<code>sklearn.tree.plot_tree</code> қолданып, нақты шешім ағашын сал.", sq1_reward: "💰 Сыйлық: 50 ЖИ-теңге", sq2_title: "⚙️ Квест «Гиперпараметрлерді баптау»", sq2_text: "Random Forest-та <code>n_estimators</code> және <code>max_depth</code> өзгерт. Дәлдіктің қалай өзгеретінін жаз.", sq2_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq3_title: "🏆 Квест «Нағыз Kaggle»", sq3_text: "Kaggle.com-ға тіркел, 'Titanic' жарысын тап. Болжамдарыңды жүктеп, Leaderboard-тағы орныңның скриншотын жаса.", sq3_reward: "💰 Сыйлық: 250 ЖИ-теңге + «Kaggle Competitor» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Титаник деректер жиынтығын жүктедің", sum2: "✅ Шешім ағаштары принципін түсіндің", sum3: "✅ Модель оқытып, Accuracy арқылы бағаладың", sum4: "✅ Қателер матрицасы арқылы қателерді талдадың", sum5: "✅ Қуатты Random Forest алгоритмін қолдандың", sum6: "🏆 Финалды босс — Kaggle сабмит жасалды!", sum_meme: "Құттықтаймын, Data Scientist! Сен классикалық машиналық оқытуды игердің.", nav_back: "← Алдыңғы квест", nav_back_title: "2.2 Сызықтық регрессия", nav_next: "Келесі модуль →", nav_next_title: "3.1 Нейрондық желілерге кіріспе", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
