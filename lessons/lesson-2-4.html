@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 2.4: Метрики качества — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 2.4 • МОДУЛЬ 2</span>
+        <h1 data-i18n="title">Метрики качества</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 2.4! 🎯 Accuracy (точность) — это хорошо, но в реальном мире данные часто несбалансированы. Сегодня ты научишься видеть истинную ценность модели через Precision, Recall, F1-score и ROC-AUC.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 2.5 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +800 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +300 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: The Accuracy Trap -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Ловушка Accuracy</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Почему 99% точности могут быть катастрофой</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+40 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Представь: у нас есть датасет из 1000 транзакций, где только 10 — мошеннические (99% нормальных). Если модель просто всегда предсказывает "Нормально", её Accuracy будет 99%! Но она пропустит всех мошенников.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🛡️</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Это как стражник, который пропускает всех подряд, говоря "Ты не монстр". Он прав в 99% случаев, но когда приходит настоящий босс, он его пропускает. Нам нужны более умные метрики!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🪤</span>
+            <h3 data-i18n="ach0_name">Ачивка: Разоблачитель иллюзий</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, почему Accuracy обманчива на несбалансированных данных</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+40 XP · +15 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson2_4_explorer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если осознал опасность слепой веры в Accuracy!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Precision & Recall -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🎯 Precision и Recall</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Дилемма детектива</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Две главные метрики для несбалансированных задач. <strong>Precision (Точность)</strong>: из всех, кого модель назвала мошенниками, сколько реально мошенники? <strong>Recall (Полнота)</strong>: из всех реальных мошенников, сколько модель смогла найти?</p>
+
+        <h3 data-i18n="l1_code_title">📝 Расчет Precision и Recall</h3>
+        <pre><code>from sklearn.metrics import precision_score, recall_score
+
+# y_test: true labels (1 = fraud, 0 = normal)
+# y_pred: model predictions
+y_test = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+y_pred = [0, 0, 0, 0, 0, 0, 0, 1, 1, 1] # Missed two frauds
+
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print(f"Precision: {precision:.2f}") # 1.0 (All predicted frauds were real)
+print(f"Recall: {recall:.2f}")       # 0.6 (Only found 3 out of 5 real frauds)</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Когда что важнее?</strong>
+            <span data-i18n="l1_tip_text"><strong>Высокий Precision</strong> важен, когда ложные срабатывания дороги (например, блокировка карты честного клиента). <strong>Высокий Recall</strong> важен, когда пропуск цели катастрофичен (например, пропуск опухоли на рентгене).</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚖️</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер баланса</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Рассчитал и интерпретировал Precision и Recall</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+100 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson2_4_precision_recall" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если понял разницу между ними!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: F1-Score -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🏆 F1-мера (F1-Score)</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Гармоническое среднее</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Что делать, если нужно учесть и Precision, и Recall одновременно? Использовать <strong>F1-меру</strong>. Это гармоническое среднее двух метрик. Она штрафует модель, если одна из метрик сильно проседает.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Расчет F1-меры</h3>
+        <pre><code>from sklearn.metrics import f1_score
+
+# Using the same y_test and y_pred from Level 1
+f1 = f1_score(y_test, y_pred)
+
+print(f"F1-Score: {f1:.2f}") 
+# F1 will be lower than Precision (1.0) because Recall is only 0.6
+# Formula: 2 * (Precision * Recall) / (Precision + Recall)</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🤹‍♂️</span>
+            <span data-i18n="l2_meme">F1-мера — это как оценка в школе по двум предметам. Если по математике 5, а по физике 2, средний балл (арифметический) будет 3.5, но F1-мера (гармоническая) даст около 2.8, честно наказывая за провал в одном из направлений!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏆</span>
+            <h3 data-i18n="ach2_name">Ачивка: Хранитель F1</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Вычислил F1-меру для оценки модели</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+120 XP · +40 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson2_4_f1_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел, как F1 штрафует дисбаланс!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: ROC-AUC -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">📈 ROC-кривая и AUC</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Оценка вероятностей, а не просто классов</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Модели часто выдают не просто "0" или "1", а вероятность (например, "85% что это мошенник"). <strong>ROC-кривая</strong> показывает, как меняются True Positive Rate и False Positive Rate при разных порогах отсечения. <strong>AUC</strong> (Area Under Curve) — это площадь под этой кривой: от 0.5 (случайное угадывание) до 1.0 (идеальная модель).</p>
+
+        <h3 data-i18n="l3_code_title">📝 Построение ROC-кривой</h3>
+        <pre><code>from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+# Get probabilities for the positive class (1)
+y_probs = rf_model.predict_proba(X_test)[:, 1]
+
+# Calculate AUC
+auc_score = roc_auc_score(y_test, y_probs)
+print(f"AUC-ROC Score: {auc_score:.4f}")
+
+# Plot ROC curve
+fpr, tpr, thresholds = roc_curve(y_test, y_probs)
+plt.figure(figsize=(6, 6))
+plt.plot(fpr, tpr, label=f'Random Forest (AUC = {auc_score:.2f})', color='#00c8ff')
+plt.plot([0, 1], [0, 1], 'k--', label='Random Guess (AUC = 0.5)') # Diagonal line
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📈</span>
+            <h3 data-i18n="ach3_name">Ачивка: Аналитик ROC</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Построил ROC-кривую и интерпретировал AUC</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_4_roc_analyst" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел кривую выше диагональной линии!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Imbalanced Data Practice -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🕵️ Практика: Поиск мошенников</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Применяем метрики к реальным данным</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Создадим синтетический датасет транзакций, где только 2% — мошенничество. Обучим модель и посмотрим, как Accuracy врет, а F1 и AUC показывают реальную картину.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Оценка модели на несбалансированных данных</h3>
+        <pre><code>import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# Generate imbalanced dataset: 2% positive class (fraud)
+X_fraud, y_fraud = make_classification(
+    n_samples=1000, n_features=10, n_informative=5, 
+    n_classes=2, weights=[0.98, 0.02], random_state=42
+)
+
+X_train, X_test, y_train, y_test = train_test_split(X_fraud, y_fraud, test_size=0.2, random_state=42)
+
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}") # Will look deceptively high!
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=['Normal', 'Fraud']))</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l4_warn_title">⚠️ Обрати внимание</strong>
+            <span data-i18n="l4_warn_text">В отчете ты увидишь высокий accuracy, но низкий recall для класса 'Fraud' (1). Это классическая ловушка, которую мы теперь умеем распознавать!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🕵️</span>
+            <h3 data-i18n="ach4_name">Ачивка: Охотник за мошенниками</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Применил метрики к задаче с несбалансированными данными</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson2_4_fraud_hunter" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел разницу между accuracy и f1-score!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Оптимизация порога</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Подбираем threshold под бизнес-задачу</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+250 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🎛️💼</span>
+            <span data-i18n="l5_meme">Модель выдает вероятности. Стандартный порог — 0.5. Но что если блокировка честного клиента стоит компании $10, а пропуск мошенника — $100? Мы можем сдвинуть порог, чтобы снизить Recall, но повысить Precision!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Финальный код: Поиск оптимального порога</h3>
+        <pre><code># Get probabilities
+y_probs = model.predict_proba(X_test)[:, 1]
+
+# Test different thresholds
+thresholds_to_test = [0.3, 0.5, 0.7, 0.9]
+
+print("Threshold | Precision | Recall | F1-Score")
+print("-" * 45)
+
+for thresh in thresholds_to_test:
+    # Create custom predictions based on threshold
+    custom_preds = (y_probs >= thresh).astype(int)
+    
+    prec = precision_score(y_test, custom_preds, zero_division=0)
+    rec = recall_score(y_test, custom_preds, zero_division=0)
+    f1 = f1_score(y_test, custom_preds, zero_division=0)
+    
+    print(f"   {thresh:.1f}    |   {prec:.3f}   |  {rec:.3f}  |  {f1:.3f}")
+
+print("\n💡 Business Decision: Choose threshold based on whether False Positives or False Negatives are more costly!")</code></pre>
+
+        <div class="info-box danger">
+            <strong data-i18n="l5_danger_title">🚨 Проверь перед сдачей босса</strong>
+            <span data-i18n="l5_danger_text">Ты увидел, как при увеличении порога (с 0.3 до 0.9) Precision растет, а Recall падает? Это и есть тот самый trade-off, которым управляют настоящие Data Scientist'ы! 🏆</span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Гуру метрик</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Оптимизировал порог классификации под бизнес-требования</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+250 XP · +100 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson2_4_threshold_master" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% игроков понимают, как управлять trade-off'ом. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Ручной расчет»</h3>
+            <p data-i18n="sq1_text">Дана матрица ошибок: TP=40, FP=10, FN=20, TN=930. Рассчитай Precision, Recall и F1 вручную на листке бумаги и проверь себя через Python.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 50 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚖️ Квест «Медицинская диагностика»</h3>
+            <p data-i18n="sq2_text">Представь, что ты строишь модель для выявления редкой болезни. Какая метрика (Precision или Recall) для тебя критичнее? Напиши короткий вывод и обоснуй его.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">📊 Квест «PR-кривая»</h3>
+            <p data-i18n="sq3_text">Построй Precision-Recall кривую (используя <code>sklearn.metrics.precision_recall_curve</code>) для несбалансированного датасета и сравни её визуально с ROC-кривой. Почему PR-кривая информативнее при сильном дисбалансе?</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 200 AI-коинов + титул «Metric Wizard»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял, почему Accuracy обманчива</li>
+            <li data-i18n="sum2">✅ Освоил Precision и Recall</li>
+            <li data-i18n="sum3">✅ Научился использовать F1-меру</li>
+            <li data-i18n="sum4">✅ Построил и интерпретировал ROC-AUC</li>
+            <li data-i18n="sum5">✅ Применил метрики к несбалансированным данным</li>
+            <li data-i18n="sum6">🏆 Финальный босс — оптимизация порога пройдена!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Гуру метрик! Ты теперь видишь модели насквозь. Модуль 2 завершен. В следующем модуле мы переходим к нейронным сетям и компьютерному зрению. Готовься, будет по-настоящему мощно!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-2-3.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">2.3 Деревья решений</span>
+        </a>
+        <a href="lesson-3-1.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий модуль →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.1 Введение в нейросети</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 2.4 • МОДУЛЬ 2", title: "Метрики качества",
+            subtitle: "Добро пожаловать на Уровень 2.4! 🎯 Accuracy (точность) — это хорошо, но в реальном мире данные часто несбалансированы. Сегодня ты научишься видеть истинную ценность модели через Precision, Recall, F1-score и ROC-AUC.",
+            duration: "⏱ 2.5 часа", level: "📙 Продвинутый", xp: "⭐ +800 XP", loot: "💰 +300 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🪤 Ловушка Accuracy", l0_sub: "Почему 99% точности могут быть катастрофой", l0_xp: "+40 XP",
+            l0_p1: "Представь: у нас есть датасет из 1000 транзакций, где только 10 — мошеннические (99% нормальных). Если модель просто всегда предсказывает 'Нормально', её Accuracy будет 99%! Но она пропустит всех мошенников.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Это как стражник, который пропускает всех подряд, говоря 'Ты не монстр'. Он прав в 99% случаев, но когда приходит настоящий босс, он его пропускает. Нам нужны более умные метрики!",
+            ach0_name: "Ачивка: Разоблачитель иллюзий", ach0_desc: "Понял, почему Accuracy обманчива на несбалансированных данных", ach0_reward: "+40 XP · +15 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если осознал опасность слепой веры в Accuracy!",
+            l1_title: "🎯 Precision и Recall", l1_sub: "Дилемма детектива", l1_xp: "+100 XP",
+            l1_p1: "Две главные метрики для несбалансированных задач. Precision (Точность): из всех, кого модель назвала мошенниками, сколько реально мошенники? Recall (Полнота): из всех реальных мошенников, сколько модель смогла найти?",
+            l1_code_title: "📝 Расчет Precision и Recall",
+            l1_tip_title: "💡 Когда что важнее?", l1_tip_text: "Высокий Precision важен, когда ложные срабатывания дороги (например, блокировка карты честного клиента). Высокий Recall важен, когда пропуск цели катастрофичен (например, пропуск опухоли на рентгене).",
+            ach1_name: "Ачивка: Мастер баланса", ach1_desc: "Рассчитал и интерпретировал Precision и Recall", ach1_reward: "+100 XP · +30 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если понял разницу между ними!",
+            l2_title: "🏆 F1-мера (F1-Score)", l2_sub: "Гармоническое среднее", l2_xp: "+120 XP",
+            l2_p1: "Что делать, если нужно учесть и Precision, и Recall одновременно? Использовать F1-меру. Это гармоническое среднее двух метрик. Она штрафует модель, если одна из метрик сильно проседает.",
+            l2_code_title: "📝 Расчет F1-меры",
+            l2_meme: "F1-мера — это как оценка в школе по двум предметам. Если по математике 5, а по физике 2, средний балл (арифметический) будет 3.5, но F1-мера (гармоническая) даст около 2.8, честно наказывая за провал в одном из направлений!",
+            ach2_name: "Ачивка: Хранитель F1", ach2_desc: "Вычислил F1-меру для оценки модели", ach2_reward: "+120 XP · +40 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел, как F1 штрафует дисбаланс!",
+            l3_title: "📈 ROC-кривая и AUC", l3_sub: "Оценка вероятностей, а не просто классов", l3_xp: "+150 XP",
+            l3_p1: "Модели часто выдают не просто '0' или '1', а вероятность. ROC-кривая показывает, как меняются True Positive Rate и False Positive Rate при разных порогах отсечения. AUC (Area Under Curve) — это площадь под этой кривой: от 0.5 (случайное угадывание) до 1.0 (идеальная модель).",
+            l3_code_title: "📝 Построение ROC-кривой",
+            ach3_name: "Ачивка: Аналитик ROC", ach3_desc: "Построил ROC-кривую и интерпретировал AUC", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел кривую выше диагональной линии!",
+            l4_title: "🕵️ Практика: Поиск мошенников", l4_sub: "Применяем метрики к реальным данным", l4_xp: "+150 XP",
+            l4_p1: "Создадим синтетический датасет транзакций, где только 2% — мошенничество. Обучим модель и посмотрим, как Accuracy врет, а F1 и AUC показывают реальную картину.",
+            l4_code_title: "📝 Оценка модели на несбалансированных данных",
+            l4_warn_title: "⚠️ Обрати внимание", l4_warn_text: "В отчете ты увидишь высокий accuracy, но низкий recall для класса 'Fraud' (1). Это классическая ловушка, которую мы теперь умеем распознавать!",
+            ach4_name: "Ачивка: Охотник за мошенниками", ach4_desc: "Применил метрики к задаче с несбалансированными данными", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел разницу между accuracy и f1-score!",
+            l5_title: "БОСС-ФАЙТ: Оптимизация порога", l5_sub: "Подбираем threshold под бизнес-задачу", l5_xp: "+250 XP",
+            l5_meme: "Модель выдает вероятности. Стандартный порог — 0.5. Но что если блокировка честного клиента стоит компании $10, а пропуск мошенника — $100? Мы можем сдвинуть порог, чтобы снизить Recall, но повысить Precision!",
+            l5_code_title: "📝 Финальный код: Поиск оптимального порога",
+            l5_danger_title: "🚨 Проверь перед сдачей босса", l5_danger_text: "Ты увидел, как при увеличении порога (с 0.3 до 0.9) Precision растет, а Recall падает? Это и есть тот самый trade-off, которым управляют настоящие Data Scientist'ы! 🏆",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Гуру метрик", ach5_desc: "Оптимизировал порог классификации под бизнес-требования", ach5_reward: "+250 XP · +100 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% игроков понимают, как управлять trade-off'ом. Ты — элита!",
+            sq_title: "📜 Побочные квесты (домашнее задание)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Ручной расчет»", sq1_text: "Дана матрица ошибок: TP=40, FP=10, FN=20, TN=930. Рассчитай Precision, Recall и F1 вручную на листке бумаги и проверь себя через Python.", sq1_reward: "💰 Награда: 50 AI-коинов",
+            sq2_title: "⚖️ Квест «Медицинская диагностика»", sq2_text: "Представь, что ты строишь модель для выявления редкой болезни. Какая метрика (Precision или Recall) для тебя критичнее? Напиши короткий вывод и обоснуй его.", sq2_reward: "💰 Награда: 100 AI-коинов",
+            sq3_title: "📊 Квест «PR-кривая»", sq3_text: "Построй Precision-Recall кривую для несбалансированного датасета и сравни её визуально с ROC-кривой. Почему PR-кривая информативнее при сильном дисбалансе?", sq3_reward: "💰 Награда: 200 AI-коинов + титул «Metric Wizard»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял, почему Accuracy обманчива", sum2: "✅ Освоил Precision и Recall",
+            sum3: "✅ Научился использовать F1-меру", sum4: "✅ Построил и интерпретировал ROC-AUC",
+            sum5: "✅ Применил метрики к несбалансированным данным", sum6: "🏆 Финальный босс — оптимизация порога пройдена!",
+            sum_meme: "Поздравляю, Гуру метрик! Ты теперь видишь модели насквозь. Модуль 2 завершен. В следующем модуле мы переходим к нейронным сетям и компьютерному зрению. Готовься, будет по-настоящему мощно!",
+            nav_back: "← Предыдущий квест", nav_back_title: "2.3 Деревья решений",
+            nav_next: "Следующий модуль →", nav_next_title: "3.1 Введение в нейросети",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 2.4 • MODULE 2", title: "Quality Metrics",
+            subtitle: "Welcome to Level 2.4! 🎯 Accuracy is good, but in the real world, data is often imbalanced. Today you'll learn to see the true value of a model through Precision, Recall, F1-score, and ROC-AUC.",
+            duration: "⏱ 2.5 hours", level: "📙 Advanced", xp: "⭐ +800 XP", loot: "💰 +300 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🪤 The Accuracy Trap", l0_sub: "Why 99% accuracy can be a disaster", l0_xp: "+40 XP",
+            l0_p1: "Imagine a dataset of 1000 transactions, where only 10 are fraudulent (99% normal). If a model always predicts 'Normal', its accuracy will be 99%! But it will miss all frauds.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "It's like a guard who lets everyone through, saying 'You're not a monster'. He's right 99% of the time, but when the real boss comes, he lets him through. We need smarter metrics!",
+            ach0_name: "Achievement: Illusion Breaker", ach0_desc: "Understood why Accuracy is deceptive on imbalanced data", ach0_reward: "+40 XP · +15 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you realized the danger of blind faith in Accuracy!",
+            l1_title: "🎯 Precision and Recall", l1_sub: "The detective's dilemma", l1_xp: "+100 XP",
+            l1_p1: "Two main metrics for imbalanced tasks. Precision: of all the ones the model called frauds, how many are real? Recall: of all real frauds, how many did the model find?",
+            l1_code_title: "📝 Calculating Precision and Recall",
+            l1_tip_title: "💡 When is which more important?", l1_tip_text: "High Precision is important when false positives are costly (e.g., blocking an honest client's card). High Recall is important when missing a target is catastrophic (e.g., missing a tumor on an X-ray).",
+            ach1_name: "Achievement: Balance Master", ach1_desc: "Calculated and interpreted Precision and Recall", ach1_reward: "+100 XP · +30 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you understood the difference between them!",
+            l2_title: "🏆 F1-Score", l2_sub: "The harmonic mean", l2_xp: "+120 XP",
+            l2_p1: "What if we need to account for both Precision and Recall simultaneously? Use the F1-score. It's the harmonic mean of the two metrics. It penalizes the model if one metric drops significantly.",
+            l2_code_title: "📝 Calculating F1-Score",
+            l2_meme: "F1-score is like a school grade for two subjects. If you get 5 in math and 2 in physics, the arithmetic mean is 3.5, but the F1-score (harmonic) will be around 2.8, honestly punishing you for failing in one area!",
+            ach2_name: "Achievement: F1 Keeper", ach2_desc: "Calculated F1-score to evaluate the model", ach2_reward: "+120 XP · +40 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw how F1 penalizes imbalance!",
+            l3_title: "📈 ROC Curve and AUC", l3_sub: "Evaluating probabilities, not just classes", l3_xp: "+150 XP",
+            l3_p1: "Models often output not just '0' or '1', but a probability. The ROC curve shows how True Positive Rate and False Positive Rate change at different thresholds. AUC (Area Under Curve) is the area under this curve: from 0.5 (random guessing) to 1.0 (perfect model).",
+            l3_code_title: "📝 Plotting the ROC curve",
+            ach3_name: "Achievement: ROC Analyst", ach3_desc: "Plotted ROC curve and interpreted AUC", ach3_reward: "+150 XP · +50 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw the curve above the diagonal line!",
+            l4_title: "🕵️ Practice: Fraud Detection", l4_sub: "Applying metrics to real data", l4_xp: "+150 XP",
+            l4_p1: "Let's create a synthetic transaction dataset where only 2% are fraud. We'll train a model and see how Accuracy lies, while F1 and AUC show the real picture.",
+            l4_code_title: "📝 Evaluating the model on imbalanced data",
+            l4_warn_title: "⚠️ Pay attention", l4_warn_text: "In the report, you'll see high accuracy, but low recall for the 'Fraud' class (1). This is the classic trap we now know how to recognize!",
+            ach4_name: "Achievement: Fraud Hunter", ach4_desc: "Applied metrics to an imbalanced data task", ach4_reward: "+150 XP · +50 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you saw the difference between accuracy and f1-score!",
+            l5_title: "BOSS FIGHT: Threshold Optimization", l5_sub: "Tuning the threshold for a business task", l5_xp: "+250 XP",
+            l5_meme: "The model outputs probabilities. The standard threshold is 0.5. But what if blocking an honest client costs the company $10, and missing a fraud costs $100? We can shift the threshold to lower Recall but increase Precision!",
+            l5_code_title: "📝 Final code: Finding the optimal threshold",
+            l5_danger_title: "🚨 Check before submitting boss", l5_danger_text: "Did you see how increasing the threshold (from 0.3 to 0.9) increases Precision but decreases Recall? This is the exact trade-off that real Data Scientists manage! 🏆",
+            ach5_name: "LEGENDARY: Metrics Guru", ach5_desc: "Optimized classification threshold for business requirements", ach5_reward: "+250 XP · +100 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of players understand how to manage the trade-off. You're elite!",
+            sq_title: "📜 Side quests (homework)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Manual calculation»", sq1_text: "Given a confusion matrix: TP=40, FP=10, FN=20, TN=930. Calculate Precision, Recall, and F1 manually on paper and check yourself via Python.", sq1_reward: "💰 Reward: 50 AI-coins",
+            sq2_title: "⚖️ Quest «Medical diagnosis»", sq2_text: "Imagine you're building a model to detect a rare disease. Which metric (Precision or Recall) is more critical for you? Write a short conclusion and justify it.", sq2_reward: "💰 Reward: 100 AI-coins",
+            sq3_title: "📊 Quest «PR Curve»", sq3_text: "Plot a Precision-Recall curve for an imbalanced dataset and visually compare it with the ROC curve. Why is the PR curve more informative under severe imbalance?", sq3_reward: "💰 Reward: 200 AI-coins + title «Metric Wizard»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood why Accuracy is deceptive", sum2: "✅ Mastered Precision and Recall",
+            sum3: "✅ Learned to use F1-score", sum4: "✅ Plotted and interpreted ROC-AUC",
+            sum5: "✅ Applied metrics to imbalanced data", sum6: "🏆 Final boss — threshold optimization completed!",
+            sum_meme: "Congrats, Metrics Guru! You now see through models. Module 2 is complete. In the next module, we move to neural networks and computer vision. Get ready, it'll be truly powerful!",
+            nav_back: "← Previous quest", nav_back_title: "2.3 Decision Trees",
+            nav_next: "Next module →", nav_next_title: "3.1 Intro to Neural Networks",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 2.4 • MÓDULO 2", title: "Métricas de Calidad", subtitle: "¡Bienvenido al Nivel 2.4! 🎯 La Accuracy es buena, pero los datos reales suelen estar desbalanceados. Hoy aprenderás a ver el verdadero valor de un modelo a través de Precision, Recall, F1-score y ROC-AUC.", duration: "⏱ 2.5 horas", level: "📙 Avanzado", xp: "⭐ +800 XP", loot: "💰 +300 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🪤 La trampa de la Accuracy", l0_sub: "Por qué el 99% de precisión puede ser un desastre", l0_xp: "+40 XP", l0_p1: "Imagina un dataset de 1000 transacciones, donde solo 10 son fraudulentas. Si un modelo siempre predice 'Normal', su accuracy será del 99%. ¡Pero perderá todos los fraudes!", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Es como un guardia que deja pasar a todos. Tiene razón el 99% de las veces, pero cuando llega el verdadero jefe, lo deja pasar. ¡Necesitamos métricas más inteligentes!", ach0_name: "Logro: Rompedor de ilusiones", ach0_desc: "Entendió por qué la Accuracy engaña en datos desbalanceados", ach0_reward: "+40 XP · +15 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si te diste cuenta del peligro!", l1_title: "🎯 Precision y Recall", l1_sub: "El dilema del detective", l1_xp: "+100 XP", l1_p1: "Precision: de todos los que el modelo llamó fraudes, ¿cuántos lo son realmente? Recall: de todos los fraudes reales, ¿cuántos encontró el modelo?", l1_code_title: "📝 Calculando Precision y Recall", l1_tip_title: "💡 ¿Cuándo es más importante cada una?", l1_tip_text: "Alta Precision es crucial cuando los falsos positivos son costosos. Alto Recall es vital cuando pasar por alto un objetivo es catastrófico (ej. un tumor).", ach1_name: "Logro: Maestro del equilibrio", ach1_desc: "Calculó e interpretó Precision y Recall", ach1_reward: "+100 XP · +30 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si entendiste la diferencia!", l2_title: "🏆 F1-Score", l2_sub: "La media armónica", l2_xp: "+120 XP", l2_p1: "¿Qué hacer si necesitamos tener en cuenta ambas? Usar el F1-Score. Es la media armónica. Penaliza al modelo si una de las métricas cae significativamente.", l2_code_title: "📝 Calculando F1-Score", l2_meme: "El F1-Score es como la nota escolar de dos materias. Si tienes 5 en mates y 2 en física, la media aritmética es 3.5, pero el F1-Score dará alrededor de 2.8, castigando honestamente el suspenso.", ach2_name: "Logro: Guardián del F1", ach2_desc: "Calculó el F1-Score para evaluar el modelo", ach2_reward: "+120 XP · +40 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste cómo el F1 penaliza el desequilibrio!", l3_title: "📈 Curva ROC y AUC", l3_sub: "Evaluando probabilidades, no solo clases", l3_xp: "+150 XP", l3_p1: "Los modelos suelen dar probabilidades. La curva ROC muestra cómo cambian las tasas de verdaderos y falsos positivos en diferentes umbrales. AUC es el área bajo esta curva: de 0.5 (azar) a 1.0 (perfecto).", l3_code_title: "📝 Trazando la curva ROC", ach3_name: "Logro: Analista ROC", ach3_desc: "Trazó la curva ROC e interpretó el AUC", ach3_reward: "+150 XP · +50 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si viste la curva por encima de la línea diagonal!", l4_title: "🕵️ Práctica: Detección de fraude", l4_sub: "Aplicando métricas a datos reales", l4_xp: "+150 XP", l4_p1: "Creemos un dataset sintético donde solo el 2% sean fraudes. Entrenaremos un modelo y veremos cómo la Accuracy miente, mientras que F1 y AUC muestran la realidad.", l4_code_title: "📝 Evaluando el modelo en datos desbalanceados", l4_warn_title: "⚠️ Presta atención", l4_warn_text: "En el informe verás alta accuracy, pero bajo recall para la clase 'Fraud'. ¡Esta es la trampa clásica que ahora sabemos reconocer!", ach4_name: "Logro: Cazador de fraudes", ach4_desc: "Aplicó métricas a una tarea con datos desbalanceados", ach4_reward: "+150 XP · +50 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste la diferencia entre accuracy y f1-score!", l5_title: "¡PELEA JEFE: Optimización del umbral", l5_sub: "Ajustando el threshold para una tarea de negocio", l5_xp: "+250 XP", l5_meme: "El modelo da probabilidades. El umbral estándar es 0.5. ¿Pero qué si bloquear a un cliente honesto cuesta $10 y perder un fraude cuesta $100? ¡Podemos mover el umbral!", l5_code_title: "📝 Código final: Buscando el umbral óptimo", l5_danger_title: "🚨 Revisa antes de entregar", l5_danger_text: "¿Viste cómo al aumentar el umbral (de 0.3 a 0.9) sube la Precision pero baja el Recall? ¡Este es el trade-off que gestionan los Data Scientists reales! 🏆", ach5_name: "LEGENDARIO: Gurú de las métricas", ach5_desc: "Optimizó el umbral de clasificación para requisitos de negocio", ach5_reward: "+250 XP · +100 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% entiende cómo gestionar este trade-off. Eres élite!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Cálculo manual»", sq1_text: "Dada una matriz de confusión: TP=40, FP=10, FN=20, TN=930. Calcula Precision, Recall y F1 a mano y compruébalo con Python.", sq1_reward: "💰 Recompensa: 50 AI-monedas", sq2_title: "⚖️ Misión «Diagnóstico médico»", sq2_text: "Imagina que construyes un modelo para detectar una enfermedad rara. ¿Qué métrica es más crítica? Escribe una breve conclusión.", sq2_reward: "💰 Recompensa: 100 AI-monedas", sq3_title: "📊 Misión «Curva PR»", sq3_text: "Traza una curva Precision-Recall para un dataset desbalanceado y compárala visualmente con la curva ROC.", sq3_reward: "💰 Recompensa: 200 AI-monedas + título «Metric Wizard»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste por qué la Accuracy engaña", sum2: "✅ Dominaste Precision y Recall", sum3: "✅ Aprendiste a usar el F1-Score", sum4: "✅ Trazaste e interpretaste ROC-AUC", sum5: "✅ Aplicaste métricas a datos desbalanceados", sum6: "🏆 ¡Jefe final derrotado: optimización de umbral!", sum_meme: "¡Felicidades, Gurú de las métricas! El Módulo 2 está completo. En el siguiente pasamos a redes neuronales.", nav_back: "← Misión anterior", nav_back_title: "2.3 Árboles de Decisión", nav_next: "Siguiente módulo →", nav_next_title: "3.1 Intro a Redes Neuronales", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 2.4 • MODUL 2", title: "Qualitätsmetriken", subtitle: "Willkommen auf Level 2.4! 🎯 Accuracy ist gut, aber reale Daten sind oft unausgeglichen. Heute lernst du, den wahren Wert eines Modells durch Precision, Recall, F1-Score und ROC-AUC zu sehen.", duration: " 2,5 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +800 XP", loot: "💰 +300 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🪤 Die Accuracy-Falle", l0_sub: "Warum 99% Genauigkeit eine Katastrophe sein kann", l0_xp: "+40 XP", l0_p1: "Stell dir 1000 Transaktionen vor, nur 10 sind Betrug. Wenn ein Modell immer 'Normal' vorhersagt, ist die Accuracy 99%! Aber es verpasst allen Betrug.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Wie ein Wächter, der alle durchlässt. Er hat 99% recht, aber wenn der echte Boss kommt, lässt er ihn durch. Wir brauchen schlauere Metriken!", ach0_name: "Erfolg: Illusionsbrecher", ach0_desc: "Verstand, warum Accuracy bei unausgeglichenen Daten täuscht", ach0_reward: "+40 XP · +15 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Gefahr erkannt hast!", l1_title: "🎯 Precision und Recall", l1_sub: "Das Detektiv-Dilemma", l1_xp: "+100 XP", l1_p1: "Precision: Von allen, die das Modell als Betrug bezeichnete, wie viele waren es wirklich? Recall: Von allen echten Betrügern, wie viele hat das Modell gefunden?", l1_code_title: "📝 Precision und Recall berechnen", l1_tip_title: "💡 Wann ist was wichtiger?", l1_tip_text: "Hohe Precision ist wichtig, wenn falsche Positive teuer sind. Hoher Recall ist wichtig, wenn das Übersehen eines Ziels katastrophal ist (z.B. ein Tumor).", ach1_name: "Erfolg: Balance-Meister", ach1_desc: "Precision und Recall berechnet und interpretiert", ach1_reward: "+100 XP · +30 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du den Unterschied verstanden hast!", l2_title: "🏆 F1-Score", l2_sub: "Das harmonische Mittel", l2_xp: "+120 XP", l2_p1: "Was tun, wenn wir beide gleichzeitig berücksichtigen müssen? Den F1-Score nutzen. Er ist das harmonische Mittel und bestraft das Modell, wenn eine Metrik stark einbricht.", l2_code_title: "📝 F1-Score berechnen", l2_meme: "Der F1-Score ist wie eine Schulnote in zwei Fächern. Bei 5 in Mathe und 2 in Physik ist der arithmetische Schnitt 3.5, aber der F1-Score gibt etwa 2.8 und bestraft ehrlich das Durchfallen in einem Fach!", ach2_name: "Erfolg: F1-Hüter", ach2_desc: "F1-Score zur Modellbewertung berechnet", ach2_reward: "+120 XP · +40 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du sahst, wie F1 Unausgeglichenheit bestraft!", l3_title: "📈 ROC-Kurve und AUC", l3_sub: "Bewertung von Wahrscheinlichkeiten, nicht nur Klassen", l3_xp: "+150 XP", l3_p1: "Modelle geben oft Wahrscheinlichkeiten aus. Die ROC-Kurve zeigt, wie sich True Positive Rate und False Positive Rate bei verschiedenen Schwellenwerten ändern. AUC ist die Fläche unter dieser Kurve: von 0.5 (Zufall) bis 1.0 (perfekt).", l3_code_title: "📝 ROC-Kurve plotten", ach3_name: "Erfolg: ROC-Analyst", ach3_desc: "ROC-Kurve geplottet und AUC interpretiert", ach3_reward: "+150 XP · +50 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du die Kurve über der Diagonalen sahst!", l4_title: "🕵️ Praxis: Betrugserkennung", l4_sub: "Metriken auf reale Daten anwenden", l4_xp: "+150 XP", l4_p1: "Erstellen wir einen synthetischen Datensatz, bei dem nur 2% Betrug sind. Wir trainieren ein Modell und sehen, wie die Accuracy lügt, während F1 und AUC die Realität zeigen.", l4_code_title: "📝 Modellbewertung bei unausgeglichenen Daten", l4_warn_title: "⚠️ Achtung", l4_warn_text: "Im Bericht siehst du hohe Accuracy, aber niedrigen Recall für die Klasse 'Fraud'. Das ist die klassische Falle, die wir jetzt erkennen!", ach4_name: "Erfolg: Betrug-Jäger", ach4_desc: "Metriken auf eine Aufgabe mit unausgeglichenen Daten angewendet", ach4_reward: "+150 XP · +50 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du den Unterschied zwischen Accuracy und F1 sahst!", l5_title: "BOSSKAMPF: Schwellenwert-Optimierung", l5_sub: "Threshold für eine Business-Aufgabe anpassen", l5_xp: "+250 XP", l5_meme: "Das Modell gibt Wahrscheinlichkeiten aus. Der Standard-Threshold ist 0.5. Aber was, wenn das Blockieren eines ehrlichen Kunden $10 kostet und das Übersehen von Betrug $100? Wir können den Threshold verschieben!", l5_code_title: "📝 Finaler Code: Optimalen Threshold finden", l5_danger_title: "🚨 Prüfe vor Boss-Abgabe", l5_danger_text: "Sahst du, wie bei Erhöhung des Thresholds (von 0.3 auf 0.9) die Precision steigt, aber der Recall fällt? Das ist genau der Trade-off, den echte Data Scientists managen! 🏆", ach5_name: "LEGENDÄR: Metriken-Guru", ach5_desc: "Klassifikationsschwellenwert für Business-Anforderungen optimiert", ach5_reward: "+250 XP · +100 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% verstehen, wie man diesen Trade-off managt. Du bist Elite!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Manuelle Berechnung»", sq1_text: "Gegeben: TP=40, FP=10, FN=20, TN=930. Berechne Precision, Recall und F1 manuell und prüfe dich mit Python.", sq1_reward: "💰 Belohnung: 50 AI-Münzen", sq2_title: "⚖️ Quest «Medizinische Diagnose»", sq2_text: "Stell dir vor, du baust ein Modell zur Erkennung einer seltenen Krankheit. Welche Metrik ist kritischer? Schreibe eine kurze Schlussfolgerung.", sq2_reward: "💰 Belohnung: 100 AI-Münzen", sq3_title: "📊 Quest «PR-Kurve»", sq3_text: "Plotte eine Precision-Recall-Kurve für unausgegliche Daten und vergleiche sie visuell mit der ROC-Kurve.", sq3_reward: "💰 Belohnung: 200 AI-Münzen + Titel «Metric Wizard»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Verstanden, warum Accuracy täuscht", sum2: "✅ Precision und Recall gemeistert", sum3: "✅ F1-Score nutzen gelernt", sum4: "✅ ROC-AUC geplottet und interpretiert", sum5: "✅ Metriken auf unausgegliche Daten angewendet", sum6: "🏆 Endboss besiegt: Threshold-Optimierung geschafft!", sum_meme: "Glückwunsch, Metriken-Guru! Modul 2 ist abgeschlossen. Im nächsten Modul geht es zu neuronalen Netzen.", nav_back: "← Vorheriger Quest", nav_back_title: "2.3 Entscheidungsbäume", nav_next: "Nächstes Modul →", nav_next_title: "3.1 Intro zu Neuronalen Netzen", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 2.4 • 2-МОДУЛЬ", title: "Сапа метрикалары", subtitle: "2.4 деңгейге қош келдің! 🎯 Accuracy жақсы, бірақ шынайы деректер жиі тепе-теңсіз болады. Бүгін сен Precision, Recall, F1-score және ROC-AUC арқылы модельдің шынайы құндылығын көруді үйренесің.", duration: "⏱ 2,5 сағат", level: "📙 Озық", xp: "⭐ +800 XP", loot: "💰 +300 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🪤 Accuracy тұзағы", l0_sub: "Неліктен 99% дәлдік апат болуы мүмкін", l0_xp: "+40 XP", l0_p1: "1000 транзакцияның тек 10-ы алаяқтық деп елестет. Егер модель әрқашан 'Қалыпты' деп болжаса, оның Accuracy 99% болады! Бірақ ол барлық алаяқтықты жіберіп алады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Бұл бәрін өткізіп жіберетін күзетші сияқты. Ол 99% жағдайда дұрыс, бірақ нағыз босс келгенде, оны да өткізіп жібереді. Бізге ақылдырақ метрикалар керек!", ach0_name: "Жетістік: Иллюзияны бұзушы", ach0_desc: "Тепе-теңсіз деректерде Accuracy-дің неге алдаушы екенін түсінді", ach0_reward: "+40 XP · +15 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Accuracy-ге соқыр сенімнің қаупін түсінсең — бас!", l1_title: "🎯 Precision және Recall", l1_sub: "Детектив дилеммасы", l1_xp: "+100 XP", l1_p1: "Precision: модель алаяқ деп атағандардың қаншасы шынымен алаяқ? Recall: барлық шынайы алаяқтардың қаншасын модель таба алды?", l1_code_title: "📝 Precision және Recall есептеу", l1_tip_title: "💡 Қайсысы қашан маңызды?", l1_tip_text: "Жоғары Precision жалған оң нәтижелер қымбатқа түскенде маңызды. Жоғары Recall мақсатты жіберіп алу апатты болғанда маңызды (мысалы, рентгендегі ісік).", ach1_name: "Жетістік: Тепе-теңдік шебері", ach1_desc: "Precision және Recall есептеді және түсіндірді", ach1_reward: "+100 XP · +30 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Айырмашылығын түсінсең — бас!", l2_title: "🏆 F1-мера (F1-Score)", l2_sub: "Гармоникалық орта", l2_xp: "+120 XP", l2_p1: "Екеуін де ескеру керек болса не істеу керек? F1-мераны қолдану. Бұл екі метриканың гармоникалық ортасы. Ол бір метрика қатты түсіп кетсе, модельді жазалайды.", l2_code_title: "📝 F1-мераны есептеу", l2_meme: "F1-мера мектептегі екі пән бағасы сияқты. Математикадан 5, физикадан 2 алсаң, арифметикалық орта 3.5 болады, бірақ F1-мера шамамен 2.8 береді, бір пәннен құлағаның үшін шынайы жазалайды!", ach2_name: "Жетістік: F1 қорғаушысы", ach2_desc: "Модельді бағалау үшін F1-мераны есептеді", ach2_reward: "+120 XP · +40 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "F1-дің тепе-теңсіздікті қалай жазалайтынын көрсең — бас!", l3_title: "📈 ROC-қисығы және AUC", l3_sub: "Ықтималдықтарды бағалау", l3_xp: "+150 XP", l3_p1: "Модельдер жиі ықтималдықты шығарады. ROC-қисығы әртүрлі шектік мәндерде True Positive Rate және False Positive Rate қалай өзгеретінін көрсетеді. AUC — осы қисықтың астындағы аудан: 0.5-тен (кездейсоқ) 1.0-ге (мінсіз) дейін.", l3_code_title: "📝 ROC-қисығын салу", ach3_name: "Жетістік: ROC талдаушысы", ach3_desc: "ROC-қисығын салды және AUC-ді түсіндірді", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Қисықты диагональ сызықтың үстінен көрсең — бас!", l4_title: "🕵️ Тәжірибе: Алаяқтықты анықтау", l4_sub: "Метрикаларды нақты деректерге қолдану", l4_xp: "+150 XP", l4_p1: "Тек 2%-ы алаяқтық болатын синтетикалық деректер жиынтығын жасайық. Модельді оқытып, Accuracy-дің қалай өтірік айтатынын, ал F1 мен AUC шынайы көріністі көрсететінін қараймыз.", l4_code_title: "📝 Тепе-теңсіз деректердегі модельді бағалау", l4_warn_title: "⚠️ Назар аудар", l4_warn_text: "Есепте жоғары accuracy, бірақ 'Fraud' класы үшін төмен recall көресің. Бұл біз енді танитын классикалық тұзақ!", ach4_name: "Жетістік: Алаяқтық аңшысы", ach4_desc: "Тепе-теңсіз деректер тапсырмасына метрикаларды қолданды", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Accuracy мен f1-score арасындағы айырмашылықты көрсең — бас!", l5_title: "БОСС-ФАЙТ: Шектік мәнді оңтайландыру", l5_sub: "Бизнес тапсырма үшін threshold баптау", l5_xp: "+250 XP", l5_meme: "Модель ықтималдықтарды береді. Стандартты шек 0.5. Бірақ адал клиентті бұғаттау $10, ал алаяқтықты жіберіп алу $100 тұрса ше? Біз Recall-ді төмендетіп, Precision-ді арттыру үшін шекті жылжыта аламыз!", l5_code_title: "📝 Финалды код: Оңтайлы шекті іздеу", l5_danger_title: "🚨 Боссты тапсырмас бұрын тексер", l5_danger_text: "Шекті ұлғайтқанда (0.3-тен 0.9-ға дейін) Precision өсіп, Recall түсетінін көрдің бе? Нағыз Data Scientist-тер басқаратын дәл осы trade-off! 🏆", ach5_name: "АҢЫЗДЫҚ: Метрикалар гуруі", ach5_desc: "Бизнес талаптары үшін классификация шегін оңтайландырды", ach5_reward: "+250 XP · +100 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% ғана бұл trade-off-ты басқаруды түсінеді. Сен — элитасы!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Қолмен есептеу»", sq1_text: "Қателер матрицасы берілген: TP=40, FP=10, FN=20, TN=930. Precision, Recall және F1-ді қағазда қолмен есептеп, Python арқылы тексер.", sq1_reward: "💰 Сыйлық: 50 ЖИ-теңге", sq2_title: "⚖️ Квест «Медициналық диагностика»", sq2_text: "Сирек кездесетін ауруды анықтайтын модель жасайсың деп елестет. Қай метрика (Precision немесе Recall) сен үшін маңыздырақ? Қысқаша қорытынды жаз.", sq2_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq3_title: "📊 Квест «PR-қисығы»", sq3_text: "Тепе-теңсіз деректер жиынтығы үшін Precision-Recall қисығын сал және оны ROC-қисығымен визуалды түрде салыстыр.", sq3_reward: "💰 Сыйлық: 200 ЖИ-теңге + «Metric Wizard» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Accuracy-дің неге алдаушы екенін түсіндің", sum2: "✅ Precision және Recall игердің", sum3: "✅ F1-мераны қолдануды үйрендің", sum4: "✅ ROC-AUC салып, түсіндірдің", sum5: "✅ Метрикаларды тепе-теңсіз деректерге қолдандың", sum6: "🏆 Финалды босс — шекті оңтайландыру өтті!", sum_meme: "Құттықтаймын, Метрикалар гуруі! 2-модуль аяқталды. Келесі модульде нейрондық желілерге өтеміз.", nav_back: "← Алдыңғы квест", nav_back_title: "2.3 Шешім ағаштары", nav_next: "Келесі модуль →", nav_next_title: "3.1 Нейрондық желілерге кіріспе", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
