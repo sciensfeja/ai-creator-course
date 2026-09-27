@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 3.1: Перцептрон — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 3.1 • МОДУЛЬ 3</span>
+        <h1 data-i18n="title">Перцептрон: Искусственный нейрон</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать в Модуль 3 — мир Deep Learning! 🧠 Сегодня ты создашь свой первый искусственный нейрон с нуля и поймёшь, как машины учатся принимать решения.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration"> 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +900 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +350 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Biological vs Artificial Neuron -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Биологический vs Искусственный нейрон</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Откуда взялась идея нейросетей</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+50 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Твой мозг содержит около <strong>86 миллиардов нейронов</strong>. Каждый нейрон получает сигналы от других нейронов через дендриты, обрабатывает их и передаёт результат через аксон. Если суммарный сигнал превышает порог — нейрон «срабатывает».</p>
+
+        <p data-i18n="l0_p2">В 1958 году Фрэнк Розенблатт создал <strong>перцептрон</strong> — математическую модель нейрона. Он принимает входные данные, умножает их на веса, складывает и пропускает через функцию активации. Это и есть основа всех современных нейросетей!</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🧠</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь нейрон как NPC-стражника у ворот города. Он получает «сигналы» от разных источников (золото = +1, оружие = +2, подозрительный вид = -3). Если сумма сигналов выше порога — он пропускает тебя. Если нет — отправляет обратно. Веса сигналов он настраивает опытом!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach0_name">Ачивка: Исследователь нейронов</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял разницу между биологическим и искусственным нейроном</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+50 XP · +20 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson3_1_neuron_explorer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если представил нейрон как стражника!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Math of a Neuron -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title"> Математика нейрона</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Веса, сумма и порог</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Формула нейрона проста: <strong>output = activation(w1*x1 + w2*x2 + ... + wn*xn + bias)</strong>. Где x — входы, w — веса (важность каждого входа), bias — смещение (порог срабатывания), activation — функция активации.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Математика нейрона на NumPy</h3>
+        <pre><code>import numpy as np
+
+# Inputs: features of a game character [strength, agility, magic]
+inputs = np.array([8, 5, 3])
+
+# Weights: how important each feature is for "warrior class"
+weights = np.array([0.7, 0.2, 0.1])
+
+# Bias: threshold adjustment
+bias = -2.0
+
+# Weighted sum (dot product + bias)
+weighted_sum = np.dot(inputs, weights) + bias
+print(f"Weighted sum: {weighted_sum}")
+
+# This is the core of every neuron: z = w*x + b
+# Next we'll apply activation function to get final output</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Что такое веса?</strong>
+            <span data-i18n="l1_tip_text">Веса — это «знания» нейрона. При обучении мы меняем веса так, чтобы нейрон выдавал правильные ответы. Bias позволяет сдвинуть порог срабатывания, даже если все входы равны нулю.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔢</span>
+            <h3 data-i18n="ach1_name">Ачивка: Математик нейросетей</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Вычислил взвешенную сумму входов нейрона</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+100 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_1_math_master" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если понял формулу z = w*x + b!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Activation Functions -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">⚡ Функции активации</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Sigmoid, ReLU и другие</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Без функции активации нейрон был бы просто линейной регрессией. Активация добавляет <strong>нелинейность</strong> — способность решать сложные задачи. Две главные функции: <strong>Sigmoid</strong> (сжимает выход в диапазон 0-1, как вероятность) и <strong>ReLU</strong> (обнуляет отрицательные значения, очень быстрая).</p>
+
+        <h3 data-i18n="l2_code_title">📝 Реализация функций активации</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# Sigmoid: outputs between 0 and 1 (good for probabilities)
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# ReLU: max(0, z) - most popular in modern networks
+def relu(z):
+    return np.maximum(0, z)
+
+# Test both functions
+z = np.linspace(-5, 5, 100)
+
+plt.figure(figsize=(10, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(z, sigmoid(z), label='Sigmoid', color='#00c8ff', linewidth=2)
+plt.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5)
+plt.title('Sigmoid Activation')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.subplot(1, 2, 2)
+plt.plot(z, relu(z), label='ReLU', color='#ff50a0', linewidth=2)
+plt.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
+plt.title('ReLU Activation')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+# Test values
+print(f"Sigmoid(0) = {sigmoid(0):.3f}")   # 0.5
+print(f"Sigmoid(2) = {sigmoid(2):.3f}")   # 0.881
+print(f"ReLU(-1) = {relu(-1):.1f}")       # 0.0
+print(f"ReLU(3) = {relu(3):.1f}")         # 3.0</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l2_lore_text">ReLU (Rectified Linear Unit) стала революцией в 2012 году. До неё все использовали sigmoid и tanh, но они страдают от «проблемы затухающих градиентов» — нейроны перестают учиться. ReLU решает эту проблему, обнуляя только отрицательные значения.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚡</span>
+            <h3 data-i18n="ach2_name">Ачивка: Мастер активаций</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Реализовал и визуализировал Sigmoid и ReLU</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+120 XP · +40 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_1_activation_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел графики функций!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Building a Neuron -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🏗️ Строим нейрон с нуля</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Класс Perceptron на Python</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Теперь соберём всё вместе! Создадим класс <code>Perceptron</code>, который умеет принимать решения на основе входов. Это будет наш первый полноценный искусственный нейрон.</p>
+
+        <h3 data-i18n="l3_code_title">📝 Класс Perceptron</h3>
+        <pre><code>import numpy as np
+
+class Perceptron:
+    def __init__(self, n_inputs, learning_rate=0.1):
+        # Initialize weights randomly and bias to zero
+        self.weights = np.random.randn(n_inputs) * 0.01
+        self.bias = 0.0
+        self.lr = learning_rate
+    
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    
+    def predict(self, inputs):
+        # Forward pass: calculate weighted sum and apply activation
+        z = np.dot(inputs, self.weights) + self.bias
+        return self.sigmoid(z)
+    
+    def train_step(self, inputs, target):
+        # Forward pass
+        prediction = self.predict(inputs)
+        
+        # Calculate error (target - prediction)
+        error = target - prediction
+        
+        # Update weights and bias using gradient descent
+        # Gradient of sigmoid: prediction * (1 - prediction)
+        gradient = error * prediction * (1 - prediction)
+        self.weights += self.lr * gradient * inputs
+        self.bias += self.lr * gradient
+        
+        return error
+
+# Test our perceptron
+neuron = Perceptron(n_inputs=2, learning_rate=0.5)
+
+# Train on AND gate logic
+training_data = [
+    ([0, 0], 0),
+    ([0, 1], 0),
+    ([1, 0], 0),
+    ([1, 1], 1)
+]
+
+# Train for 1000 epochs
+for epoch in range(1000):
+    total_error = 0
+    for inputs, target in training_data:
+        error = neuron.train_step(np.array(inputs), target)
+        total_error += abs(error)
+    
+    if epoch % 200 == 0:
+        print(f"Epoch {epoch}: Total Error = {total_error:.4f}")
+
+# Test the trained perceptron
+print("\nTrained Perceptron (AND gate):")
+for inputs, target in training_data:
+    prediction = neuron.predict(np.array(inputs))
+    print(f"Input {inputs} -> {prediction:.3f} (target: {target})")</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏗️</span>
+            <h3 data-i18n="ach3_name">Ачивка: Архитектор нейронов</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Создал класс Perceptron с нуля</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_1_neuron_architect" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если нейрон научился логике AND!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Training Visualization -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title"> Визуализация обучения</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Как нейрон учится разделять данные</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Одно из главных свойств перцептрона — он может рисовать <strong>линию решения</strong> (decision boundary), разделяющую два класса. Давай визуализируем, как нейрон учится разделять красные и синие точки!</p>
+
+        <h3 data-i18n="l4_code_title">📝 Визуализация decision boundary</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+
+# Generate linearly separable data
+np.random.seed(42)
+n_samples = 100
+
+# Class 0: bottom-left cluster
+X0 = np.random.randn(n_samples//2, 2) - np.array([2, 2])
+# Class 1: top-right cluster
+X1 = np.random.randn(n_samples//2, 2) + np.array([2, 2])
+
+X = np.vstack([X0, X1])
+y = np.array([0]*(n_samples//2) + [1]*(n_samples//2))
+
+# Train perceptron
+neuron = Perceptron(n_inputs=2, learning_rate=0.1)
+for epoch in range(500):
+    for i in range(len(X)):
+        neuron.train_step(X[i], y[i])
+
+# Plot decision boundary
+fig, ax = plt.subplots(figsize=(10, 8))
+
+# Create mesh grid
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
+                     np.arange(y_min, y_max, 0.1))
+
+# Predict on mesh
+Z = np.array([neuron.predict(np.array([x, y])) 
+              for x, y in zip(xx.ravel(), yy.ravel())])
+Z = Z.reshape(xx.shape)
+
+# Plot contour
+ax.contourf(xx, yy, Z, alpha=0.4, cmap='RdYlBu')
+ax.contour(xx, yy, Z, levels=[0.5], linewidths=2, colors='black')
+
+# Plot data points
+ax.scatter(X0[:, 0], X0[:, 1], c='red', label='Class 0', s=50, edgecolors='black')
+ax.scatter(X1[:, 0], X1[:, 1], c='blue', label='Class 1', s=50, edgecolors='black')
+
+ax.set_xlabel('Feature 1')
+ax.set_ylabel('Feature 2')
+ax.set_title('Perceptron Decision Boundary')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print("Decision boundary drawn! The line separates two classes.")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">✨</span>
+            <span data-i18n="l4_meme">Видишь эту чёрную линию? Это нейрон сам научился проводить границу между классами! Он нашёл оптимальные веса так, чтобы красные точки были слева, а синие — справа. Это и есть магия машинного обучения!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach4_name">Ачивка: Визуализатор нейросетей</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Визуализировал decision boundary перцептрона</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+150 XP · +50 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_1_boundary_viz" class="ach-btn" data-i18n="ach4_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел разделяющую линию!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - XOR Problem -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Проблема XOR</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Пределы одного нейрона</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+300 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🤯💥</span>
+            <span data-i18n="l5_meme">В 1969 году Марвин Мински доказал: один перцептрон НЕ МОЖЕТ решить задачу XOR (исключающее ИЛИ). Почему? Потому что XOR не линейно разделим! Это открытие на 10 лет остановило развитие нейросетей. Решение? Многослойные сети! Но об этом в следующем уроке...</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title"> Пытаемся решить XOR одним нейроном</h3>
+        <pre><code># XOR truth table
+xor_data = [
+    ([0, 0], 0),
+    ([0, 1], 1),
+    ([1, 0], 1),
+    ([1, 1], 0)
+]
+
+# Train perceptron on XOR
+neuron = Perceptron(n_inputs=2, learning_rate=0.5)
+
+print("Training Perceptron on XOR problem...")
+for epoch in range(1000):
+    total_error = 0
+    for inputs, target in xor_data:
+        error = neuron.train_step(np.array(inputs), target)
+        total_error += abs(error)
+
+# Test results
+print("\nPerceptron predictions on XOR:")
+all_correct = True
+for inputs, target in xor_data:
+    prediction = neuron.predict(np.array(inputs))
+    predicted_class = 1 if prediction > 0.5 else 0
+    correct = "✓" if predicted_class == target else "✗"
+    if predicted_class != target:
+        all_correct = False
+    print(f"Input {inputs} -> {prediction:.3f} (class: {predicted_class}, target: {target}) {correct}")
+
+if not all_correct:
+    print("\n❌ Perceptron FAILED to learn XOR!")
+    print("This is because XOR is NOT linearly separable.")
+    print("A single neuron can only draw ONE straight line.")
+    print("XOR requires TWO lines - we need a multi-layer network!")
+else:
+    print("\n✅ Surprisingly, it worked! (Very rare with random initialization)")
+
+print("\n CONCLUSION: Single perceptron has limitations.")
+print("Next lesson: Multi-Layer Perceptron (MLP) will solve XOR!")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l5_warn_title">⚠️ Важное открытие</strong>
+            <span data-i18n="l5_warn_text">Ты только что столкнулся с фундаментальным ограничением одного нейрона! Он может решать только <strong>линейно разделимые</strong> задачи (AND, OR, но не XOR). Чтобы решать сложные задачи, нужно объединять нейроны в <strong>многослойные сети</strong> — это тема следующего урока 3.2!</span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon"></span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Создатель перцептрона</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Построил перцептрон с нуля и понял его ограничения</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+300 XP · +150 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson3_1_perceptron_creator" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% игроков доходят до понимания ограничений перцептрона. Ты — элита Deep Learning!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (домашнее задание)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Логические вентили»</h3>
+            <p data-i18n="sq1_text">Обучи перцептрон на задачах OR и NOT. Убедись, что он справляется с ними (в отличие от XOR). Запиши финальные веса нейрона.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 50 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium"> СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Сравнение активаций»</h3>
+            <p data-i18n="sq2_text">Добавь в свой класс Perceptron функции активации tanh и Leaky ReLU. Обучи нейрон на одной и той же задаче с разными активациями и сравни скорость сходимости.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Визуализация весов»</h3>
+            <p data-i18n="sq3_text">Создай анимацию, показывающую, как меняются веса нейрона во время обучения. Используй <code>matplotlib.animation</code> для создания GIF-файла, демонстрирующего процесс обучения перцептрона.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 200 AI-коинов + титул «Neural Animator»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял разницу между биологическим и искусственным нейроном</li>
+            <li data-i18n="sum2">✅ Освоил математику нейрона: z = w*x + b</li>
+            <li data-i18n="sum3">✅ Реализовал функции активации Sigmoid и ReLU</li>
+            <li data-i18n="sum4">✅ Создал класс Perceptron с нуля на Python</li>
+            <li data-i18n="sum5">✅ Визуализировал decision boundary</li>
+            <li data-i18n="sum6">🏆 Финальный босс — понял ограничения перцептрона (XOR)!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, Архитектор нейронов! Ты создал свой первый искусственный нейрон и понял его силу и ограничения. В следующем уроке 3.2 мы объединим множество нейронов в многослойную сеть (MLP) и решим задачу XOR. Готовься — будет ещё мощнее!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-2-4.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">2.4 Метрики качества</span>
+        </a>
+        <a href="lesson-3-2.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.2 Многослойный перцептрон</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 3.1 • МОДУЛЬ 3", title: "Перцептрон: Искусственный нейрон",
+            subtitle: "Добро пожаловать в Модуль 3 — мир Deep Learning!  Сегодня ты создашь свой первый искусственный нейрон с нуля и поймёшь, как машины учатся принимать решения.",
+            duration: "⏱ 3 часа", level: "📙 Продвинутый", xp: "⭐ +900 XP", loot: "💰 +350 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🧠 Биологический vs Искусственный нейрон", l0_sub: "Откуда взялась идея нейросетей", l0_xp: "+50 XP",
+            l0_p1: "Твой мозг содержит около 86 миллиардов нейронов. Каждый нейрон получает сигналы от других нейронов через дендриты, обрабатывает их и передаёт результат через аксон. Если суммарный сигнал превышает порог — нейрон «срабатывает».",
+            l0_p2: "В 1958 году Фрэнк Розенблатт создал перцептрон — математическую модель нейрона. Он принимает входные данные, умножает их на веса, складывает и пропускает через функцию активации. Это и есть основа всех современных нейросетей!",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь нейрон как NPC-стражника у ворот города. Он получает «сигналы» от разных источников (золото = +1, оружие = +2, подозрительный вид = -3). Если сумма сигналов выше порога — он пропускает тебя. Если нет — отправляет обратно. Веса сигналов он настраивает опытом!",
+            ach0_name: "Ачивка: Исследователь нейронов", ach0_desc: "Понял разницу между биологическим и искусственным нейроном", ach0_reward: "+50 XP · +20 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если представил нейрон как стражника!",
+            l1_title: " Математика нейрона", l1_sub: "Веса, сумма и порог", l1_xp: "+100 XP",
+            l1_p1: "Формула нейрона проста: output = activation(w1*x1 + w2*x2 + ... + wn*xn + bias). Где x — входы, w — веса (важность каждого входа), bias — смещение (порог срабатывания), activation — функция активации.",
+            l1_code_title: "📝 Математика нейрона на NumPy",
+            l1_tip_title: "💡 Что такое веса?", l1_tip_text: "Веса — это «знания» нейрона. При обучении мы меняем веса так, чтобы нейрон выдавал правильные ответы. Bias позволяет сдвинуть порог срабатывания, даже если все входы равны нулю.",
+            ach1_name: "Ачивка: Математик нейросетей", ach1_desc: "Вычислил взвешенную сумму входов нейрона", ach1_reward: "+100 XP · +30 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если понял формулу z = w*x + b!",
+            l2_title: "⚡ Функции активации", l2_sub: "Sigmoid, ReLU и другие", l2_xp: "+120 XP",
+            l2_p1: "Без функции активации нейрон был бы просто линейной регрессией. Активация добавляет нелинейность — способность решать сложные задачи. Две главные функции: Sigmoid (сжимает выход в диапазон 0-1, как вероятность) и ReLU (обнуляет отрицательные значения, очень быстрая).",
+            l2_code_title: " Реализация функций активации",
+            l2_lore_title: "📚 Лор для гиков", l2_lore_text: "ReLU (Rectified Linear Unit) стала революцией в 2012 году. До неё все использовали sigmoid и tanh, но они страдают от «проблемы затухающих градиентов» — нейроны перестают учиться. ReLU решает эту проблему, обнуляя только отрицательные значения.",
+            ach2_name: "Ачивка: Мастер активаций", ach2_desc: "Реализовал и визуализировал Sigmoid и ReLU", ach2_reward: "+120 XP · +40 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел графики функций!",
+            l3_title: "🏗️ Строим нейрон с нуля", l3_sub: "Класс Perceptron на Python", l3_xp: "+150 XP",
+            l3_p1: "Теперь соберём всё вместе! Создадим класс Perceptron, который умеет принимать решения на основе входов. Это будет наш первый полноценный искусственный нейрон.",
+            l3_code_title: "📝 Класс Perceptron",
+            ach3_name: "Ачивка: Архитектор нейронов", ach3_desc: "Создал класс Perceptron с нуля", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach3_btn: " Получить ачивку", ach3_hint: "Нажми, если нейрон научился логике AND!",
+            l4_title: "📈 Визуализация обучения", l4_sub: "Как нейрон учится разделять данные", l4_xp: "+150 XP",
+            l4_p1: "Одно из главных свойств перцептрона — он может рисовать линию решения (decision boundary), разделяющую два класса. Давай визуализируем, как нейрон учится разделять красные и синие точки!",
+            l4_code_title: "📝 Визуализация decision boundary",
+            l4_meme: "Видишь эту чёрную линию? Это нейрон сам научился проводить границу между классами! Он нашёл оптимальные веса так, чтобы красные точки были слева, а синие — справа. Это и есть магия машинного обучения!",
+            ach4_name: "Ачивка: Визуализатор нейросетей", ach4_desc: "Визуализировал decision boundary перцептрона", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел разделяющую линию!",
+            l5_title: "БОСС-ФАЙТ: Проблема XOR", l5_sub: "Пределы одного нейрона", l5_xp: "+300 XP",
+            l5_meme: "В 1969 году Марвин Мински доказал: один перцептрон НЕ МОЖЕТ решить задачу XOR (исключающее ИЛИ). Почему? Потому что XOR не линейно разделим! Это открытие на 10 лет остановило развитие нейросетей. Решение? Многослойные сети! Но об этом в следующем уроке...",
+            l5_code_title: "📝 Пытаемся решить XOR одним нейроном",
+            l5_warn_title: "⚠️ Важное открытие", l5_warn_text: "Ты только что столкнулся с фундаментальным ограничением одного нейрона! Он может решать только линейно разделимые задачи (AND, OR, но не XOR). Чтобы решать сложные задачи, нужно объединять нейроны в многослойные сети — это тема следующего урока 3.2!",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Создатель перцептрона", ach5_desc: "Построил перцептрон с нуля и понял его ограничения", ach5_reward: "+300 XP · +150 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% игроков доходят до понимания ограничений перцептрона. Ты — элита Deep Learning!",
+            sq_title: "📜 Побочные квесты (домашнее задание)", sq_easy: " ЛЁГКИЙ", sq_medium: " СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Логические вентили»", sq1_text: "Обучи перцептрон на задачах OR и NOT. Убедись, что он справляется с ними (в отличие от XOR). Запиши финальные веса нейрона.", sq1_reward: "💰 Награда: 50 AI-коинов",
+            sq2_title: "⚡ Квест «Сравнение активаций»", sq2_text: "Добавь в свой класс Perceptron функции активации tanh и Leaky ReLU. Обучи нейрон на одной и той же задаче с разными активациями и сравни скорость сходимости.", sq2_reward: "💰 Награда: 100 AI-коинов",
+            sq3_title: "🎨 Квест «Визуализация весов»", sq3_text: "Создай анимацию, показывающую, как меняются веса нейрона во время обучения. Используй matplotlib.animation для создания GIF-файла, демонстрирующего процесс обучения перцептрона.", sq3_reward: "💰 Награда: 200 AI-коинов + титул «Neural Animator»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял разницу между биологическим и искусственным нейроном", sum2: "✅ Освоил математику нейрона: z = w*x + b",
+            sum3: "✅ Реализовал функции активации Sigmoid и ReLU", sum4: "✅ Создал класс Perceptron с нуля на Python",
+            sum5: "✅ Визуализировал decision boundary", sum6: " Финальный босс — понял ограничения перцептрона (XOR)!",
+            sum_meme: "Поздравляю, Архитектор нейронов! Ты создал свой первый искусственный нейрон и понял его силу и ограничения. В следующем уроке 3.2 мы объединим множество нейронов в многослойную сеть (MLP) и решим задачу XOR. Готовься — будет ещё мощнее!",
+            nav_back: "← Предыдущий квест", nav_back_title: "2.4 Метрики качества",
+            nav_next: "Следующий квест →", nav_next_title: "3.2 Многослойный перцептрон",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 3.1 • MODULE 3", title: "Perceptron: Artificial Neuron",
+            subtitle: "Welcome to Module 3 — the world of Deep Learning! 🧠 Today you'll create your first artificial neuron from scratch and understand how machines learn to make decisions.",
+            duration: " 3 hours", level: "📙 Advanced", xp: "⭐ +900 XP", loot: "💰 +350 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🧠 Biological vs Artificial Neuron", l0_sub: "Where the idea of neural networks came from", l0_xp: "+50 XP",
+            l0_p1: "Your brain contains about 86 billion neurons. Each neuron receives signals from other neurons through dendrites, processes them, and transmits the result through an axon. If the total signal exceeds a threshold, the neuron 'fires'.",
+            l0_p2: "In 1958, Frank Rosenblatt created the perceptron — a mathematical model of a neuron. It takes input data, multiplies by weights, sums them up, and passes through an activation function. This is the foundation of all modern neural networks!",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine a neuron as an NPC guard at city gates. He receives 'signals' from different sources (gold = +1, weapon = +2, suspicious look = -3). If the sum of signals is above the threshold, he lets you through. If not, he sends you back. He adjusts signal weights through experience!",
+            ach0_name: "Achievement: Neuron Explorer", ach0_desc: "Understood the difference between biological and artificial neurons", ach0_reward: "+50 XP · +20  · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you imagined a neuron as a guard!",
+            l1_title: "🔢 Math of a Neuron", l1_sub: "Weights, sum, and threshold", l1_xp: "+100 XP",
+            l1_p1: "The neuron formula is simple: output = activation(w1*x1 + w2*x2 + ... + wn*xn + bias). Where x is inputs, w is weights (importance of each input), bias is offset (activation threshold), activation is the activation function.",
+            l1_code_title: " Neuron math in NumPy",
+            l1_tip_title: "💡 What are weights?", l1_tip_text: "Weights are the neuron's 'knowledge'. During training, we change weights so the neuron produces correct answers. Bias allows shifting the activation threshold even when all inputs are zero.",
+            ach1_name: "Achievement: Neural Network Mathematician", ach1_desc: "Calculated the weighted sum of neuron inputs", ach1_reward: "+100 XP · +30  · 🔵 Rare", ach1_btn: " Get achievement", ach1_hint: "Click if you understood the formula z = w*x + b!",
+            l2_title: "⚡ Activation Functions", l2_sub: "Sigmoid, ReLU, and others", l2_xp: "+120 XP",
+            l2_p1: "Without an activation function, a neuron would just be linear regression. Activation adds non-linearity — the ability to solve complex tasks. Two main functions: Sigmoid (compresses output to 0-1 range, like probability) and ReLU (zeros out negative values, very fast).",
+            l2_code_title: "📝 Implementing activation functions",
+            l2_lore_title: "📚 Lore for geeks", l2_lore_text: "ReLU (Rectified Linear Unit) became a revolution in 2012. Before it, everyone used sigmoid and tanh, but they suffer from the 'vanishing gradients problem' — neurons stop learning. ReLU solves this by zeroing out only negative values.",
+            ach2_name: "Achievement: Activation Master", ach2_desc: "Implemented and visualized Sigmoid and ReLU", ach2_reward: "+120 XP · +40 💰 ·  Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw the function graphs!",
+            l3_title: "️ Building a Neuron from Scratch", l3_sub: "Perceptron class in Python", l3_xp: "+150 XP",
+            l3_p1: "Now let's put it all together! We'll create a Perceptron class that can make decisions based on inputs. This will be our first full-fledged artificial neuron.",
+            l3_code_title: "📝 Perceptron class",
+            ach3_name: "Achievement: Neuron Architect", ach3_desc: "Created a Perceptron class from scratch", ach3_reward: "+150 XP · +50 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if the neuron learned AND logic!",
+            l4_title: " Training Visualization", l4_sub: "How a neuron learns to separate data", l4_xp: "+150 XP",
+            l4_p1: "One of the main properties of a perceptron is that it can draw a decision boundary separating two classes. Let's visualize how the neuron learns to separate red and blue points!",
+            l4_code_title: "📝 Visualizing decision boundary",
+            l4_meme: "See that black line? The neuron learned to draw the boundary between classes by itself! It found optimal weights so that red points are on the left and blue ones on the right. This is the magic of machine learning!",
+            ach4_name: "Achievement: Neural Network Visualizer", ach4_desc: "Visualized perceptron decision boundary", ach4_reward: "+150 XP · +50 💰 · 🟣 Epic", ach4_btn: " Get achievement", ach4_hint: "Click if you saw the separating line!",
+            l5_title: "BOSS FIGHT: XOR Problem", l5_sub: "Limitations of a single neuron", l5_xp: "+300 XP",
+            l5_meme: "In 1969, Marvin Minsky proved: a single perceptron CANNOT solve the XOR problem (exclusive OR). Why? Because XOR is not linearly separable! This discovery stopped neural network development for 10 years. The solution? Multi-layer networks! But that's in the next lesson...",
+            l5_code_title: "📝 Trying to solve XOR with one neuron",
+            l5_warn_title: "️ Important discovery", l5_warn_text: "You just encountered a fundamental limitation of a single neuron! It can only solve linearly separable tasks (AND, OR, but not XOR). To solve complex tasks, we need to combine neurons into multi-layer networks — that's the topic of the next lesson 3.2!",
+            ach5_name: "LEGENDARY: Perceptron Creator", ach5_desc: "Built a perceptron from scratch and understood its limitations", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of players reach understanding of perceptron limitations. You're Deep Learning elite!",
+            sq_title: "📜 Side quests (homework)", sq_easy: " EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Logic Gates»", sq1_text: "Train perceptron on OR and NOT tasks. Make sure it handles them (unlike XOR). Record the final neuron weights.", sq1_reward: "💰 Reward: 50 AI-coins",
+            sq2_title: "⚡ Quest «Activation Comparison»", sq2_text: "Add tanh and Leaky ReLU activation functions to your Perceptron class. Train the neuron on the same task with different activations and compare convergence speed.", sq2_reward: "💰 Reward: 100 AI-coins",
+            sq3_title: "🎨 Quest «Weight Visualization»", sq3_text: "Create an animation showing how neuron weights change during training. Use matplotlib.animation to create a GIF file demonstrating the perceptron learning process.", sq3_reward: "💰 Reward: 200 AI-coins + title «Neural Animator»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood difference between biological and artificial neurons", sum2: "✅ Mastered neuron math: z = w*x + b",
+            sum3: "✅ Implemented Sigmoid and ReLU activation functions", sum4: "✅ Created Perceptron class from scratch in Python",
+            sum5: "✅ Visualized decision boundary", sum6: "🏆 Final boss — understood perceptron limitations (XOR)!",
+            sum_meme: "Congrats, Neuron Architect! You created your first artificial neuron and understood its power and limitations. In the next lesson 3.2, we'll combine many neurons into a multi-layer network (MLP) and solve the XOR problem. Get ready — it'll be even more powerful!",
+            nav_back: "← Previous quest", nav_back_title: "2.4 Quality Metrics",
+            nav_next: "Next quest →", nav_next_title: "3.2 Multi-Layer Perceptron",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 3.1 • MÓDULO 3", title: "Perceptrón: Neurona Artificial", subtitle: "¡Bienvenido al Módulo 3 — el mundo del Deep Learning! 🧠 Hoy crearás tu primera neurona artificial desde cero.", duration: "⏱ 3 horas", level: "📙 Avanzado", xp: "⭐ +900 XP", loot: "💰 +350 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🧠 Neurona Biológica vs Artificial", l0_sub: "De dónde vino la idea de las redes neuronales", l0_xp: "+50 XP", l0_p1: "Tu cerebro contiene unos 86 mil millones de neuronas. Cada neurona recibe señales de otras neuronas a través de dendritas, las procesa y transmite el resultado a través de un axón.", l0_p2: "En 1958, Frank Rosenblatt creó el perceptrón — un modelo matemático de neurona. ¡Esta es la base de todas las redes neuronales modernas!", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina una neurona como un guardia NPC en las puertas de la ciudad. Recibe 'señales' de diferentes fuentes. Si la suma de señales está por encima del umbral, te deja pasar.", ach0_name: "Logro: Explorador de neuronas", ach0_desc: "Entendió la diferencia entre neuronas biológicas y artificiales", ach0_reward: "+50 XP · +20 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si imaginaste una neurona como guardia!", l1_title: " Matemáticas de una neurona", l1_sub: "Pesos, suma y umbral", l1_xp: "+100 XP", l1_p1: "La fórmula de la neurona es simple: output = activation(w1*x1 + w2*x2 + ... + bias). Donde x son entradas, w son pesos, bias es el desplazamiento.", l1_code_title: "📝 Matemáticas de neurona en NumPy", l1_tip_title: " ¿Qué son los pesos?", l1_tip_text: "Los pesos son el 'conocimiento' de la neurona. Durante el entrenamiento, cambiamos los pesos para que la neurona produzca respuestas correctas.", ach1_name: "Logro: Matemático de redes neuronales", ach1_desc: "Calculó la suma ponderada de entradas de la neurona", ach1_reward: "+100 XP · +30 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si entendiste la fórmula z = w*x + b!", l2_title: " Funciones de Activación", l2_sub: "Sigmoid, ReLU y otras", l2_xp: "+120 XP", l2_p1: "Sin función de activación, una neurona sería solo regresión lineal. La activación añade no-linealidad. Dos funciones principales: Sigmoid (comprime salida a 0-1) y ReLU (anula valores negativos).", l2_code_title: "📝 Implementando funciones de activación", l2_lore_title: "📚 Lore para geeks", l2_lore_text: "ReLU se convirtió en una revolución en 2012. Antes, todos usaban sigmoid y tanh, pero sufren del 'problema de gradientes vanishing'. ReLU resuelve esto anulando solo valores negativos.", ach2_name: "Logro: Maestro de activaciones", ach2_desc: "Implementó y visualizó Sigmoid y ReLU", ach2_reward: "+120 XP · +40 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste los gráficos!", l3_title: "🏗️ Construyendo una neurona desde cero", l3_sub: "Clase Perceptron en Python", l3_xp: "+150 XP", l3_p1: "¡Ahora pongamos todo junto! Crearemos una clase Perceptron que puede tomar decisiones basadas en entradas.", l3_code_title: "📝 Clase Perceptron", ach3_name: "Logro: Arquitecto de neuronas", ach3_desc: "Creó una clase Perceptron desde cero", ach3_reward: "+150 XP · +50 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si la neurona aprendió lógica AND!", l4_title: "📈 Visualización del entrenamiento", l4_sub: "Cómo una neurona aprende a separar datos", l4_xp: "+150 XP", l4_p1: "Una de las principales propiedades de un perceptrón es que puede dibujar un límite de decisión separando dos clases.", l4_code_title: "📝 Visualizando límite de decisión", l4_meme: "¿Ves esa línea negra? ¡La neurona aprendió a dibujar el límite entre clases por sí misma! ¡Esta es la magia del machine learning!", ach4_name: "Logro: Visualizador de redes neuronales", ach4_desc: "Visualizó el límite de decisión del perceptrón", ach4_reward: "+150 XP · +50 💰 ·  Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste la línea separadora!", l5_title: "¡PELEA JEFE: Problema XOR!", l5_sub: "Limitaciones de una sola neurona", l5_xp: "+300 XP", l5_meme: "En 1969, Marvin Minsky demostró: ¡un perceptrón NO PUEDE resolver el problema XOR! ¿Por qué? Porque XOR no es linealmente separable. ¡La solución? ¡Redes multicapa!", l5_code_title: " Intentando resolver XOR con una neurona", l5_warn_title: "⚠️ Descubrimiento importante", l5_warn_text: "¡Acabas de encontrar una limitación fundamental de una sola neurona! Solo puede resolver tareas linealmente separables (AND, OR, pero no XOR).", ach5_name: "LEGENDARIO: Creador de perceptrón", ach5_desc: "Construyó un perceptrón desde cero y entendió sus limitaciones", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% llega a entender las limitaciones del perceptrón!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Compuertas lógicas»", sq1_text: "Entrena perceptrón en tareas OR y NOT. Asegúrate de que las maneja (a diferencia de XOR).", sq1_reward: "💰 Recompensa: 50 AI-monedas", sq2_title: "⚡ Misión «Comparación de activaciones»", sq2_text: "Añade funciones tanh y Leaky ReLU a tu clase Perceptron. Compara velocidad de convergencia.", sq2_reward: "💰 Recompensa: 100 AI-monedas", sq3_title: "🎨 Misión «Visualización de pesos»", sq3_text: "Crea una animación mostrando cómo cambian los pesos durante el entrenamiento.", sq3_reward: "💰 Recompensa: 200 AI-monedas + título «Neural Animator»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste diferencia entre neuronas biológicas y artificiales", sum2: "✅ Dominaste matemáticas de neurona: z = w*x + b", sum3: "✅ Implementaste funciones Sigmoid y ReLU", sum4: "✅ Creaste clase Perceptron desde cero", sum5: "✅ Visualizaste límite de decisión", sum6: "🏆 ¡Jefe final derrotado: entendiste limitaciones XOR!", sum_meme: "¡Felicidades, Arquitecto de neuronas! En la próxima lección 3.2 combinaremos muchas neuronas en una red multicapa (MLP).", nav_back: "← Misión anterior", nav_back_title: "2.4 Métricas de Calidad", nav_next: "Siguiente misión →", nav_next_title: "3.2 Perceptrón Multicapa", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 3.1 • MODUL 3", title: "Perzeptron: Künstliches Neuron", subtitle: "Willkommen in Modul 3 — der Welt des Deep Learning!  Heute erstellst du dein erstes künstliches Neuron von Grund auf.", duration: " 3 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +900 XP", loot: "💰 +350 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🧠 Biologisches vs Künstliches Neuron", l0_sub: "Woher die Idee der neuronalen Netze kam", l0_xp: "+50 XP", l0_p1: "Dein Gehirn enthält etwa 86 Milliarden Neuronen. Jedes Neuron empfängt Signale von anderen Neuronen durch Dendriten.", l0_p2: "1958 schuf Frank Rosenblatt das Perzeptron — ein mathematisches Modell eines Neurons. Das ist die Grundlage aller modernen neuronalen Netze!", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir ein Neuron als NPC-Wächter an Stadttoren vor. Er empfängt 'Signale' von verschiedenen Quellen. Wenn die Summe über dem Schwellenwert liegt, lässt er dich durch.", ach0_name: "Erfolg: Neuron-Entdecker", ach0_desc: "Verstand den Unterschied zwischen biologischen und künstlichen Neuronen", ach0_reward: "+50 XP · +20 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du ein Neuron als Wächter imaginiert hast!", l1_title: "🔢 Mathematik eines Neurons", l1_sub: "Gewichte, Summe und Schwellenwert", l1_xp: "+100 XP", l1_p1: "Die Neuronenformel ist einfach: output = activation(w1*x1 + w2*x2 + ... + bias). Wo x Eingaben sind, w Gewichte, bias der Offset.", l1_code_title: "📝 Neuronen-Mathematik in NumPy", l1_tip_title: "💡 Was sind Gewichte?", l1_tip_text: "Gewichte sind das 'Wissen' des Neurons. Während des Trainings ändern wir Gewichte, damit das Neuron korrekte Antworten liefert.", ach1_name: "Erfolg: Neuronaler Netzwerk-Mathematiker", ach1_desc: "Berechnete die gewichtete Summe der Neuroneneingaben", ach1_reward: "+100 XP · +30 💰 · 🔵 Selten", ach1_btn: " Erfolg erhalten", ach1_hint: "Klicke, wenn du die Formel z = w*x + b verstanden hast!", l2_title: " Aktivierungsfunktionen", l2_sub: "Sigmoid, ReLU und andere", l2_xp: "+120 XP", l2_p1: "Ohne Aktivierungsfunktion wäre ein Neuron nur lineare Regression. Aktivierung fügt Nicht-Linearität hinzu. Zwei Hauptfunktionen: Sigmoid (komprimiert Ausgabe auf 0-1) und ReLU (nullt negative Werte).", l2_code_title: " Aktivierungsfunktionen implementieren", l2_lore_title: "📚 Lore für Geeks", l2_lore_text: "ReLU wurde 2012 zur Revolution. Davor benutzten alle sigmoid und tanh, aber sie leiden unter dem 'vanishing gradients problem'. ReLU löst dies, indem es nur negative Werte nullt.", ach2_name: "Erfolg: Aktivierungs-Meister", ach2_desc: "Implementierte und visualisierte Sigmoid und ReLU", ach2_reward: "+120 XP · +40 💰 · 🔵 Selten", ach2_btn: " Erfolg erhalten", ach2_hint: "Klicke, wenn du die Funktionsgraphen sahst!", l3_title: "🏗️ Neuron von Grund auf bauen", l3_sub: "Perceptron-Klasse in Python", l3_xp: "+150 XP", l3_p1: "Jetzt setzen wir alles zusammen! Wir erstellen eine Perceptron-Klasse, die Entscheidungen basierend auf Eingaben treffen kann.", l3_code_title: "📝 Perceptron-Klasse", ach3_name: "Erfolg: Neuron-Architekt", ach3_desc: "Erstellte eine Perceptron-Klasse von Grund auf", ach3_reward: "+150 XP · +50 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn das Neuron AND-Logik lernte!", l4_title: "📈 Trainingsvisualisierung", l4_sub: "Wie ein Neuron lernt, Daten zu trennen", l4_xp: "+150 XP", l4_p1: "Eine der Haupteigenschaften eines Perzeptrons ist, dass es eine Entscheidungsgrenze zeichnen kann, die zwei Klassen trennt.", l4_code_title: "📝 Entscheidungsgrenze visualisieren", l4_meme: "Siehst du diese schwarze Linie? Das Neuron lernte selbst, die Grenze zwischen Klassen zu ziehen! Das ist die Magie des Machine Learning!", ach4_name: "Erfolg: Neuronaler Netzwerk-Visualisierer", ach4_desc: "Visualisierte Perceptron-Entscheidungsgrenze", ach4_reward: "+150 XP · +50 💰 ·  Episch", ach4_btn: " Erfolg erhalten", ach4_hint: "Klicke, wenn du die Trennlinie sahst!", l5_title: "BOSSKAMPF: XOR-Problem", l5_sub: "Grenzen eines einzelnen Neurons", l5_xp: "+300 XP", l5_meme: "1969 bewies Marvin Minsky: Ein Perzeptron KANN das XOR-Problem NICHT lösen! Warum? Weil XOR nicht linear trennbar ist! Die Lösung? Mehrschichtige Netze!", l5_code_title: "📝 Versuch, XOR mit einem Neuron zu lösen", l5_warn_title: "⚠️ Wichtige Entdeckung", l5_warn_text: "Du bist gerade auf eine grundlegende Einschränkung eines einzelnen Neurons gestoßen! Es kann nur linear trennbare Aufgaben lösen (AND, OR, aber nicht XOR).", ach5_name: "LEGENDÄR: Perzeptron-Erschaffer", ach5_desc: "Baute ein Perzeptron von Grund auf und verstand seine Grenzen", ach5_reward: "+300 XP · +150 💰 ·  Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% verstehen die Grenzen des Perzeptrons. Du bist Deep Learning-Elite!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: " SCHWER", sq1_title: "🧮 Quest «Logikgatter»", sq1_text: "Trainiere Perzeptron auf OR- und NOT-Aufgaben. Stelle sicher, dass es sie bewältigt.", sq1_reward: "💰 Belohnung: 50 AI-Münzen", sq2_title: "⚡ Quest «Aktivierungsvergleich»", sq2_text: "Füge tanh und Leaky ReLU zu deiner Perceptron-Klasse hinzu. Vergleiche Konvergenzgeschwindigkeit.", sq2_reward: "💰 Belohnung: 100 AI-Münzen", sq3_title: "🎨 Quest «Gewichtsvisualisierung»", sq3_text: "Erstelle eine Animation, die zeigt, wie sich Gewichte während des Trainings ändern.", sq3_reward: "💰 Belohnung: 200 AI-Münzen + Titel «Neural Animator»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Unterschied zwischen biologischen und künstlichen Neuronen verstanden", sum2: "✅ Neuronen-Mathematik gemeistert: z = w*x + b", sum3: "✅ Sigmoid und ReLU implementiert", sum4: "✅ Perceptron-Klasse von Grund auf erstellt", sum5: "✅ Entscheidungsgrenze visualisiert", sum6: " Endboss besiegt: XOR-Grenzen verstanden!", sum_meme: "Glückwunsch, Neuron-Architekt! In der nächsten Lektion 3.2 kombinieren wir viele Neuronen zu einem mehrschichtigen Netz (MLP).", nav_back: "← Vorheriger Quest", nav_back_title: "2.4 Qualitätsmetriken", nav_next: "Nächster Quest →", nav_next_title: "3.2 Mehrschichtiges Perzeptron", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 3.1 • 3-МОДУЛЬ", title: "Перцептрон: Жасанды нейрон", subtitle: "3-модульге — Deep Learning әлеміне қош келдің! 🧠 Бүгін сен алғашқы жасанды нейроныңды нөлден жасайсың.", duration: "⏱ 3 сағат", level: "📙 Озық", xp: "⭐ +900 XP", loot: "💰 +350 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: " Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🧠 Биологиялық және Жасанды нейрон", l0_sub: "Нейрондық желілер идеясы қайдан шықты", l0_xp: "+50 XP", l0_p1: "Сенің миыңда шамамен 86 миллиард нейрон бар. Әр нейрон басқа нейрондардан дендриттер арқылы сигналдар алады.", l0_p2: "1958 жылы Фрэнк Розенблатт перцептронды — нейронның математикалық моделін жасады. Бұл барлық заманауи нейрондық желілердің негізі!", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Нейронды қала қақпасындағы NPC күзетшісі ретінде елестет. Ол әртүрлі көздерден 'сигналдар' алады. Егер сигналдар қосындысы шектен жоғары болса, сені өткізеді.", ach0_name: "Жетістік: Нейрон зерттеушісі", ach0_desc: "Биологиялық және жасанды нейрондар арасындағы айырмашылықты түсінді", ach0_reward: "+50 XP · +20 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Нейронды күзетші ретінде елестетсең — бас!", l1_title: "🔢 Нейрон математикасы", l1_sub: "Салмақтар, қосынды және шек", l1_xp: "+100 XP", l1_p1: "Нейрон формуласы қарапайым: output = activation(w1*x1 + w2*x2 + ... + bias). Мұнда x — кірістер, w — салмақтар, bias — ығысу.", l1_code_title: "📝 NumPy-дегі нейрон математикасы", l1_tip_title: "💡 Салмақтар деген не?", l1_tip_text: "Салмақтар — нейронның 'білімі'. Оқыту кезінде біз нейрон дұрыс жауаптар беруі үшін салмақтарды өзгертеміз.", ach1_name: "Жетістік: Нейрондық желі математигі", ach1_desc: "Нейрон кірістерінің салмақталған қосындысын есептеді", ach1_reward: "+100 XP · +30 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "z = w*x + b формуласын түсінсең — бас!", l2_title: "⚡ Белсендіру функциялары", l2_sub: "Sigmoid, ReLU және басқалар", l2_xp: "+120 XP", l2_p1: "Белсендіру функциясынсыз нейрон жай сызықтық регрессия болар еді. Белсендіру сызықтық еместік қосады. Екі негізгі функция: Sigmoid (шығысты 0-1 аралығына сығады) және ReLU (теріс мәндерді нөлдейді).", l2_code_title: "📝 Белсендіру функцияларын іске асыру", l2_lore_title: "📚 Гиктерге арналған лор", l2_lore_text: "ReLU 2012 жылы революцияға айналды. Оған дейін бәрі sigmoid және tanh қолданды, бірақ олар 'градиенттердің жоғалуы мәселесінен' зардап шегеді. ReLU тек теріс мәндерді нөлдеу арқылы бұл мәселені шешеді.", ach2_name: "Жетістік: Белсендіру шебері", ach2_desc: "Sigmoid және ReLU іске асырды және визуализациялады", ach2_reward: "+120 XP · +40 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Функция графиктерін көрсең — бас!", l3_title: "🏗️ Нейронды нөлден құру", l3_sub: "Python-да Perceptron класы", l3_xp: "+150 XP", l3_p1: "Енді бәрін біріктірейік! Кірістер негізінде шешім қабылдай алатын Perceptron класын жасаймыз.", l3_code_title: " Perceptron класы", ach3_name: "Жетістік: Нейрон сәулетшісі", ach3_desc: "Perceptron класын нөлден жасады", ach3_reward: "+150 XP · +50 💰 ·  Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Нейрон AND логикасын үйренсе — бас!", l4_title: "📈 Оқытуды визуализациялау", l4_sub: "Нейрон деректерді қалай бөлуді үйренеді", l4_xp: "+150 XP", l4_p1: "Перцептронның негізгі қасиеттерінің бірі — екі класты бөлетін шешім шекарасын сыза алуы.", l4_code_title: "📝 Шешім шекарасын визуализациялау", l4_meme: "Мына қара сызықты көресің бе? Нейрон кластар арасындағы шекараны өзі сызуды үйренді! Бұл машиналық оқытудың сиқыры!", ach4_name: "Жетістік: Нейрондық желі визуализаторы", ach4_desc: "Перцептрон шешім шекарасын визуализациялады", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Бөлу сызығын көрсең — бас!", l5_title: "БОСС-ФАЙТ: XOR мәселесі", l5_sub: "Бір нейронның шектеулері", l5_xp: "+300 XP", l5_meme: "1969 жылы Марвин Минский дәлелдеді: бір перцептрон XOR мәселесін ШЕШЕ АЛМАЙДЫ! Неліктен? Өйткені XOR сызықтық бөлінбейді! Шешім? Көп қабатты желілер!", l5_code_title: "📝 Бір нейронмен XOR шешуге тырысу", l5_warn_title: "⚠️ Маңызды жаңалық", l5_warn_text: "Сен бір нейронның іргелі шектеуіне тап болдың! Ол тек сызықтық бөлінетін тапсырмаларды шеше алады (AND, OR, бірақ XOR емес).", ach5_name: "АҢЫЗДЫҚ: Перцептрон жасаушы", ach5_desc: "Перцептронды нөлден құрды және оның шектеулерін түсінді", ach5_reward: "+300 XP · +150 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% ғана перцептрон шектеулерін түсінеді. Сен — Deep Learning элитасы!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Логикалық қақпалар»", sq1_text: "Перцептронды OR және NOT тапсырмаларында оқыт. Оларды басқара алатынына көз жеткіз.", sq1_reward: "💰 Сыйлық: 50 ЖИ-теңге", sq2_title: "⚡ Квест «Белсендіру салыстыруы»", sq2_text: "Perceptron класына tanh және Leaky ReLU қос. Жақындау жылдамдығын салыстыр.", sq2_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq3_title: "🎨 Квест «Салмақтарды визуализациялау»", sq3_text: "Оқыту кезінде салмақтардың қалай өзгеретінін көрсететін анимация жаса.", sq3_reward: "💰 Сыйлық: 200 ЖИ-теңге + «Neural Animator» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Биологиялық және жасанды нейрондар айырмасын түсіндің", sum2: "✅ Нейрон математикасын игердің: z = w*x + b", sum3: "✅ Sigmoid және ReLU іске асырдың", sum4: "✅ Perceptron класын нөлден жасадың", sum5: "✅ Шешім шекарасын визуализацияладың", sum6: "🏆 Финалды босс — XOR шектеулерін түсіндің!", sum_meme: "Құттықтаймын, Нейрон сәулетшісі! Келесі 3.2 сабақта көп нейрондарды көп қабатты желіге (MLP) біріктіреміз.", nav_back: "← Алдыңғы квест", nav_back_title: "2.4 Сапа метрикалары", nav_next: "Келесі квест →", nav_next_title: "3.2 Көп қабатты перцептрон", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
