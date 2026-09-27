@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструкция: GitHub + VS Code | GitHub + VS Code Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            background: #f6f8fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .lang-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .lang-btn:not(.active) {
+            background: #e1e4e8;
+            color: #24292e;
+        }
+
+        .lang-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .content {
+            background: white;
+            margin: 30px 0;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e1e4e8;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            color: #24292e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: #0366d6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #667eea;
+        }
+
+        .step {
+            background: #f6f8fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+
+        pre {
+            background: #24292e;
+            color: #e1e4e8;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        pre code {
+            background: none;
+            color: #e1e4e8;
+            padding: 0;
+        }
+
+        .command {
+            background: #24292e;
+            color: #79b8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li:before {
+            content: "☐ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav h3 {
+            margin-top: 0;
+        }
+
+        .nav ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .nav a {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f6f8fa;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            transform: translateX(5px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .lang-switcher {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #6a737d;
+            background: white;
+            margin-top: 40px;
+            border-radius: 10px;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="switchLang('ru')"> RU</button>
+        <button class="lang-btn" onclick="switchLang('en')"> EN</button>
+    </div>
+
+    <header>
+        <h1 id="main-title">Инструкция: GitHub + VS Code</h1>
+        <p class="subtitle" id="main-subtitle">Пошаговое руководство для школьников</p>
+    </header>
+
+    <div class="container">
+        <div class="nav">
+            <h3 id="nav-title">📑 Содержание</h3>
+            <ul id="nav-list">
+                <li><a href="#register">Регистрация на GitHub</a></li>
+                <li><a href="#git-install">Установка Git</a></li>
+                <li><a href="#git-setup">Настройка Git</a></li>
+                <li><a href="#github-connect">Подключение VS Code к GitHub</a></li>
+                <li><a href="#get-repo">Получение репозитория учителя</a></li>
+                <li><a href="#first-work">Отправка первой работы</a></li>
+                <li><a href="#pull-request">Создание Pull Request</a></li>
+                <li><a href="#token">Персональный токен GitHub</a></li>
+                <li><a href="#commands">Шпаргалка команд</a></li>
+                <li><a href="#problems">Частые проблемы</a></li>
+                <li><a href="#checklist">Чеклист перед отправкой</a></li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <!-- РУССКАЯ ВЕРСИЯ -->
+            <div id="content-ru">
+                <h2 id="register">📝 Часть 1: Регистрация на GitHub</h2>
+                
+                <h3>Шаг 1: Создаём аккаунт</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Открой браузер и перейди на сайт <a href="https://github.com" target="_blank">github.com</a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Нажми кнопку <strong>"Sign up"</strong> (Зарегистрироваться) в правом верхнем углу
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Введи свой email (можно использовать школьную почту)
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Придумай пароль (минимум 8 символов, буквы + цифры)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Нажми <strong>"Create account"</strong>
+                </div>
+
+                <h3>Шаг 2: Подтверждение почты</h3>
+                <ol>
+                    <li>Открой свою почту</li>
+                    <li>Найди письмо от GitHub (проверь папку "Спам", если не видишь)</li>
+                    <li>Нажми на ссылку подтверждения в письме</li>
+                    <li>Вернись на GitHub — ты увидишь страницу с проверкой</li>
+                </ol>
+
+                <h3>Шаг 3: Завершение регистрации</h3>
+                <ol>
+                    <li>GitHub может попросить решить простую задачу (капча) — это защита от роботов</li>
+                    <li>Выбери план <strong>Free</strong> (бесплатный) — его достаточно для учёбы</li>
+                    <li>Готово! Ты попал на свою главную страницу GitHub</li>
+                </ol>
+
+                <h2 id="git-install">🔧 Часть 2: Установка Git</h2>
+                
+                <h3>Что такое Git?</h3>
+                <p>Git — это программа, которая сохраняет все изменения в твоём коде. Как "машина времени" для файлов.</p>
+
+                <h3>Установка на Windows:</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Перейди на сайт <a href="https://git-scm.com/downloads" target="_blank">git-scm.com</a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Нажми <strong>"Download for Windows"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Запусти скачанный файл <code>.exe</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Нажимай <strong>"Next"</strong> на всех экранах (настройки по умолчанию подходят)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    В конце нажми <strong>"Install"</strong>, затем <strong>"Finish"</strong>
+                </div>
+
+                <h3>Установка на Mac:</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Открой <strong>Terminal</strong> (нажми <code>Cmd + Space</code>, введи "Terminal")
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Введи команду:
+                    <div class="command">git --version</div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Если Git не установлен, система сама предложит его установить — нажми <strong>"Install"</strong>
+                </div>
+
+                <h3>Проверка установки:</h3>
+                <p>Открой <strong>Командную строку</strong> (Windows) или <strong>Terminal</strong> (Mac) и введи:</p>
+                <div class="command">git --version</div>
+                <p>Должно появиться что-то вроде: <code>git version 2.40.0</code></p>
+
+                <h2 id="git-setup">️ Часть 3: Настройка Git (первый запуск)</h2>
+                
+                <p>Открой <strong>Командную строку</strong> или <strong>Terminal</strong> и выполни две команды:</p>
+                <div class="command">git config --global user.name "Твоё Имя"</div>
+                <div class="command">git config --global user.email "твой@email.com"</div>
+                
+                <div class="warning">
+                    <strong>⚠️ Важно:</strong> Используй тот же email, что и при регистрации на GitHub!
+                </div>
+
+                <p>Проверь настройки:</p>
+                <div class="command">git config --list</div>
+
+                <h2 id="github-connect">🔗 Часть 4: Подключение VS Code к GitHub</h2>
+                
+                <h3>Способ 1: Через браузер (проще)</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Открой VS Code
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Нажми на иконку человечка слева внизу (Accounts)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Выбери <strong>"Sign in with GitHub"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Откроется браузер — войди в свой аккаунт GitHub
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Разреши VS Code доступ к твоему аккаунту
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    Вернись в VS Code — ты увидишь свой никнейм
+                </div>
+
+                <h3>Способ 2: Через терминал</h3>
+                <p>В терминале VS Code (<code>Ctrl + ~</code>) введи:</p>
+                <div class="command">git config --global credential.helper store</div>
+                <p>При первом пуше Git запомнит твой пароль.</p>
+
+                <h2 id="get-repo">📥 Часть 5: Получаем репозиторий учителя</h2>
+                
+                <h3>Шаг 1: Форк репозитория</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Учитель даст тебе ссылку на репозиторий курса (например: <code>https://github.com/teacher/ai-course</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Открой эту ссылку в браузере
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    В правом верхнем углу нажми кнопку <strong>"Fork"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Выбери свой аккаунт — создастся копия репозитория у тебя
+                </div>
+
+                <h3>Шаг 2: Клонируем репозиторий на компьютер</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Открой VS Code
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Нажми <code>Ctrl + Shift + P</code> (Windows) или <code>Cmd + Shift + P</code> (Mac)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Введи: <code>Git: Clone</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Вставь ссылку на <strong>свой</strong> форкнутый репозиторий (например: <code>https://github.com/твой-ник/ai-course</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Выбери папку, куда сохранить проект
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    VS Code спросит "Open the repository?" — нажми <strong>"Open"</strong>
+                </div>
+
+                <h2 id="first-work">📤 Часть 6: Отправка первой работы</h2>
+                
+                <h3>Шаг 1: Создаём ветку</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    В VS Code открой терминал: <code>Ctrl + ~</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Введи команду:
+                    <div class="command">git checkout -b lesson-1.1</div>
+                    Это создаст новую ветку для твоего урока.
+                </div>
+
+                <h3>Шаг 2: Выполняем задание</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Найди папку с заданием (например: <code>lessons/lesson-1.1/</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Открой файл задания (например: <code>task.py</code> или <code>README.md</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Выполни задание — напиши код или ответь на вопросы
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Сохрани файл: <code>Ctrl + S</code>
+                </div>
+
+                <h3>Шаг 3: Проверяем изменения</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    В VS Code нажми на иконку ветки слева (Source Control) или <code>Ctrl + Shift + G</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Ты увидишь список изменённых файлов
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Нажми на файл — VS Code покажет, что ты изменил (красным — удалено, зелёным — добавлено)
+                </div>
+
+                <h3>Шаг 4: Делаем коммит</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    В поле "Message" напиши описание: <code>Выполнен урок 1.1: Синтаксис Python</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Нажми кнопку <strong>"Commit"</strong> (или <code>Ctrl + Enter</code>)
+                </div>
+
+                <h3>Шаг 5: Отправляем на GitHub</h3>
+                <p>В терминале введи:</p>
+                <div class="command">git push origin lesson-1.1</div>
+                
+                <div class="warning">
+                    <strong>⚠️ Если Git спросит логин и пароль:</strong><br>
+                    Логин: твой никнейм на GitHub<br>
+                    Пароль: <strong>не пароль от GitHub</strong>, а персональный токен (см. раздел ниже)
+                </div>
+
+                <h2 id="pull-request">🔄 Часть 7: Создаём Pull Request</h2>
+                
+                <h3>Шаг 1: Открываем GitHub</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Перейди на свой репозиторий на GitHub
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Ты увидишь уведомление: <strong>"lesson-1.1 had recent pushes"</strong> с кнопкой <strong>"Compare & pull request"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Нажми эту кнопку
+                </div>
+
+                <h3>Шаг 2: Заполняем PR</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <strong>Title</strong> (заголовок): <code>Урок 1.1: Синтаксис Python — [Твоё Имя]</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <strong>Description</strong> (описание): Напиши, что ты сделал, какие были трудности
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Убедись, что стрелка идёт от твоей ветки к ветке учителя: <code>твой-ник:lesson-1.1 → teacher:main</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Нажми <strong>"Create pull request"</strong>
+                </div>
+
+                <h3>Шаг 3: Ждём проверку</h3>
+                <ol>
+                    <li>Учитель получит уведомление о твоём PR</li>
+                    <li>Он проверит код и оставит комментарии</li>
+                    <li>Если нужно что-то исправить — внеси изменения, сделай коммит и пуш — PR обновится автоматически</li>
+                    <li>Когда всё хорошо, учитель нажмёт <strong>"Merge"</strong> — твоя работа принята! 🎉</li>
+                </ol>
+
+                <h2 id="token"> Персональный токен GitHub</h2>
+                
+                <p>GitHub больше не принимает обычные пароли. Нужно создать токен:</p>
+                
+                <div class="step">
+                    <span class="step-number">1</span>
+                    На GitHub нажми на свою аватарку → <a href="https://github.com/settings" target="_blank"><strong>Settings</strong></a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Слева внизу: <a href="https://github.com/settings/developers" target="_blank"><strong>Developer settings</strong></a> → <a href="https://github.com/settings/tokens" target="_blank"><strong>Personal access tokens</strong></a> → <strong>Tokens (classic)</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Нажми <strong>"Generate new token"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Дай название: <code>VS Code</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Выбери срок действия (например, 90 дней)
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    Поставь галочку напротив <strong>repo</strong> (полный доступ к репозиториям)
+                </div>
+                <div class="step">
+                    <span class="step-number">7</span>
+                    Нажми <strong>"Generate token"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">8</span>
+                    <strong>Скопируй токен</strong> (он показывается только один раз!)
+                </div>
+                <div class="step">
+                    <span class="step-number">9</span>
+                    Вставь его вместо пароля, когда Git попросит
+                </div>
+
+                <h2 id="commands"> Шпаргалка команд</h2>
+                
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                        <tr style="background: #f6f8fa;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #e1e4e8;">Команда</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #e1e4e8;">Что делает</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git clone [ссылка]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Скачивает репозиторий на компьютер</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git checkout -b [название]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Создаёт новую ветку</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git status</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Показывает изменённые файлы</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git add .</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Добавляет все изменения для коммита</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git commit -m "текст"</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Сохраняет изменения с описанием</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git push origin [ветка]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Отправляет изменения на GitHub</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git pull origin main</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Скачивает обновления от учителя</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="problems">🆘 Частые проблемы</h2>
+                
+                <h3>Проблема: "Permission denied" при пуше</h3>
+                <div class="info">
+                    <strong>Решение:</strong> Убедись, что ты работаешь со своим форком, а не с репозиторием учителя.
+                </div>
+
+                <h3>Проблема: "Merge conflict"</h3>
+                <div class="info">
+                    <strong>Решение:</strong> Учитель обновил репозиторий, пока ты работал. Сделай:
+                    <div class="command">git pull origin main</div>
+                    Исправь конфликты в файлах (VS Code покажет их), затем снова сделай коммит и пуш.
+                </div>
+
+                <h3>Проблема: Забыл создать ветку и работаю в main</h3>
+                <div class="info">
+                    <strong>Решение:</strong>
+                    <div class="command">git checkout -b lesson-1.1</div>
+                    <div class="command">git push origin lesson-1.1</div>
+                </div>
+
+                <h2 id="checklist">✅ Чеклист перед отправкой работы</h2>
+                
+                <ul class="checklist">
+                    <li>Создал ветку для урока</li>
+                    <li>Выполнил задание полностью</li>
+                    <li>Сохранил все файлы</li>
+                    <li>Сделал коммит с понятным описанием</li>
+                    <li>Отправил изменения на GitHub (<code>git push</code>)</li>
+                    <li>Создал Pull Request</li>
+                    <li>Написал описание PR (что сделал, какие были сложности)</li>
+                </ul>
+
+                <div class="success">
+                    <strong>💡 Совет:</strong> Не бойся задавать вопросы учителю в комментариях к PR! GitHub — это место для обучения, а не для идеального кода с первого раза.
+                </div>
+            </div>
+
+            <!-- АНГЛИЙСКАЯ ВЕРСИЯ -->
+            <div id="content-en" class="hidden">
+                <h2 id="register-en">📝 Part 1: GitHub Registration</h2>
+                
+                <h3>Step 1: Create an account</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Open your browser and go to <a href="https://github.com" target="_blank">github.com</a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Click the <strong>"Sign up"</strong> button in the top right corner
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Enter your email (you can use your school email)
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Create a password (minimum 8 characters, letters + numbers)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Click <strong>"Create account"</strong>
+                </div>
+
+                <h3>Step 2: Email verification</h3>
+                <ol>
+                    <li>Open your email</li>
+                    <li>Find the email from GitHub (check "Spam" folder if you don't see it)</li>
+                    <li>Click the confirmation link in the email</li>
+                    <li>Return to GitHub — you'll see a verification page</li>
+                </ol>
+
+                <h3>Step 3: Complete registration</h3>
+                <ol>
+                    <li>GitHub may ask you to solve a simple task (captcha) — this is bot protection</li>
+                    <li>Choose the <strong>Free</strong> plan — it's enough for studying</li>
+                    <li>Done! You're now on your GitHub homepage</li>
+                </ol>
+
+                <h2 id="git-install-en">🔧 Part 2: Installing Git</h2>
+                
+                <h3>What is Git?</h3>
+                <p>Git is a program that saves all changes to your code. Like a "time machine" for files.</p>
+
+                <h3>Installation on Windows:</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Go to <a href="https://git-scm.com/downloads" target="_blank">git-scm.com</a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Click <strong>"Download for Windows"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Run the downloaded <code>.exe</code> file
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Click <strong>"Next"</strong> on all screens (default settings are fine)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    At the end, click <strong>"Install"</strong>, then <strong>"Finish"</strong>
+                </div>
+
+                <h3>Installation on Mac:</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Open <strong>Terminal</strong> (press <code>Cmd + Space</code>, type "Terminal")
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Enter the command:
+                    <div class="command">git --version</div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    If Git is not installed, the system will offer to install it — click <strong>"Install"</strong>
+                </div>
+
+                <h3>Checking installation:</h3>
+                <p>Open <strong>Command Prompt</strong> (Windows) or <strong>Terminal</strong> (Mac) and enter:</p>
+                <div class="command">git --version</div>
+                <p>You should see something like: <code>git version 2.40.0</code></p>
+
+                <h2 id="git-setup-en">⚙️ Part 3: Git Configuration (first launch)</h2>
+                
+                <p>Open <strong>Command Prompt</strong> or <strong>Terminal</strong> and run two commands:</p>
+                <div class="command">git config --global user.name "Your Name"</div>
+                <div class="command">git config --global user.email "your@email.com"</div>
+                
+                <div class="warning">
+                    <strong>️ Important:</strong> Use the same email you used for GitHub registration!
+                </div>
+
+                <p>Check your settings:</p>
+                <div class="command">git config --list</div>
+
+                <h2 id="github-connect-en"> Part 4: Connecting VS Code to GitHub</h2>
+                
+                <h3>Method 1: Via browser (easier)</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Open VS Code
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Click the person icon at the bottom left (Accounts)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Select <strong>"Sign in with GitHub"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    A browser will open — log in to your GitHub account
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Allow VS Code to access your account
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    Return to VS Code — you'll see your username
+                </div>
+
+                <h3>Method 2: Via terminal</h3>
+                <p>In VS Code terminal (<code>Ctrl + ~</code>) enter:</p>
+                <div class="command">git config --global credential.helper store</div>
+                <p>Git will remember your password on the first push.</p>
+
+                <h2 id="get-repo-en">📥 Part 5: Getting the teacher's repository</h2>
+                
+                <h3>Step 1: Fork the repository</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    The teacher will give you a link to the course repository (e.g., <code>https://github.com/teacher/ai-course</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Open this link in your browser
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    In the top right corner, click the <strong>"Fork"</strong> button
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Select your account — a copy of the repository will be created in your account
+                </div>
+
+                <h3>Step 2: Clone the repository to your computer</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Open VS Code
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Press <code>Ctrl + Shift + P</code> (Windows) or <code>Cmd + Shift + P</code> (Mac)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Type: <code>Git: Clone</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Paste the link to <strong>your</strong> forked repository (e.g., <code>https://github.com/your-username/ai-course</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Choose a folder to save the project
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    VS Code will ask "Open the repository?" — click <strong>"Open"</strong>
+                </div>
+
+                <h2 id="first-work-en">📤 Part 6: Submitting your first assignment</h2>
+                
+                <h3>Step 1: Create a branch</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    In VS Code, open the terminal: <code>Ctrl + ~</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Enter the command:
+                    <div class="command">git checkout -b lesson-1.1</div>
+                    This will create a new branch for your lesson.
+                </div>
+
+                <h3>Step 2: Complete the assignment</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Find the assignment folder (e.g., <code>lessons/lesson-1.1/</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Open the assignment file (e.g., <code>task.py</code> or <code>README.md</code>)
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Complete the assignment — write code or answer questions
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Save the file: <code>Ctrl + S</code>
+                </div>
+
+                <h3>Step 3: Check changes</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    In VS Code, click the branch icon on the left (Source Control) or press <code>Ctrl + Shift + G</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    You'll see a list of changed files
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Click on a file — VS Code will show what you changed (red — deleted, green — added)
+                </div>
+
+                <h3>Step 4: Make a commit</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    In the "Message" field, write a description: <code>Completed lesson 1.1: Python Syntax</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Click the <strong>"Commit"</strong> button (or <code>Ctrl + Enter</code>)
+                </div>
+
+                <h3>Step 5: Push to GitHub</h3>
+                <p>In the terminal, enter:</p>
+                <div class="command">git push origin lesson-1.1</div>
+                
+                <div class="warning">
+                    <strong>⚠️ If Git asks for login and password:</strong><br>
+                    Login: your GitHub username<br>
+                    Password: <strong>not your GitHub password</strong>, but a personal token (see section below)
+                </div>
+
+                <h2 id="pull-request-en">🔄 Part 7: Creating a Pull Request</h2>
+                
+                <h3>Step 1: Open GitHub</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Go to your repository on GitHub
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    You'll see a notification: <strong>"lesson-1.1 had recent pushes"</strong> with a <strong>"Compare & pull request"</strong> button
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Click this button
+                </div>
+
+                <h3>Step 2: Fill in the PR</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <strong>Title</strong>: <code>Lesson 1.1: Python Syntax — [Your Name]</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <strong>Description</strong>: Write what you did, what difficulties you had
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Make sure the arrow goes from your branch to the teacher's branch: <code>your-username:lesson-1.1 → teacher:main</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Click <strong>"Create pull request"</strong>
+                </div>
+
+                <h3>Step 3: Wait for review</h3>
+                <ol>
+                    <li>The teacher will receive a notification about your PR</li>
+                    <li>They will review the code and leave comments</li>
+                    <li>If something needs to be fixed — make changes, commit and push — the PR will update automatically</li>
+                    <li>When everything is good, the teacher will click <strong>"Merge"</strong> — your work is accepted! 🎉</li>
+                </ol>
+
+                <h2 id="token-en">🔐 GitHub Personal Token</h2>
+                
+                <p>GitHub no longer accepts regular passwords. You need to create a token:</p>
+                
+                <div class="step">
+                    <span class="step-number">1</span>
+                    On GitHub, click your avatar → <a href="https://github.com/settings" target="_blank"><strong>Settings</strong></a>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    At the bottom left: <a href="https://github.com/settings/developers" target="_blank"><strong>Developer settings</strong></a> → <a href="https://github.com/settings/tokens" target="_blank"><strong>Personal access tokens</strong></a> → <strong>Tokens (classic)</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    Click <strong>"Generate new token"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    Give it a name: <code>VS Code</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    Choose expiration period (e.g., 90 days)
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    Check the box next to <strong>repo</strong> (full access to repositories)
+                </div>
+                <div class="step">
+                    <span class="step-number">7</span>
+                    Click <strong>"Generate token"</strong>
+                </div>
+                <div class="step">
+                    <span class="step-number">8</span>
+                    <strong>Copy the token</strong> (it's shown only once!)
+                </div>
+                <div class="step">
+                    <span class="step-number">9</span>
+                    Paste it instead of the password when Git asks
+                </div>
+
+                <h2 id="commands-en">📋 Command Cheat Sheet</h2>
+                
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                        <tr style="background: #f6f8fa;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #e1e4e8;">Command</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #e1e4e8;">What it does</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git clone [url]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Downloads repository to computer</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git checkout -b [name]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Creates a new branch</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git status</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Shows changed files</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git add .</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Adds all changes for commit</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git commit -m "text"</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Saves changes with description</td>
+                        </tr>
+                        <tr style="background: #f6f8fa;">
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git push origin [branch]</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Pushes changes to GitHub</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;"><code>git pull origin main</code></td>
+                            <td style="padding: 12px; border: 1px solid #e1e4e8;">Downloads updates from teacher</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="problems-en">🆘 Common Problems</h2>
+                
+                <h3>Problem: "Permission denied" when pushing</h3>
+                <div class="info">
+                    <strong>Solution:</strong> Make sure you're working with your fork, not the teacher's repository.
+                </div>
+
+                <h3>Problem: "Merge conflict"</h3>
+                <div class="info">
+                    <strong>Solution:</strong> The teacher updated the repository while you were working. Do:
+                    <div class="command">git pull origin main</div>
+                    Fix conflicts in files (VS Code will show them), then commit and push again.
+                </div>
+
+                <h3>Problem: Forgot to create a branch and working in main</h3>
+                <div class="info">
+                    <strong>Solution:</strong>
+                    <div class="command">git checkout -b lesson-1.1</div>
+                    <div class="command">git push origin lesson-1.1</div>
+                </div>
+
+                <h2 id="checklist-en">✅ Checklist before submitting work</h2>
+                
+                <ul class="checklist">
+                    <li>Created a branch for the lesson</li>
+                    <li>Completed the assignment fully</li>
+                    <li>Saved all files</li>
+                    <li>Made a commit with a clear description</li>
+                    <li>Pushed changes to GitHub (<code>git push</code>)</li>
+                    <li>Created a Pull Request</li>
+                    <li>Wrote a PR description (what you did, what difficulties you had)</li>
+                </ul>
+
+                <div class="success">
+                    <strong>💡 Tip:</strong> Don't be afraid to ask the teacher questions in PR comments! GitHub is a place for learning, not for perfect code on the first try.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p id="footer-text">Удачи в изучении программирования! 🚀</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchLang(lang) {
+            document.getElementById('content-ru').classList.toggle('hidden', lang !== 'ru');
+            document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (lang === 'ru') {
+                document.getElementById('main-title').textContent = 'Инструкция: GitHub + VS Code';
+                document.getElementById('main-subtitle').textContent = 'Пошаговое руководство для школьников';
+                document.getElementById('nav-title').textContent = ' Содержание';
+                document.getElementById('footer-text').textContent = 'Удачи в изучении программирования! ';
+            } else {
+                document.getElementById('main-title').textContent = 'Guide: GitHub + VS Code';
+                document.getElementById('main-subtitle').textContent = 'Step-by-step guide for students';
+                document.getElementById('nav-title').textContent = '📑 Table of Contents';
+                document.getElementById('footer-text').textContent = 'Good luck learning programming! ';
+            }
+        }
+    </script>
+</body>
+</html>
