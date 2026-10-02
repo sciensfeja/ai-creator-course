@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 3.2: Функции активации — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 3.2 • МОДУЛЬ 3</span>
+        <h1 data-i18n="title">Функции активации</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 3.2! ⚡ Сегодня ты разберёшься, почему без функций активации нейросети не работают, и освоишь главные из них: ReLU, Sigmoid, Tanh и Softmax.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 2 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +800 XP</span>
+            <span class="meta-tag" data-i18n="loot"> +300 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Why Activation Functions -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Зачем нужны функции активации?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Почему линейности недостаточно</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+50 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Если убрать все функции активации из нейросети, она превратится в обычную линейную регрессию — сколько бы слоёв ты ни добавлял. Функции активации вводят <strong>нелинейность</strong>, позволяя сети аппроксимировать сложные зависимости.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎮</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты складываешь урон от разных зелий. Если все зелья просто складываются (линейность), ты не получишь комбо-эффекта. Функция активации — это как «критический удар»: она добавляет нелинейный буст, который делает комбинацию зелий мощнее простой суммы!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">💡</span>
+            <h3 data-i18n="ach0_name">Ачивка: Теоретик активаций</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, зачем нужны функции активации в нейросетях</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+50 XP · +20 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson3_2_theorist" class="ach-btn" data-i18n="ach0_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял роль нелинейности!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Sigmoid & Tanh -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">📈 Sigmoid и Tanh</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Классические функции активации</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1"><strong>Sigmoid</strong> сжимает любое число в диапазон (0, 1) — идеально для вероятностей. <strong>Tanh</strong> (гиперболический тангенс) сжимает в диапазон (-1, 1) — центрирован вокруг нуля, что помогает градиентам.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Реализация Sigmoid и Tanh</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# Sigmoid function: maps any value to (0, 1)
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# Tanh function: maps any value to (-1, 1)
+def tanh(z):
+    return np.tanh(z)
+
+# Generate input values
+z = np.linspace(-6, 6, 100)
+
+# Plot both functions
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(z, sigmoid(z), label='Sigmoid', color='#00c8ff', linewidth=2)
+plt.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5)
+plt.title('Sigmoid: Output in (0, 1)')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.subplot(1, 2, 2)
+plt.plot(z, tanh(z), label='Tanh', color='#ff50a0', linewidth=2)
+plt.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
+plt.title('Tanh: Output in (-1, 1)')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+# Test values
+print(f"Sigmoid(0) = {sigmoid(0):.3f}")    # 0.5
+print(f"Sigmoid(2) = {sigmoid(2):.3f}")    # 0.881
+print(f"Tanh(0) = {tanh(0):.3f}")          # 0.0
+print(f"Tanh(2) = {tanh(2):.3f}")          # 0.964</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l1_warn_title">⚠️ Проблема затухающих градиентов</strong>
+            <span data-i18n="l1_warn_text">Sigmoid и Tanh страдают от «vanishing gradients»: при больших или маленьких значениях z градиент почти равен нулю, и нейрон перестаёт учиться. Это главная причина, почему в глубоких сетях используют ReLU.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📈</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер Sigmoid</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Реализовал и визуализировал Sigmoid и Tanh</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+100 XP · +30 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_2_sigmoid_master" class="ach-btn" data-i18n="ach1_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел графики функций!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: ReLU Family -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">⚡ ReLU и её вариации</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Самая популярная функция в современных сетях</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1"><strong>ReLU (Rectified Linear Unit)</strong> — самая используемая функция активации в глубоких сетях. Она проста: f(x) = max(0, x). Но у неё есть проблема «мёртвых нейронов» — если нейрон всегда выдаёт отрицательное значение, он «умирает». Решения: <strong>Leaky ReLU</strong> и <strong>ELU</strong>.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Семейство ReLU</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# ReLU: max(0, x)
+def relu(z):
+    return np.maximum(0, z)
+
+# Leaky ReLU: allows small negative slope
+def leaky_relu(z, alpha=0.01):
+    return np.where(z > 0, z, alpha * z)
+
+# ELU: Exponential Linear Unit
+def elu(z, alpha=1.0):
+    return np.where(z > 0, z, alpha * (np.exp(z) - 1))
+
+# Generate input values
+z = np.linspace(-3, 3, 100)
+
+# Plot all ReLU variants
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(z, relu(z), label='ReLU', color='#00c8ff', linewidth=2)
+plt.plot(z, leaky_relu(z), label='Leaky ReLU', color='#ff50a0', linewidth=2, linestyle='--')
+plt.plot(z, elu(z), label='ELU', color='#ffb400', linewidth=2, linestyle=':')
+plt.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
+plt.title('ReLU Family')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+# Zoom in on negative region
+plt.subplot(1, 2, 2)
+z_neg = np.linspace(-1, 0, 100)
+plt.plot(z_neg, relu(z_neg), label='ReLU', color='#00c8ff', linewidth=2)
+plt.plot(z_neg, leaky_relu(z_neg), label='Leaky ReLU', color='#ff50a0', linewidth=2, linestyle='--')
+plt.plot(z_neg, elu(z_neg), label='ELU', color='#ffb400', linewidth=2, linestyle=':')
+plt.title('Negative Region (Zoomed)')
+plt.xlabel('Input (z)')
+plt.ylabel('Output')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+print("ReLU variants visualized! Notice how Leaky ReLU and ELU handle negative values.")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Лор для гиков</strong>
+            <span data-i18n="l2_lore_text">ReLU стала революцией в 2012 году благодаря AlexNet. До неё все использовали Sigmoid и Tanh, но они слишком медленно обучались в глубоких сетях. ReLU решила проблему затухающих градиентов для положительных значений, ускорив обучение в 10 раз!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚡</span>
+            <h3 data-i18n="ach2_name">Ачивка: Мастер ReLU</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Реализовал ReLU, Leaky ReLU и ELU</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+120 XP · +40 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_2_relu_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел разницу между ReLU вариациями!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Softmax -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🎯 Softmax: Многоклассовая классификация</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Когда нужно выбрать один класс из многих</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1"><strong>Softmax</strong> превращает вектор чисел в распределение вероятностей: все значения от 0 до 1, и их сумма равна 1. Используется в последнем слое сети для многоклассовой классификации (например, распознавание цифр 0-9).</p>
+
+        <h3 data-i18n="l3_code_title">📝 Реализация Softmax</h3>
+        <pre><code>import numpy as np
+
+def softmax(z):
+    # Subtract max for numerical stability
+    exp_z = np.exp(z - np.max(z))
+    return exp_z / exp_z.sum(axis=0)
+
+# Example: neural network outputs for 3 classes (cat, dog, bird)
+raw_outputs = np.array([2.0, 1.0, 0.1])
+
+# Apply softmax to get probabilities
+probabilities = softmax(raw_outputs)
+
+print(f"Raw outputs: {raw_outputs}")
+print(f"Probabilities: {probabilities}")
+print(f"Sum of probabilities: {probabilities.sum():.3f}")  # Should be 1.0
+print(f"\nPredicted class: {np.argmax(probabilities)} (Cat)")
+
+# Test with different inputs
+print("\n--- More examples ---")
+test_cases = [
+    np.array([1.0, 1.0, 1.0]),      # Equal probabilities
+    np.array([10.0, 1.0, 0.1]),     # One dominant class
+    np.array([-1.0, -2.0, -3.0])    # All negative
+]
+
+for i, case in enumerate(test_cases):
+    probs = softmax(case)
+    print(f"Case {i+1}: {case} -> {probs.round(3)}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l3_tip_title">💡 Зачем вычитать максимум?</strong>
+            <span data-i18n="l3_tip_text">Строка <code>z - np.max(z)</code> нужна для численной стабильности. Без неё exp() может переполниться при больших значениях z, вызвав ошибку overflow. Вычитание максимума не меняет результат, но предотвращает переполнение.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Мастер Softmax</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал Softmax и понял его применение</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+150 XP · +50 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_2_softmax_master" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если сумма вероятностей равна 1.0!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Comparison -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🔬 Сравнение функций активации</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Когда какую использовать?</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Каждая функция активации имеет свои сильные и слабые стороны. Давай сравним их на одной задаче и посмотрим, как быстро каждая из них сходится.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Сравнение на задаче XOR</h3>
+        <pre><code>import numpy as np
+
+# XOR problem data
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+y = np.array([[0], [1], [1], [0]])
+
+# Activation functions
+def sigmoid(z):
+    return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+def relu(z):
+    return np.maximum(0, z)
+
+def tanh(z):
+    return np.tanh(z)
+
+# Simple neural network with different activations
+def train_network(activation_func, learning_rate=0.1, epochs=1000):
+    np.random.seed(42)
+    weights1 = np.random.randn(2, 4) * 0.5
+    bias1 = np.zeros((1, 4))
+    weights2 = np.random.randn(4, 1) * 0.5
+    bias2 = np.zeros((1, 1))
+    
+    for epoch in range(epochs):
+        # Forward pass
+        hidden = activation_func(np.dot(X, weights1) + bias1)
+        output = sigmoid(np.dot(hidden, weights2) + bias2)
+        
+        # Backward pass (simplified)
+        error = y - output
+        # ... (gradient calculation omitted for brevity)
+    
+    return output
+
+# Train with different activations
+print("Training XOR with different activations...\n")
+
+activations = [
+    ('Sigmoid', sigmoid),
+    ('Tanh', tanh),
+    ('ReLU', relu)
+]
+
+for name, func in activations:
+    result = train_network(func)
+    print(f"{name}:")
+    for i, (inp, out) in enumerate(zip(X, result)):
+        print(f"  Input {inp} -> {out[0]:.3f} (target: {y[i][0]})")
+    print()</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🏆</span>
+            <span data-i18n="l4_meme">В современных глубоких сетях ReLU доминирует в скрытых слоях, Sigmoid используется в бинарной классификации, а Softmax — в многоклассовой. Tanh встречается реже, но полезен в RNN!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔬</span>
+            <h3 data-i18n="ach4_name">Ачивка: Аналитик активаций</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Сравнил разные функции активации на одной задаче</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+150 XP · +50  · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_2_analyst" class="ach-btn" data-i18n="ach4_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел разницу в сходимости!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - GitHub Homework -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number"></div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Домашнее задание на GitHub</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Создай репозиторий и отправь решение</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+300 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀💼</span>
+            <span data-i18n="l5_meme">Настоящие разработчики не просто пишут код — они публикуют его на GitHub! Сегодня ты создашь свой первый репозиторий с решением задачи и отправишь его учителю.</span>
+        </div>
+
+        <h3 data-i18n="l5_task_title">📝 Задание</h3>
+        <p data-i18n="l5_task_desc">Создай Python-скрипт, который:</p>
+        <ul data-i18n="l5_task_list">
+            <li>Реализует все 4 функции активации: Sigmoid, Tanh, ReLU, Softmax</li>
+            <li>Визуализирует их на одном графике</li>
+            <li>Тестирует на разных входных данных</li>
+            <li>Сохраняет результат в файл <code>activation_functions.py</code></li>
+        </ul>
+
+        <h3 data-i18n="l5_github_title"> Инструкция по отправке на GitHub</h3>
+        <pre><code># 1. Создай новый репозиторий на GitHub.com
+#    Название: ai-creator-homework-3-2
+
+# 2. Клонируй репозиторий локально
+git clone https://github.com/ТВОЙ_НИК/ai-creator-homework-3-2.git
+cd ai-creator-homework-3-2
+
+# 3. Создай файл с решением
+touch activation_functions.py
+
+# 4. Напиши код (используй код из уровней 1-4 как основу)
+#    Добавь комментарии на английском языке
+
+# 5. Закоммить и отправь на GitHub
+git add activation_functions.py
+git commit -m "Add activation functions homework"
+git push origin main
+
+# 6. Отправь ссылку на репозиторий учителю!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы по GitHub</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Создай файл <code>README.md</code> с описанием проекта<br>
+                2. Добавь скриншот графиков в репозиторий<br>
+                3. Используй осмысленные коммит-сообщения<br>
+                4. Проверь, что код запускается без ошибок перед отправкой
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: GitHub Мастер</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал репозиторий и отправил домашнее задание на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+300 XP · +150 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson3_2_github_master" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 10% студентов отправляют домашку на GitHub. Ты — профессионал!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Производные»</h3>
+            <p data-i18n="sq1_text">Реализуй функции, которые вычисляют производные Sigmoid, Tanh и ReLU. Визуализируй их на том же графике, что и сами функции.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 50 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title"> Квест «GELU и Swish»</h3>
+            <p data-i18n="sq2_text">Исследуй современные функции активации GELU (используется в BERT) и Swish (используется в EfficientNet). Реализуй их и сравни с ReLU.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title"> Квест «Полноценный репозиторий»</h3>
+            <p data-i18n="sq3_text">Создай полноценный GitHub-репозиторий с документацией, примерами использования, тестами и GitHub Actions для автоматической проверки кода.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 200 AI-коинов + титул «Open Source Contributor»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял роль функций активации в нейросетях</li>
+            <li data-i18n="sum2">✅ Реализовал Sigmoid и Tanh</li>
+            <li data-i18n="sum3">✅ Освоил семейство ReLU (ReLU, Leaky ReLU, ELU)</li>
+            <li data-i18n="sum4">✅ Научился использовать Softmax для классификации</li>
+            <li data-i18n="sum5">✅ Сравнил функции активации на практической задаче</li>
+            <li data-i18n="sum6">🏆 Финальный босс — отправил домашнее задание на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">✨</span>
+            <span data-i18n="sum_meme">Поздравляю, Мастер активаций! Ты теперь понимаешь, как选择不同的 функции активации влияют на обучение нейросети. В следующем уроке 3.3 мы построим полноценную многослойную нейросеть (MLP) и решим задачу XOR. Готовься — будет ещё мощнее!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-3-1.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">3.1 Перцептрон</span>
+        </a>
+        <a href="lesson-3-3.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.3 Многослойный перцептрон</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 3.2 • МОДУЛЬ 3", title: "Функции активации",
+            subtitle: "Добро пожаловать на Уровень 3.2! ⚡ Сегодня ты разберёшься, почему без функций активации нейросети не работают, и освоишь главные из них: ReLU, Sigmoid, Tanh и Softmax.",
+            duration: " 2 часа", level: "📙 Продвинутый", xp: "⭐ +800 XP", loot: "💰 +300 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: " Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "💡 Зачем нужны функции активации?", l0_sub: "Почему линейности недостаточно", l0_xp: "+50 XP",
+            l0_p1: "Если убрать все функции активации из нейросети, она превратится в обычную линейную регрессию — сколько бы слоёв ты ни добавлял. Функции активации вводят нелинейность, позволяя сети аппроксимировать сложные зависимости.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты складываешь урон от разных зелий. Если все зелья просто складываются (линейность), ты не получишь комбо-эффекта. Функция активации — это как «критический удар»: она добавляет нелинейный буст, который делает комбинацию зелий мощнее простой суммы!",
+            ach0_name: "Ачивка: Теоретик активаций", ach0_desc: "Понял, зачем нужны функции активации в нейросетях", ach0_reward: "+50 XP · +20 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял роль нелинейности!",
+            l1_title: "📈 Sigmoid и Tanh", l1_sub: "Классические функции активации", l1_xp: "+100 XP",
+            l1_p1: "Sigmoid сжимает любое число в диапазон (0, 1) — идеально для вероятностей. Tanh (гиперболический тангенс) сжимает в диапазон (-1, 1) — центрирован вокруг нуля, что помогает градиентам.",
+            l1_code_title: "📝 Реализация Sigmoid и Tanh",
+            l1_warn_title: "⚠️ Проблема затухающих градиентов", l1_warn_text: "Sigmoid и Tanh страдают от «vanishing gradients»: при больших или маленьких значениях z градиент почти равен нулю, и нейрон перестаёт учиться. Это главная причина, почему в глубоких сетях используют ReLU.",
+            ach1_name: "Ачивка: Мастер Sigmoid", ach1_desc: "Реализовал и визуализировал Sigmoid и Tanh", ach1_reward: "+100 XP · +30 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если увидел графики функций!",
+            l2_title: "⚡ ReLU и её вариации", l2_sub: "Самая популярная функция в современных сетях", l2_xp: "+120 XP",
+            l2_p1: "ReLU (Rectified Linear Unit) — самая используемая функция активации в глубоких сетях. Она проста: f(x) = max(0, x). Но у неё есть проблема «мёртвых нейронов» — если нейрон всегда выдаёт отрицательное значение, он «умирает». Решения: Leaky ReLU и ELU.",
+            l2_code_title: "📝 Семейство ReLU",
+            l2_lore_title: "📚 Лор для гиков", l2_lore_text: "ReLU стала революцией в 2012 году благодаря AlexNet. До неё все использовали Sigmoid и Tanh, но они слишком медленно обучались в глубоких сетях. ReLU решила проблему затухающих градиентов для положительных значений, ускорив обучение в 10 раз!",
+            ach2_name: "Ачивка: Мастер ReLU", ach2_desc: "Реализовал ReLU, Leaky ReLU и ELU", ach2_reward: "+120 XP · +40  · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел разницу между ReLU вариациями!",
+            l3_title: "🎯 Softmax: Многоклассовая классификация", l3_sub: "Когда нужно выбрать один класс из многих", l3_xp: "+150 XP",
+            l3_p1: "Softmax превращает вектор чисел в распределение вероятностей: все значения от 0 до 1, и их сумма равна 1. Используется в последнем слое сети для многоклассовой классификации (например, распознавание цифр 0-9).",
+            l3_code_title: "📝 Реализация Softmax",
+            l3_tip_title: "💡 Зачем вычитать максимум?", l3_tip_text: "Строка z - np.max(z) нужна для численной стабильности. Без неё exp() может переполниться при больших значениях z, вызвав ошибку overflow. Вычитание максимума не меняет результат, но предотвращает переполнение.",
+            ach3_name: "Ачивка: Мастер Softmax", ach3_desc: "Реализовал Softmax и понял его применение", ach3_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если сумма вероятностей равна 1.0!",
+            l4_title: "🔬 Сравнение функций активации", l4_sub: "Когда какую использовать?", l4_xp: "+150 XP",
+            l4_p1: "Каждая функция активации имеет свои сильные и слабые стороны. Давай сравним их на одной задаче и посмотрим, как быстро каждая из них сходится.",
+            l4_code_title: "📝 Сравнение на задаче XOR",
+            l4_meme: "В современных глубоких сетях ReLU доминирует в скрытых слоях, Sigmoid используется в бинарной классификации, а Softmax — в многоклассовой. Tanh встречается реже, но полезен в RNN!",
+            ach4_name: "Ачивка: Аналитик активаций", ach4_desc: "Сравнил разные функции активации на одной задаче", ach4_reward: "+150 XP · +50 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел разницу в сходимости!",
+            l5_title: "БОСС-ФАЙТ: Домашнее задание на GitHub", l5_sub: "Создай репозиторий и отправь решение", l5_xp: "+300 XP",
+            l5_meme: "Настоящие разработчики не просто пишут код — они публикуют его на GitHub! Сегодня ты создашь свой первый репозиторий с решением задачи и отправишь его учителю.",
+            l5_task_title: "📝 Задание",
+            l5_task_desc: "Создай Python-скрипт, который:",
+            l5_task_list: "Реализует все 4 функции активации: Sigmoid, Tanh, ReLU, Softmax; Визуализирует их на одном графике; Тестирует на разных входных данных; Сохраняет результат в файл activation_functions.py",
+            l5_github_title: "🚀 Инструкция по отправке на GitHub",
+            l5_github_tip_title: "💡 Советы по GitHub",
+            l5_github_tip_text: "1. Создай файл README.md с описанием проекта; 2. Добавь скриншот графиков в репозиторий; 3. Используй осмысленные коммит-сообщения; 4. Проверь, что код запускается без ошибок перед отправкой",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: GitHub Мастер", ach5_desc: "Создал репозиторий и отправил домашнее задание на GitHub", ach5_reward: "+300 XP · +150 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 10% студентов отправляют домашку на GitHub. Ты — профессионал!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: " Квест «Производные»", sq1_text: "Реализуй функции, которые вычисляют производные Sigmoid, Tanh и ReLU. Визуализируй их на том же графике, что и сами функции.", sq1_reward: "💰 Награда: 50 AI-коинов",
+            sq2_title: " Квест «GELU и Swish»", sq2_text: "Исследуй современные функции активации GELU (используется в BERT) и Swish (используется в EfficientNet). Реализуй их и сравни с ReLU.", sq2_reward: "💰 Награда: 100 AI-коинов",
+            sq3_title: "🎨 Квест «Полноценный репозиторий»", sq3_text: "Создай полноценный GitHub-репозиторий с документацией, примерами использования, тестами и GitHub Actions для автоматической проверки кода.", sq3_reward: " Награда: 200 AI-коинов + титул «Open Source Contributor»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял роль функций активации в нейросетях", sum2: "✅ Реализовал Sigmoid и Tanh",
+            sum3: "✅ Освоил семейство ReLU (ReLU, Leaky ReLU, ELU)", sum4: "✅ Научился использовать Softmax для классификации",
+            sum5: "✅ Сравнил функции активации на практической задаче", sum6: "🏆 Финальный босс — отправил домашнее задание на GitHub!",
+            sum_meme: "Поздравляю, Мастер активаций! Ты теперь понимаешь, как选择不同的 функции активации влияют на обучение нейросети. В следующем уроке 3.3 мы построим полноценную многослойную нейросеть (MLP) и решим задачу XOR. Готовься — будет ещё мощнее!",
+            nav_back: "← Предыдущий квест", nav_back_title: "3.1 Перцептрон",
+            nav_next: "Следующий квест →", nav_next_title: "3.3 Многослойный перцептрон",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 3.2 • MODULE 3", title: "Activation Functions",
+            subtitle: "Welcome to Level 3.2! ⚡ Today you'll understand why neural networks don't work without activation functions, and master the main ones: ReLU, Sigmoid, Tanh, and Softmax.",
+            duration: "⏱ 2 hours", level: " Advanced", xp: "⭐ +800 XP", loot: "💰 +300 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "💡 Why activation functions?", l0_sub: "Why linearity is not enough", l0_xp: "+50 XP",
+            l0_p1: "If you remove all activation functions from a neural network, it becomes ordinary linear regression — no matter how many layers you add. Activation functions introduce non-linearity, allowing the network to approximate complex dependencies.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you're adding damage from different potions. If all potions just add up (linearity), you won't get a combo effect. An activation function is like a 'critical hit': it adds a non-linear boost that makes the potion combination more powerful than a simple sum!",
+            ach0_name: "Achievement: Activation Theorist", ach0_desc: "Understood why activation functions are needed in neural networks", ach0_reward: "+50 XP · +20 💰 ·  Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the role of non-linearity!",
+            l1_title: "📈 Sigmoid and Tanh", l1_sub: "Classic activation functions", l1_xp: "+100 XP",
+            l1_p1: "Sigmoid compresses any number to the range (0, 1) — ideal for probabilities. Tanh (hyperbolic tangent) compresses to (-1, 1) — centered around zero, which helps gradients.",
+            l1_code_title: " Implementing Sigmoid and Tanh",
+            l1_warn_title: "⚠️ Vanishing gradients problem", l1_warn_text: "Sigmoid and Tanh suffer from 'vanishing gradients': at large or small z values, the gradient is almost zero, and the neuron stops learning. This is the main reason why deep networks use ReLU.",
+            ach1_name: "Achievement: Sigmoid Master", ach1_desc: "Implemented and visualized Sigmoid and Tanh", ach1_reward: "+100 XP · +30 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you saw the function graphs!",
+            l2_title: "⚡ ReLU and its variants", l2_sub: "The most popular function in modern networks", l2_xp: "+120 XP",
+            l2_p1: "ReLU (Rectified Linear Unit) is the most used activation function in deep networks. It's simple: f(x) = max(0, x). But it has a 'dead neurons' problem — if a neuron always outputs negative values, it 'dies'. Solutions: Leaky ReLU and ELU.",
+            l2_code_title: "📝 ReLU family",
+            l2_lore_title: "📚 Lore for geeks", l2_lore_text: "ReLU became a revolution in 2012 thanks to AlexNet. Before it, everyone used Sigmoid and Tanh, but they trained too slowly in deep networks. ReLU solved the vanishing gradients problem for positive values, speeding up training by 10x!",
+            ach2_name: "Achievement: ReLU Master", ach2_desc: "Implemented ReLU, Leaky ReLU, and ELU", ach2_reward: "+120 XP · +40 💰 ·  Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw the difference between ReLU variants!",
+            l3_title: "🎯 Softmax: Multi-class classification", l3_sub: "When you need to choose one class from many", l3_xp: "+150 XP",
+            l3_p1: "Softmax turns a vector of numbers into a probability distribution: all values from 0 to 1, and their sum equals 1. Used in the last layer of the network for multi-class classification (e.g., digit recognition 0-9).",
+            l3_code_title: "📝 Implementing Softmax",
+            l3_tip_title: "💡 Why subtract the maximum?", l3_tip_text: "The line z - np.max(z) is needed for numerical stability. Without it, exp() can overflow at large z values, causing an overflow error. Subtracting the max doesn't change the result but prevents overflow.",
+            ach3_name: "Achievement: Softmax Master", ach3_desc: "Implemented Softmax and understood its application", ach3_reward: "+150 XP · +50 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if the sum of probabilities equals 1.0!",
+            l4_title: "🔬 Comparing activation functions", l4_sub: "When to use which?", l4_xp: "+150 XP",
+            l4_p1: "Each activation function has its strengths and weaknesses. Let's compare them on one task and see how quickly each converges.",
+            l4_code_title: "📝 Comparison on XOR task",
+            l4_meme: "In modern deep networks, ReLU dominates in hidden layers, Sigmoid is used in binary classification, and Softmax in multi-class. Tanh is less common but useful in RNNs!",
+            ach4_name: "Achievement: Activation Analyst", ach4_desc: "Compared different activation functions on one task", ach4_reward: "+150 XP · +50 💰 · 🟣 Epic", ach4_btn: " Get achievement", ach4_hint: "Click if you saw the difference in convergence!",
+            l5_title: "BOSS FIGHT: GitHub Homework", l5_sub: "Create a repository and submit your solution", l5_xp: "+300 XP",
+            l5_meme: "Real developers don't just write code — they publish it on GitHub! Today you'll create your first repository with a task solution and send it to your teacher.",
+            l5_task_title: "📝 Task",
+            l5_task_desc: "Create a Python script that:",
+            l5_task_list: "Implements all 4 activation functions: Sigmoid, Tanh, ReLU, Softmax; Visualizes them on one graph; Tests on different input data; Saves the result to activation_functions.py",
+            l5_github_title: "🚀 GitHub submission instructions",
+            l5_github_tip_title: "💡 GitHub tips",
+            l5_github_tip_text: "1. Create a README.md file with project description; 2. Add graph screenshots to the repository; 3. Use meaningful commit messages; 4. Check that the code runs without errors before submission",
+            ach5_name: "LEGENDARY: GitHub Master", ach5_desc: "Created a repository and submitted homework to GitHub", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 10% of students submit homework to GitHub. You're a professional!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Derivatives»", sq1_text: "Implement functions that compute derivatives of Sigmoid, Tanh, and ReLU. Visualize them on the same graph as the functions themselves.", sq1_reward: "💰 Reward: 50 AI-coins",
+            sq2_title: "⚡ Quest «GELU and Swish»", sq2_text: "Explore modern activation functions GELU (used in BERT) and Swish (used in EfficientNet). Implement them and compare with ReLU.", sq2_reward: "💰 Reward: 100 AI-coins",
+            sq3_title: "🎨 Quest «Full repository»", sq3_text: "Create a full GitHub repository with documentation, usage examples, tests, and GitHub Actions for automatic code checking.", sq3_reward: " Reward: 200 AI-coins + title «Open Source Contributor»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood the role of activation functions in neural networks", sum2: "✅ Implemented Sigmoid and Tanh",
+            sum3: "✅ Mastered the ReLU family (ReLU, Leaky ReLU, ELU)", sum4: "✅ Learned to use Softmax for classification",
+            sum5: "✅ Compared activation functions on a practical task", sum6: "🏆 Final boss — submitted homework to GitHub!",
+            sum_meme: "Congrats, Activation Master! You now understand how different activation functions affect neural network training. In the next lesson 3.3, we'll build a full multi-layer neural network (MLP) and solve the XOR problem. Get ready — it'll be even more powerful!",
+            nav_back: "← Previous quest", nav_back_title: "3.1 Perceptron",
+            nav_next: "Next quest →", nav_next_title: "3.3 Multi-Layer Perceptron",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 3.2 • MÓDULO 3", title: "Funciones de Activación", subtitle: "¡Bienvenido al Nivel 3.2! ⚡ Hoy entenderás por qué las redes neuronales no funcionan sin funciones de activación.", duration: " 2 horas", level: "📙 Avanzado", xp: "⭐ +800 XP", loot: "💰 +300 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "💡 ¿Por qué funciones de activación?", l0_sub: "Por qué la linealidad no es suficiente", l0_xp: "+50 XP", l0_p1: "Si eliminas todas las funciones de activación, la red se convierte en regresión lineal.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que sumas daño de diferentes pociones. Si todas las pociones solo se suman (linealidad), no obtendrás un efecto combo.", ach0_name: "Logro: Teórico de activaciones", ach0_desc: "Entendió por qué se necesitan funciones de activación", ach0_reward: "+50 XP · +20 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste el papel de la no-linealidad!", l1_title: " Sigmoid y Tanh", l1_sub: "Funciones de activación clásicas", l1_xp: "+100 XP", l1_p1: "Sigmoid comprime cualquier número al rango (0, 1). Tanh comprime a (-1, 1).", l1_code_title: "📝 Implementando Sigmoid y Tanh", l1_warn_title: "⚠️ Problema de gradientes vanishing", l1_warn_text: "Sigmoid y Tanh sufren de 'vanishing gradients': el gradiente es casi cero y la neurona deja de aprender.", ach1_name: "Logro: Maestro Sigmoid", ach1_desc: "Implementó y visualizó Sigmoid y Tanh", ach1_reward: "+100 XP · +30 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si viste los gráficos!", l2_title: "⚡ ReLU y sus variantes", l2_sub: "La función más popular en redes modernas", l2_xp: "+120 XP", l2_p1: "ReLU es la función de activación más usada. f(x) = max(0, x). Pero tiene el problema de 'neuronas muertas'.", l2_code_title: "📝 Familia ReLU", l2_lore_title: "📚 Lore para geeks", l2_lore_text: "ReLU se convirtió en revolución en 2012 gracias a AlexNet. ¡Aceleró el entrenamiento 10 veces!", ach2_name: "Logro: Maestro ReLU", ach2_desc: "Implementó ReLU, Leaky ReLU y ELU", ach2_reward: "+120 XP · +40 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste la diferencia entre variantes ReLU!", l3_title: "🎯 Softmax: Clasificación multiclase", l3_sub: "Cuando necesitas elegir una clase de muchas", l3_xp: "+150 XP", l3_p1: "Softmax convierte un vector de números en distribución de probabilidad: todos los valores de 0 a 1, y su suma es 1.", l3_code_title: "📝 Implementando Softmax", l3_tip_title: "💡 ¿Por qué restar el máximo?", l3_tip_text: "La línea z - np.max(z) es necesaria para estabilidad numérica. Previene overflow en exp().", ach3_name: "Logro: Maestro Softmax", ach3_desc: "Implementó Softmax y entendió su aplicación", ach3_reward: "+150 XP · +50 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si la suma de probabilidades es 1.0!", l4_title: "🔬 Comparando funciones de activación", l4_sub: "¿Cuándo usar cuál?", l4_xp: "+150 XP", l4_p1: "Cada función de activación tiene sus fortalezas y debilidades. Comparemos en una tarea.", l4_code_title: "📝 Comparación en tarea XOR", l4_meme: "En redes profundas modernas, ReLU domina en capas ocultas, Sigmoid se usa en clasificación binaria, y Softmax en multiclase.", ach4_name: "Logro: Analista de activaciones", ach4_desc: "Comparó diferentes funciones de activación", ach4_reward: "+150 XP · +50 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste la diferencia en convergencia!", l5_title: "¡PELEA JEFE: Tarea en GitHub!", l5_sub: "Crea un repositorio y envía tu solución", l5_xp: "+300 XP", l5_meme: "¡Los desarrolladores reales no solo escriben código — lo publican en GitHub! Hoy crearás tu primer repositorio.", l5_task_title: "📝 Tarea", l5_task_desc: "Crea un script Python que:", l5_task_list: "Implemente las 4 funciones de activación; Las visualice en un gráfico; Las pruebe con diferentes datos; Guarde el resultado", l5_github_title: "🚀 Instrucciones de envío a GitHub", l5_github_tip_title: "💡 Consejos de GitHub", l5_github_tip_text: "1. Crea README.md; 2. Añade capturas de gráficos; 3. Usa mensajes de commit significativos; 4. Verifica que el código funcione", ach5_name: "LEGENDARIO: Maestro GitHub", ach5_desc: "Creó repositorio y envió tarea a GitHub", ach5_reward: "+300 XP · +150 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 10% envía tareas a GitHub. Eres profesional!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Derivadas»", sq1_text: "Implementa funciones que calculen derivadas de Sigmoid, Tanh y ReLU.", sq1_reward: "💰 Recompensa: 50 AI-monedas", sq2_title: "⚡ Misión «GELU y Swish»", sq2_text: "Explora funciones modernas GELU (usado en BERT) y Swish (usado en EfficientNet).", sq2_reward: "💰 Recompensa: 100 AI-monedas", sq3_title: "🎨 Misión «Repositorio completo»", sq3_text: "Crea un repositorio GitHub completo con documentación, ejemplos, tests y GitHub Actions.", sq3_reward: "💰 Recompensa: 200 AI-monedas + título «Open Source Contributor»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste el papel de funciones de activación", sum2: "✅ Implementaste Sigmoid y Tanh", sum3: "✅ Dominaste familia ReLU", sum4: "✅ Aprendiste a usar Softmax", sum5: "✅ Comparaste funciones de activación", sum6: "🏆 ¡Jefe final: tarea enviada a GitHub!", sum_meme: "¡Felicidades, Maestro de Activaciones! En la próxima lección 3.3 construiremos una red neuronal multicapa completa.", nav_back: "← Misión anterior", nav_back_title: "3.1 Perceptrón", nav_next: "Siguiente misión →", nav_next_title: "3.3 Perceptrón Multicapa", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 3.2 • MODUL 3", title: "Aktivierungsfunktionen", subtitle: "Willkommen auf Level 3.2! ⚡ Heute verstehst du, warum neuronale Netze ohne Aktivierungsfunktionen nicht funktionieren.", duration: " 2 Stunden", level: " Fortgeschritten", xp: "⭐ +800 XP", loot: "💰 +300 AI-Münzen", ach: " 6 Erfolge", progress_title: " Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "💡 Warum Aktivierungsfunktionen?", l0_sub: "Warum Linearität nicht reicht", l0_xp: "+50 XP", l0_p1: "Wenn du alle Aktivierungsfunktionen entfernst, wird das Netz zur linearen Regression.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir vor, du addierst Schaden von verschiedenen Tränken. Wenn alle Tränke nur addieren (Linearität), bekommst du keinen Combo-Effekt.", ach0_name: "Erfolg: Aktivierungs-Theoretiker", ach0_desc: "Verstand, warum Aktivierungsfunktionen nötig sind", ach0_reward: "+50 XP · +20 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Rolle der Nicht-Linearität verstanden hast!", l1_title: " Sigmoid und Tanh", l1_sub: "Klassische Aktivierungsfunktionen", l1_xp: "+100 XP", l1_p1: "Sigmoid komprimiert auf (0, 1). Tanh komprimiert auf (-1, 1).", l1_code_title: " Sigmoid und Tanh implementieren", l1_warn_title: "⚠️ Vanishing Gradients Problem", l1_warn_text: "Sigmoid und Tanh leiden unter 'vanishing gradients': der Gradient ist fast null und das Neuron lernt nicht mehr.", ach1_name: "Erfolg: Sigmoid-Meister", ach1_desc: "Implementierte und visualisierte Sigmoid und Tanh", ach1_reward: "+100 XP · +30 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du die Funktionsgraphen sahst!", l2_title: "⚡ ReLU und seine Varianten", l2_sub: "Die beliebteste Funktion in modernen Netzen", l2_xp: "+120 XP", l2_p1: "ReLU ist die meistgenutzte Aktivierungsfunktion. f(x) = max(0, x). Aber es hat das Problem 'toter Neuronen'.", l2_code_title: " ReLU-Familie", l2_lore_title: "📚 Lore für Geeks", l2_lore_text: "ReLU wurde 2012 dank AlexNet zur Revolution. Es beschleunigte das Training um das 10-fache!", ach2_name: "Erfolg: ReLU-Meister", ach2_desc: "Implementierte ReLU, Leaky ReLU und ELU", ach2_reward: "+120 XP · +40 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du den Unterschied zwischen ReLU-Varianten sahst!", l3_title: " Softmax: Mehrklassen-Klassifikation", l3_sub: "Wenn du eine Klasse aus vielen wählen musst", l3_xp: "+150 XP", l3_p1: "Softmax wandelt einen Zahlenvektor in eine Wahrscheinlichkeitsverteilung um: alle Werte von 0 bis 1, Summe = 1.", l3_code_title: "📝 Softmax implementieren", l3_tip_title: " Warum das Maximum subtrahieren?", l3_tip_text: "Die Zeile z - np.max(z) ist für numerische Stabilität nötig. Sie verhindert Overflow in exp().", ach3_name: "Erfolg: Softmax-Meister", ach3_desc: "Implementierte Softmax und verstand seine Anwendung", ach3_reward: "+150 XP · +50 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn die Summe der Wahrscheinlichkeiten 1.0 ist!", l4_title: "🔬 Aktivierungsfunktionen vergleichen", l4_sub: "Wann welche verwenden?", l4_xp: "+150 XP", l4_p1: "Jede Aktivierungsfunktion hat Stärken und Schwächen. Vergleichen wir sie an einer Aufgabe.", l4_code_title: "📝 Vergleich an XOR-Aufgabe", l4_meme: "In modernen tiefen Netzen dominiert ReLU in versteckten Schichten, Sigmoid wird in binärer Klassifikation verwendet, Softmax in Mehrklassen.", ach4_name: "Erfolg: Aktivierungs-Analyst", ach4_desc: "Verglich verschiedene Aktivierungsfunktionen", ach4_reward: "+150 XP · +50 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du den Konvergenzunterschied sahst!", l5_title: "BOSSKAMPF: GitHub-Hausaufgabe", l5_sub: "Erstelle ein Repository und reiche deine Lösung ein", l5_xp: "+300 XP", l5_meme: "Echte Entwickler schreiben nicht nur Code — sie veröffentlichen ihn auf GitHub! Heute erstellst du dein erstes Repository.", l5_task_title: " Aufgabe", l5_task_desc: "Erstelle ein Python-Skript, das:", l5_task_list: "Alle 4 Aktivierungsfunktionen implementiert; Sie in einem Graph visualisiert; Mit verschiedenen Daten testet; Das Ergebnis speichert", l5_github_title: "🚀 GitHub-Einreichungsanweisungen", l5_github_tip_title: "💡 GitHub-Tipps", l5_github_tip_text: "1. Erstelle README.md; 2. Füge Graph-Screenshots hinzu; 3. Verwende aussagekräftige Commit-Nachrichten; 4. Prüfe, dass der Code funktioniert", ach5_name: "LEGENDÄR: GitHub-Meister", ach5_desc: "Erstellte Repository und reichte Hausaufgabe auf GitHub ein", ach5_reward: "+300 XP · +150 💰 ·  Legendär", ach5_btn: " Legendären Erfolg erhalten", ach5_hint: "Nur 10% der Studenten reichen Hausaufgaben auf GitHub ein. Du bist Profi!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: " SCHWER", sq1_title: "🧮 Quest «Ableitungen»", sq1_text: "Implementiere Funktionen, die Ableitungen von Sigmoid, Tanh und ReLU berechnen.", sq1_reward: "💰 Belohnung: 50 AI-Münzen", sq2_title: "⚡ Quest «GELU und Swish»", sq2_text: "Erforsche moderne Aktivierungsfunktionen GELU (in BERT) und Swish (in EfficientNet).", sq2_reward: "💰 Belohnung: 100 AI-Münzen", sq3_title: "🎨 Quest «Vollständiges Repository»", sq3_text: "Erstelle ein vollständiges GitHub-Repository mit Dokumentation, Beispielen, Tests und GitHub Actions.", sq3_reward: "💰 Belohnung: 200 AI-Münzen + Titel «Open Source Contributor»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Rolle von Aktivierungsfunktionen verstanden", sum2: "✅ Sigmoid und Tanh implementiert", sum3: "✅ ReLU-Familie gemeistert", sum4: "✅ Softmax für Klassifikation gelernt", sum5: "✅ Aktivierungsfunktionen verglichen", sum6: "🏆 Endboss: Hausaufgabe auf GitHub eingereicht!", sum_meme: "Glückwunsch, Aktivierungs-Meister! In der nächsten Lektion 3.3 bauen wir ein vollständiges mehrschichtiges neuronales Netz.", nav_back: "← Vorheriger Quest", nav_back_title: "3.1 Perzeptron", nav_next: "Nächster Quest →", nav_next_title: "3.2 Mehrschichtiges Perzeptron", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 3.2 • 3-МОДУЛЬ", title: "Белсендіру функциялары", subtitle: "3.2 деңгейге қош келдің! ⚡ Бүгін нейрондық желілердің белсендіру функцияларынсыз неге жұмыс істемейтінін түсінесің.", duration: "⏱ 2 сағат", level: "📙 Озық", xp: "⭐ +800 XP", loot: " +300 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "💡 Белсендіру функциялары неге керек?", l0_sub: "Сызықтық жеткіліксіз неге", l0_xp: "+50 XP", l0_p1: "Егер барлық белсендіру функцияларын алып тастасаң, желі кәдімгі сызықтық регрессияға айналады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Әртүрлі зельттерден зақым қосып жатырсың деп елестет. Егер барлық зельттер жай қосылса (сызықтық), комбо эффектісі болмайды.", ach0_name: "Жетістік: Белсендіру теоретигі", ach0_desc: "Белсендіру функцияларының неге керек екенін түсінді", ach0_reward: "+50 XP · +20 💰 · ⚪ Кәдімгі", ach0_btn: " Жетістікті алу", ach0_hint: "Сызықтық еместіктің рөлін түсінсең — бас!", l1_title: "📈 Sigmoid және Tanh", l1_sub: "Классикалық белсендіру функциялары", l1_xp: "+100 XP", l1_p1: "Sigmoid кез келген санды (0, 1) аралығына сығады. Tanh (-1, 1) аралығына сығады.", l1_code_title: "📝 Sigmoid және Tanh іске асыру", l1_warn_title: "⚠️ Градиенттердің жоғалуы мәселесі", l1_warn_text: "Sigmoid және Tanh 'градиенттердің жоғалуынан' зардап шегеді: градиент нөлге жақын және нейрон үйренуді тоқтатады.", ach1_name: "Жетістік: Sigmoid шебері", ach1_desc: "Sigmoid және Tanh іске асырды және визуализациялады", ach1_reward: "+100 XP · +30 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Функция графиктерін көрсең — бас!", l2_title: "⚡ ReLU және оның вариациялары", l2_sub: "Заманауи желілердегі ең танымал функция", l2_xp: "+120 XP", l2_p1: "ReLU — терең желілерде ең көп қолданылатын белсендіру функциясы. f(x) = max(0, x). Бірақ 'өлі нейрондар' мәселесі бар.", l2_code_title: " ReLU отбасы", l2_lore_title: "📚 Гиктерге арналған лор", l2_lore_text: "ReLU 2012 жылы AlexNet арқасында революцияға айналды. Оқытуды 10 есе жылдамдатты!", ach2_name: "Жетістік: ReLU шебері", ach2_desc: "ReLU, Leaky ReLU және ELU іске асырды", ach2_reward: "+120 XP · +40 💰 ·  Сирек", ach2_btn: " Жетістікті алу", ach2_hint: "ReLU вариациялары арасындағы айырмашылықты көрсең — бас!", l3_title: "🎯 Softmax: Көп класты классификация", l3_sub: "Көптеген кластардан бірін таңдау керек болғанда", l3_xp: "+150 XP", l3_p1: "Softmax сандар векторын ықтималдық таралуына айналдырады: барлық мәндер 0-ден 1-ге дейін, қосындысы 1-ге тең.", l3_code_title: "📝 Softmax іске асыру", l3_tip_title: "💡 Неліктен максимумды азайту керек?", l3_tip_text: "z - np.max(z) жолы сандық тұрақтылық үшін қажет. Ол exp() ішіндегі overflow-ты болдырмайды.", ach3_name: "Жетістік: Softmax шебері", ach3_desc: "Softmax іске асырды және қолданылуын түсінді", ach3_reward: "+150 XP · +50 💰 ·  Эпикалық", ach3_btn: " Жетістікті алу", ach3_hint: "Ықтималдықтар қосындысы 1.0 болса — бас!", l4_title: "🔬 Белсендіру функцияларын салыстыру", l4_sub: "Қайсысын қашан қолдану керек?", l4_xp: "+150 XP", l4_p1: "Әр белсендіру функциясының өз артықшылықтары мен кемшіліктері бар. Бір тапсырмада салыстырайық.", l4_code_title: "📝 XOR тапсырмасында салыстыру", l4_meme: "Заманауи терең желілерде ReLU жасырын қабаттарда басым, Sigmoid екілік классификацияда, Softmax көп кластыда қолданылады.", ach4_name: "Жетістік: Белсендіру талдаушысы", ach4_desc: "Бір тапсырмада әртүрлі белсендіру функцияларын салыстырды", ach4_reward: "+150 XP · +50 💰 ·  Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Жақындау айырмашылығын көрсең — бас!", l5_title: "БОСС-ФАЙТ: GitHub үй тапсырмасы", l5_sub: "Репозиторий жаса және шешімді жібер", l5_xp: "+300 XP", l5_meme: "Нағыз әзірлеушілер код жазбайды — оны GitHub-та жариялайды! Бүгін сен бірінші репозиторийіңді жасайсың.", l5_task_title: "📝 Тапсырма", l5_task_desc: "Python скриптін жаса:", l5_task_list: "4 белсендіру функциясын іске асырады; Оларды бір графикте визуализациялайды; Әртүрлі деректерде тестілейді; Нәтижені сақтайды", l5_github_title: "🚀 GitHub-қа жіберу нұсқаулары", l5_github_tip_title: "💡 GitHub кеңестері", l5_github_tip_text: "1. README.md жаса; 2. График скриншоттарын қос; 3. Мағыналы коммит хабарламаларын қолдан; 4. Код қатесіз жұмыс істейтінін тексер", ach5_name: "АҢЫЗДЫҚ: GitHub шебері", ach5_desc: "Репозиторий жасады және үй тапсырмасын GitHub-қа жіберді", ach5_reward: "+300 XP · +150 💰 ·  Аңыздық", ach5_btn: " Аңыздық жетістікті алу", ach5_hint: "Тек 10% студенттер үй тапсырмасын GitHub-қа жібереді. Сен кәсіпқойсы!", sq_title: " Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Туындылар»", sq1_text: "Sigmoid, Tanh және ReLU туындыларын есептейтін функцияларды іске асыр.", sq1_reward: "💰 Сыйлық: 50 ЖИ-теңге", sq2_title: "⚡ Квест «GELU және Swish»", sq2_text: "Заманауи GELU (BERT-те) және Swish (EfficientNet-те) функцияларын зертте.", sq2_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq3_title: " Квест «Толық репозиторий»", sq3_text: "Құжаттама, мысалдар, тесттер және GitHub Actions бар толық GitHub репозиторийін жаса.", sq3_reward: "💰 Сыйлық: 200 ЖИ-теңге + «Open Source Contributor» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Белсендіру функцияларының рөлін түсіндің", sum2: "✅ Sigmoid және Tanh іске асырдың", sum3: "✅ ReLU отбасын игердің", sum4: "✅ Softmax-ты классификация үшін қолдандың", sum5: "✅ Белсендіру функцияларын салыстырдың", sum6: "🏆 Финалды босс — үй тапсырмасы GitHub-қа жіберілді!", sum_meme: "Құттықтаймын, Белсендіру шебері! Келесі 3.3 сабақта толық көп қабатты нейрондық желі (MLP) жасаймыз.", nav_back: "← Алдыңғы квест", nav_back_title: "3.1 Перцептрон", nav_next: "Келесі квест →", nav_next_title: "3.3 Көп қабатты перцептрон", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
