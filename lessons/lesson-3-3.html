@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 3.3: Backpropagation — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(120, 80, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(120, 80, 255, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(120, 80, 255, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #7850ff, #00c8ff); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ff50a0, #7850ff); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 160, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(255, 80, 160, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ff50a0, #7850ff, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #7850ff, #00c8ff, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #7850ff, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ff8800); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #7850ff, #00c8ff); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(120, 80, 255, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ff8800); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #00c8ff; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(255, 80, 160, 0.1), rgba(120, 80, 255, 0.1)); border: 2px dashed rgba(255, 80, 160, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(120, 80, 255, 0.08); border-color: #7850ff; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #7850ff; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(120, 80, 255, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #00c8ff; background: rgba(0, 200, 255, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 255, 0.05); border: 1px solid rgba(0, 200, 255, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #00c8ff; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #7850ff; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(120, 80, 255, 0.05); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(120, 80, 255, 0.1); border: 1px solid rgba(120, 80, 255, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(120, 80, 255, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(120, 80, 255, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(120, 80, 255, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(120, 80, 255, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 3.3 • МОДУЛЬ 3</span>
+        <h1 data-i18n="title">Backpropagation: Как сеть учится?</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 3.3!  Сегодня ты разберёшься с самым важным алгоритмом в Deep Learning — обратным распространением ошибки. Это то, как нейросеть понимает свои ошибки и становится умнее!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1000 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +400 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Intuition -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Интуиция: Как учимся мы?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">От человеческого обучения к машинному</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+60 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Когда ты учишься играть в игру, ты совершаешь ошибки, анализируешь их и корректируешь свои действия. Нейросеть делает то же самое! Она делает предсказание, сравнивает с правильным ответом, вычисляет ошибку и adjusts свои веса, чтобы в следующий раз ошибиться меньше.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎯</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты стреляешь из лука в мишень. Первый выстрел — промах вправо. Ты анализируешь: "Слишком сильно натянул вправо". Второй выстрел — чуть левее. Третий — в яблочко! Backpropagation — это тот же процесс: сеть "стреляет" предсказанием, видит ошибку и "подкручивает прицел" (веса).</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach0_name">Ачивка: Интуитивщик</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял интуицию обратного распространения ошибки</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+60 XP · +25 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson3_3_intuitive" class="ach-btn" data-i18n="ach0_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял аналогию со стрельбой из лука!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Chain Rule -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🔗 Цепное правило (Chain Rule)</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Математический фундамент backpropagation</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Чтобы понять, как изменить каждый вес в сети, нам нужно знать, как ошибка зависит от этого веса. Но веса находятся глубоко в сети! Здесь на помощь приходит <strong>цепное правило</strong> из математического анализа: если y зависит от x через промежуточную переменную z, то dy/dx = (dy/dz) * (dz/dx).</p>
+
+        <h3 data-i18n="l1_code_title"> Цепное правило в действии</h3>
+        <pre><code>import numpy as np
+
+# Simple example: y = (2x + 3)^2
+# We want to find dy/dx using chain rule
+
+def forward(x):
+    """Forward pass: compute y from x"""
+    z = 2 * x + 3  # Intermediate variable
+    y = z ** 2     # Output
+    return z, y
+
+def backward(x, z, y, dy=1.0):
+    """Backward pass: compute gradients using chain rule"""
+    # dy/dz = 2z
+    dz = 2 * z * dy
+    
+    # dz/dx = 2
+    dx = 2 * dz
+    
+    return dx, dz
+
+# Test with x = 1
+x = 1.0
+z, y = forward(x)
+dx, dz = backward(x, z, y)
+
+print(f"x = {x}")
+print(f"z = 2x + 3 = {z}")
+print(f"y = z^2 = {y}")
+print(f"\nGradients (chain rule):")
+print(f"dy/dz = 2z = {dz}")
+print(f"dz/dx = 2")
+print(f"dy/dx = (dy/dz) * (dz/dx) = {dx}")
+
+# Verify with numerical gradient
+h = 0.0001
+numerical_grad = ((2*(x+h)+3)**2 - (2*(x-h)+3)**2) / (2*h)
+print(f"\nNumerical verification: dy/dx ≈ {numerical_grad:.4f}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Почему это важно?</strong>
+            <span data-i18n="l1_tip_text">Цепное правило позволяет нам "протаскивать" градиент ошибки через все слои сети, от выхода ко входу. Это и есть обратное распространение!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔗</span>
+            <h3 data-i18n="ach1_name">Ачивка: Математик цепного правила</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Понял и реализовал цепное правило</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+120 XP · +40 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_3_chain_rule" class="ach-btn" data-i18n="ach1_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если градиенты совпали!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Manual Backprop -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">️ Backpropagation вручную</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Вычисляем градиенты для простой сети</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Давай реализуем backpropagation для простой сети: вход → скрытый слой (2 нейрона) → выход. Мы вручную вычислим все градиенты и обновим веса.</p>
+
+        <h3 data-i18n="l2_code_title"> Ручной backpropagation</h3>
+        <pre><code>import numpy as np
+
+# Simple network: 1 input -> 2 hidden -> 1 output
+# Using sigmoid activation
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def sigmoid_derivative(s):
+    return s * (1 - s)
+
+# Initialize weights (small random values)
+np.random.seed(42)
+w1 = np.random.randn(1, 2) * 0.5  # Input to hidden
+b1 = np.zeros((1, 2))
+w2 = np.random.randn(2, 1) * 0.5  # Hidden to output
+b2 = np.zeros((1, 1))
+
+# Training data: XOR problem
+X = np.array([[0], [1], [0], [1]])
+y = np.array([[0], [1], [1], [0]])
+
+# Learning rate
+lr = 0.5
+
+print("Training simple network with backpropagation...\n")
+
+for epoch in range(1000):
+    total_loss = 0
+    
+    for i in range(len(X)):
+        x = X[i]
+        target = y[i]
+        
+        # === FORWARD PASS ===
+        # Hidden layer
+        z1 = np.dot(x, w1) + b1
+        a1 = sigmoid(z1)
+        
+        # Output layer
+        z2 = np.dot(a1, w2) + b2
+        a2 = sigmoid(z2)
+        
+        # Compute loss (MSE)
+        loss = (target - a2) ** 2
+        total_loss += loss
+        
+        # === BACKWARD PASS ===
+        # Output layer gradients
+        d_loss_da2 = -2 * (target - a2)
+        da2_dz2 = sigmoid_derivative(a2)
+        d_loss_dz2 = d_loss_da2 * da2_dz2
+        
+        # Gradients for w2 and b2
+        d_loss_dw2 = np.dot(a1.T, d_loss_dz2)
+        d_loss_db2 = d_loss_dz2
+        
+        # Hidden layer gradients (chain rule!)
+        d_loss_da1 = np.dot(d_loss_dz2, w2.T)
+        da1_dz1 = sigmoid_derivative(a1)
+        d_loss_dz1 = d_loss_da1 * da1_dz1
+        
+        # Gradients for w1 and b1
+        d_loss_dw1 = np.dot(x.T, d_loss_dz1)
+        d_loss_db1 = d_loss_dz1
+        
+        # === UPDATE WEIGHTS ===
+        w2 -= lr * d_loss_dw2
+        b2 -= lr * d_loss_db2
+        w1 -= lr * d_loss_dw1
+        b1 -= lr * d_loss_db1
+    
+    if epoch % 200 == 0:
+        print(f"Epoch {epoch}: Loss = {total_loss/len(X):.6f}")
+
+print("\n=== Final Predictions ===")
+for i in range(len(X)):
+    x = X[i]
+    z1 = np.dot(x, w1) + b1
+    a1 = sigmoid(z1)
+    z2 = np.dot(a1, w2) + b2
+    a2 = sigmoid(z2)
+    print(f"Input: {x[0]} -> Output: {a2[0]:.4f} (Target: {y[i][0]})")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l2_warn_title">️ Ключевые моменты</strong>
+            <span data-i18n="l2_warn_text">1. Forward pass: вычисляем предсказание<br>2. Вычисляем ошибку (loss)<br>3. Backward pass: считаем градиенты через цепное правило<br>4. Обновляем веса в направлении анти-градиента</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">✍️</span>
+            <h3 data-i18n="ach2_name">Ачивка: Ручной backprop</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Реализовал обратное распространение ошибки вручную</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+150 XP · +50 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_3_manual_backprop" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если сеть научилась XOR!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Vectorized Backprop -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title"> Векторизованный Backpropagation</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Оптимизируем для скорости</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+180 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Ручной backpropagation работает, но медленно — мы обрабатываем примеры по одному. В реальных сетях мы используем <strong>векторизацию</strong>: обрабатываем весь батч данных одновременно через матричные операции NumPy.</p>
+
+        <h3 data-i18n="l3_code_title">📝 Векторизованная версия</h3>
+        <pre><code>import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size):
+        # Initialize weights with Xavier initialization
+        self.w1 = np.random.randn(input_size, hidden_size) * np.sqrt(2.0 / input_size)
+        self.b1 = np.zeros((1, hidden_size))
+        self.w2 = np.random.randn(hidden_size, output_size) * np.sqrt(2.0 / hidden_size)
+        self.b2 = np.zeros((1, output_size))
+    
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    
+    def sigmoid_derivative(self, s):
+        return s * (1 - s)
+    
+    def forward(self, X):
+        """Forward pass for entire batch"""
+        self.z1 = np.dot(X, self.w1) + self.b1
+        self.a1 = self.sigmoid(self.z1)
+        self.z2 = np.dot(self.a1, self.w2) + self.b2
+        self.a2 = self.sigmoid(self.z2)
+        return self.a2
+    
+    def backward(self, X, y, lr=0.5):
+        """Backward pass and weight update"""
+        m = X.shape[0]  # Batch size
+        
+        # Output layer gradients
+        d_loss_da2 = -2 * (y - self.a2) / m
+        da2_dz2 = self.sigmoid_derivative(self.a2)
+        d_loss_dz2 = d_loss_da2 * da2_dz2
+        
+        d_loss_dw2 = np.dot(self.a1.T, d_loss_dz2)
+        d_loss_db2 = np.sum(d_loss_dz2, axis=0, keepdims=True)
+        
+        # Hidden layer gradients
+        d_loss_da1 = np.dot(d_loss_dz2, self.w2.T)
+        da1_dz1 = self.sigmoid_derivative(self.a1)
+        d_loss_dz1 = d_loss_da1 * da1_dz1
+        
+        d_loss_dw1 = np.dot(X.T, d_loss_dz1)
+        d_loss_db1 = np.sum(d_loss_dz1, axis=0, keepdims=True)
+        
+        # Update weights
+        self.w2 -= lr * d_loss_dw2
+        self.b2 -= lr * d_loss_db2
+        self.w1 -= lr * d_loss_dw1
+        self.b1 -= lr * d_loss_db1
+    
+    def train(self, X, y, epochs=1000, lr=0.5):
+        """Training loop"""
+        for epoch in range(epochs):
+            # Forward pass
+            output = self.forward(X)
+            
+            # Compute loss
+            loss = np.mean((y - output) ** 2)
+            
+            # Backward pass
+            self.backward(X, y, lr)
+            
+            if epoch % 200 == 0:
+                print(f"Epoch {epoch}: Loss = {loss:.6f}")
+        
+        return output
+
+# Train on XOR problem
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+y = np.array([[0], [1], [1], [0]])
+
+nn = NeuralNetwork(input_size=2, hidden_size=4, output_size=1)
+final_output = nn.train(X, y, epochs=2000, lr=1.0)
+
+print("\n=== Final Predictions ===")
+for i in range(len(X)):
+    print(f"Input: {X[i]} -> Output: {final_output[i][0]:.4f} (Target: {y[i][0]})")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l3_lore_title">📚 Xavier Initialization</strong>
+            <span data-i18n="l3_lore_text">Мы используем Xavier initialization для весов: умножаем случайные числа на sqrt(2/input_size). Это помогает градиентам не затухать и не взрываться в глубоких сетях!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Векторизатор</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал векторизованный backpropagation</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+180 XP · +60 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_3_vectorized" class="ach-btn" data-i18n="ach3_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если код работает быстрее!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Visualization -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">📊 Визуализация обучения</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Смотрим, как сеть учится в реальном времени</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+180 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Давай визуализируем, как сеть учится разделять классы! Мы будем сохранять состояние сети на разных эпохах и рисовать decision boundary.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Анимация обучения</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# Generate spiral dataset (harder than XOR!)
+np.random.seed(42)
+N = 100  # Points per class
+
+# Class 0: clockwise spiral
+t = np.linspace(0, 2*np.pi, N)
+r = np.linspace(0.5, 2, N)
+X0 = np.column_stack([r*np.cos(t), r*np.sin(t)])
+
+# Class 1: counter-clockwise spiral
+X1 = np.column_stack([r*np.cos(t + np.pi), r*np.sin(t + np.pi)])
+
+X = np.vstack([X0, X1])
+y = np.array([[0]]*N + [[1]]*N)
+
+# Shuffle data
+shuffle_idx = np.random.permutation(len(X))
+X = X[shuffle_idx]
+y = y[shuffle_idx]
+
+# Train network and save snapshots
+nn = NeuralNetwork(input_size=2, hidden_size=8, output_size=1)
+snapshots = []
+
+for epoch in range(1000):
+    output = nn.forward(X)
+    nn.backward(X, y, lr=0.1)
+    
+    if epoch % 100 == 0:
+        snapshots.append((epoch, nn.w1.copy(), nn.b1.copy(), 
+                         nn.w2.copy(), nn.b2.copy(), output.copy()))
+
+# Visualize decision boundary at different epochs
+fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+axes = axes.flatten()
+
+for idx, (epoch, w1, b1, w2, b2, _) in enumerate(snapshots):
+    ax = axes[idx]
+    
+    # Create mesh grid
+    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 50),
+                         np.linspace(y_min, y_max, 50))
+    
+    # Forward pass on mesh
+    grid = np.column_stack([xx.ravel(), yy.ravel()])
+    z1 = np.dot(grid, w1) + b1
+    a1 = 1 / (1 + np.exp(-z1))
+    z2 = np.dot(a1, w2) + b2
+    a2 = 1 / (1 + np.exp(-z2))
+    
+    Z = a2.reshape(xx.shape)
+    
+    # Plot
+    ax.contourf(xx, yy, Z, levels=[0, 0.5, 1], alpha=0.3, cmap='RdYlBu')
+    ax.scatter(X0[:, 0], X0[:, 1], c='red', s=20, edgecolors='black')
+    ax.scatter(X1[:, 0], X1[:, 1], c='blue', s=20, edgecolors='black')
+    ax.set_title(f'Epoch {epoch}')
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(y_min, y_max)
+
+plt.tight_layout()
+plt.show()
+
+print("Training visualization complete! Watch how the boundary evolves.")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🌀</span>
+            <span data-i18n="l4_meme">Видишь, как decision boundary эволюционирует от хаоса к чёткой спиральной границе? Это и есть магия backpropagation — сеть сама находит сложную нелинейную границу!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📊</span>
+            <h3 data-i18n="ach4_name">Ачивка: Визуализатор обучения</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Визуализировал процесс обучения нейросети</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+180 XP · +60 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_3_visualizer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел эволюцию decision boundary!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Full Implementation -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Полная нейросеть</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Собираем всё вместе и отправляем на GitHub</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+400 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="l5_meme">Ты прошёл через цепное правило, ручной backprop, векторизацию и визуализацию. Теперь соберём полноценную нейросеть с backpropagation и опубликуем её на GitHub!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Финальная реализация нейросети</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+class DeepNeuralNetwork:
+    """Full neural network with backpropagation"""
+    
+    def __init__(self, layer_sizes):
+        """Initialize network with given layer sizes"""
+        self.layer_sizes = layer_sizes
+        self.weights = []
+        self.biases = []
+        
+        # Xavier initialization
+        for i in range(len(layer_sizes) - 1):
+            w = np.random.randn(layer_sizes[i], layer_sizes[i+1]) * np.sqrt(2.0 / layer_sizes[i])
+            b = np.zeros((1, layer_sizes[i+1]))
+            self.weights.append(w)
+            self.biases.append(b)
+    
+    def relu(self, z):
+        return np.maximum(0, z)
+    
+    def relu_derivative(self, z):
+        return (z > 0).astype(float)
+    
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    
+    def sigmoid_derivative(self, s):
+        return s * (1 - s)
+    
+    def forward(self, X):
+        """Forward pass through all layers"""
+        self.activations = [X]
+        self.z_values = []
+        
+        current = X
+        for i in range(len(self.weights) - 1):
+            z = np.dot(current, self.weights[i]) + self.biases[i]
+            self.z_values.append(z)
+            current = self.relu(z)
+            self.activations.append(current)
+        
+        # Output layer with sigmoid
+        z = np.dot(current, self.weights[-1]) + self.biases[-1]
+        self.z_values.append(z)
+        output = self.sigmoid(z)
+        self.activations.append(output)
+        
+        return output
+    
+    def backward(self, X, y, lr=0.01):
+        """Backward pass and weight update"""
+        m = X.shape[0]
+        gradients_w = []
+        gradients_b = []
+        
+        # Output layer gradient
+        delta = (self.activations[-1] - y) * self.sigmoid_derivative(self.activations[-1])
+        
+        for i in range(len(self.weights) - 1, -1, -1):
+            # Compute gradients
+            dw = np.dot(self.activations[i].T, delta) / m
+            db = np.sum(delta, axis=0, keepdims=True) / m
+            
+            gradients_w.insert(0, dw)
+            gradients_b.insert(0, db)
+            
+            # Propagate error to previous layer
+            if i > 0:
+                delta = np.dot(delta, self.weights[i].T) * self.relu_derivative(self.z_values[i-1])
+        
+        # Update weights
+        for i in range(len(self.weights)):
+            self.weights[i] -= lr * gradients_w[i]
+            self.biases[i] -= lr * gradients_b[i]
+    
+    def train(self, X, y, epochs=1000, lr=0.01, verbose=True):
+        """Training loop with loss tracking"""
+        losses = []
+        
+        for epoch in range(epochs):
+            # Forward pass
+            output = self.forward(X)
+            
+            # Compute loss
+            loss = -np.mean(y * np.log(output + 1e-8) + (1 - y) * np.log(1 - output + 1e-8))
+            losses.append(loss)
+            
+            # Backward pass
+            self.backward(X, y, lr)
+            
+            if verbose and epoch % 100 == 0:
+                accuracy = np.mean((output > 0.5) == y)
+                print(f"Epoch {epoch}: Loss = {loss:.4f}, Accuracy = {accuracy:.2%}")
+        
+        return losses
+
+# Train on spiral dataset
+np.random.seed(42)
+N = 200
+
+# Create spiral data
+t = np.linspace(0, 2*np.pi, N)
+r = np.linspace(0.5, 2, N)
+X0 = np.column_stack([r*np.cos(t) + np.random.randn(N)*0.1, 
+                      r*np.sin(t) + np.random.randn(N)*0.1])
+X1 = np.column_stack([r*np.cos(t + np.pi) + np.random.randn(N)*0.1, 
+                      r*np.sin(t + np.pi) + np.random.randn(N)*0.1])
+
+X = np.vstack([X0, X1])
+y = np.array([[0]]*N + [[1]]*N)
+
+# Create and train network
+nn = DeepNeuralNetwork([2, 16, 16, 1])
+losses = nn.train(X, y, epochs=1000, lr=0.1)
+
+# Plot loss curve
+plt.figure(figsize=(10, 4))
+plt.plot(losses)
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Training Loss')
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# Plot final decision boundary
+x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+xx, yy = np.meshgrid(np.linspace(x_min, x_max, 100),
+                     np.linspace(y_min, y_max, 100))
+
+grid = np.column_stack([xx.ravel(), yy.ravel()])
+Z = nn.forward(grid).reshape(xx.shape)
+
+plt.figure(figsize=(8, 8))
+plt.contourf(xx, yy, Z, levels=[0, 0.5, 1], alpha=0.3, cmap='RdYlBu')
+plt.scatter(X0[:, 0], X0[:, 1], c='red', s=30, edgecolors='black', label='Class 0')
+plt.scatter(X1[:, 0], X1[:, 1], c='blue', s=30, edgecolors='black', label='Class 1')
+plt.legend()
+plt.title('Final Decision Boundary')
+plt.show()
+
+print("\n🎉 Neural network trained successfully!")
+print("Ready to publish on GitHub!")</code></pre>
+
+        <h3 data-i18n="l5_github_title">🚀 Инструкция по публикации на GitHub</h3>
+        <pre><code># 1. Создай новый репозиторий на GitHub
+#    Название: ai-creator-neural-network
+
+# 2. Клонируй репозиторий
+git clone https://github.com/ТВОЙ_НИК/ai-creator-neural-network.git
+cd ai-creator-neural-network
+
+# 3. Создай структуру проекта
+mkdir -p src tests
+touch src/neural_network.py
+touch src/train.py
+touch README.md
+touch requirements.txt
+
+# 4. Раздели код на модули:
+#    - neural_network.py: класс DeepNeuralNetwork
+#    - train.py: код обучения и визуализации
+
+# 5. Создай requirements.txt
+numpy==1.24.0
+matplotlib==3.7.0
+
+# 6. Напиши README.md с описанием проекта
+
+# 7. Закоммить и отправь
+git add .
+git commit -m "Add neural network with backpropagation"
+git push origin main
+
+# 8. Отправь ссылку учителю!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Структура проекта</strong>
+            <span data-i18n="l5_github_tip_text">
+                <strong>ai-creator-neural-network/</strong><br>
+                ├── src/<br>
+                │   ├── neural_network.py (класс сети)<br>
+                │   ── train.py (обучение)<br>
+                ├── tests/<br>
+                ├── README.md<br>
+                └── requirements.txt
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 80, 160, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Архитектор нейросетей</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Реализовал полную нейросеть с backpropagation и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+400 XP · +200 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson3_3_architect" class="ach-btn" style="background: linear-gradient(135deg, #ffb400, #ff50a0);" data-i18n="ach5_btn"> Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% студентов доходят до публикации своей нейросети. Ты — настоящий AI Engineer!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Разные функции потерь»</h3>
+            <p data-i18n="sq1_text">Реализуй и сравни три функции потерь: MSE, Cross-Entropy и Huber Loss. Обучи сеть на одной задаче с каждой из них и сравни скорость сходимости.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 60 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Mini-batch SGD»</h3>
+            <p data-i18n="sq2_text">Модифицируй код обучения так, чтобы использовать mini-batch gradient descent вместо full-batch. Попробуй разные размеры батча (16, 32, 64) и сравни результаты.</p>
+            <div class="quest-reward" data-i18n="sq2_reward"> Награда: 120 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «TensorFlow/PyTorch»</h3>
+            <p data-i18n="sq3_text">Реализуй ту же нейросеть на TensorFlow или PyTorch. Сравни скорость обучения и удобство кода с твоей NumPy-реализацией. Напиши блог-пост о различиях.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 250 AI-коинов + титул «Framework Master»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял интуицию обратного распространения ошибки</li>
+            <li data-i18n="sum2">✅ Освоил цепное правило (chain rule)</li>
+            <li data-i18n="sum3">✅ Реализовал backpropagation вручную</li>
+            <li data-i18n="sum4">✅ Векторизовал код для скорости</li>
+            <li data-i18n="sum5">✅ Визуализировал процесс обучения</li>
+            <li data-i18n="sum6">🏆 Финальный босс — полная нейросеть опубликована на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, Архитектор нейросетей! Ты теперь понимаешь, как учатся нейросети изнутри. Это знание отличает настоящих AI-инженеров от тех, кто просто использует готовые библиотеки. В следующем уроке 3.4 мы изучим свёрточные нейросети (CNN) для работы с изображениями!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-3-2.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">3.2 Функции активации</span>
+        </a>
+        <a href="lesson-3-4.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.4 Свёрточные сети (CNN)</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 3.3 • МОДУЛЬ 3", title: "Backpropagation: Как сеть учится?",
+            subtitle: "Добро пожаловать на Уровень 3.3!  Сегодня ты разберёшься с самым важным алгоритмом в Deep Learning — обратным распространением ошибки. Это то, как нейросеть понимает свои ошибки и становится умнее!",
+            duration: "⏱ 3 часа", level: " Продвинутый", xp: "⭐ +1000 XP", loot: "💰 +400 AI-коинов", ach: " 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "💡 Интуиция: Как учимся мы?", l0_sub: "От человеческого обучения к машинному", l0_xp: "+60 XP",
+            l0_p1: "Когда ты учишься играть в игру, ты совершаешь ошибки, анализируешь их и корректируешь свои действия. Нейросеть делает то же самое! Она делает предсказание, сравнивает с правильным ответом, вычисляет ошибку и adjusts свои веса, чтобы в следующий раз ошибиться меньше.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты стреляешь из лука в мишень. Первый выстрел — промах вправо. Ты анализируешь: 'Слишком сильно натянул вправо'. Второй выстрел — чуть левее. Третий — в яблочко! Backpropagation — это тот же процесс: сеть 'стреляет' предсказанием, видит ошибку и 'подкручивает прицел' (веса).",
+            ach0_name: "Ачивка: Интуитивщик", ach0_desc: "Понял интуицию обратного распространения ошибки", ach0_reward: "+60 XP · +25 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял аналогию со стрельбой из лука!",
+            l1_title: "🔗 Цепное правило (Chain Rule)", l1_sub: "Математический фундамент backpropagation", l1_xp: "+120 XP",
+            l1_p1: "Чтобы понять, как изменить каждый вес в сети, нам нужно знать, как ошибка зависит от этого веса. Но веса находятся глубоко в сети! Здесь на помощь приходит цепное правило из математического анализа: если y зависит от x через промежуточную переменную z, то dy/dx = (dy/dz) * (dz/dx).",
+            l1_code_title: "📝 Цепное правило в действии",
+            l1_tip_title: " Почему это важно?", l1_tip_text: "Цепное правило позволяет нам 'протаскивать' градиент ошибки через все слои сети, от выхода ко входу. Это и есть обратное распространение!",
+            ach1_name: "Ачивка: Математик цепного правила", ach1_desc: "Понял и реализовал цепное правило", ach1_reward: "+120 XP · +40 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если градиенты совпали!",
+            l2_title: "✍️ Backpropagation вручную", l2_sub: "Вычисляем градиенты для простой сети", l2_xp: "+150 XP",
+            l2_p1: "Давай реализуем backpropagation для простой сети: вход → скрытый слой (2 нейрона) → выход. Мы вручную вычислим все градиенты и обновим веса.",
+            l2_code_title: "📝 Ручной backpropagation",
+            l2_warn_title: "⚠️ Ключевые моменты", l2_warn_text: "1. Forward pass: вычисляем предсказание<br>2. Вычисляем ошибку (loss)<br>3. Backward pass: считаем градиенты через цепное правило<br>4. Обновляем веса в направлении анти-градиента",
+            ach2_name: "Ачивка: Ручной backprop", ach2_desc: "Реализовал обратное распространение ошибки вручную", ach2_reward: "+150 XP · +50 💰 ·  Эпическая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если сеть научилась XOR!",
+            l3_title: "⚡ Векторизованный Backpropagation", l3_sub: "Оптимизируем для скорости", l3_xp: "+180 XP",
+            l3_p1: "Ручной backpropagation работает, но медленно — мы обрабатываем примеры по одному. В реальных сетях мы используем векторизацию: обрабатываем весь батч данных одновременно через матричные операции NumPy.",
+            l3_code_title: "📝 Векторизованная версия",
+            l3_lore_title: "📚 Xavier Initialization", l3_lore_text: "Мы используем Xavier initialization для весов: умножаем случайные числа на sqrt(2/input_size). Это помогает градиентам не затухать и не взрываться в глубоких сетях!",
+            ach3_name: "Ачивка: Векторизатор", ach3_desc: "Реализовал векторизованный backpropagation", ach3_reward: "+180 XP · +60 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если код работает быстрее!",
+            l4_title: "📊 Визуализация обучения", l4_sub: "Смотрим, как сеть учится в реальном времени", l4_xp: "+180 XP",
+            l4_p1: "Давай визуализируем, как сеть учится разделять классы! Мы будем сохранять состояние сети на разных эпохах и рисовать decision boundary.",
+            l4_code_title: "📝 Анимация обучения",
+            l4_meme: "Видишь, как decision boundary эволюционирует от хаоса к чёткой спиральной границе? Это и есть магия backpropagation — сеть сама находит сложную нелинейную границу!",
+            ach4_name: "Ачивка: Визуализатор обучения", ach4_desc: "Визуализировал процесс обучения нейросети", ach4_reward: "+180 XP · +60 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел эволюцию decision boundary!",
+            l5_title: "БОСС-ФАЙТ: Полная нейросеть", l5_sub: "Собираем всё вместе и отправляем на GitHub", l5_xp: "+400 XP",
+            l5_meme: "Ты прошёл через цепное правило, ручной backprop, векторизацию и визуализацию. Теперь соберём полноценную нейросеть с backpropagation и опубликуем её на GitHub!",
+            l5_code_title: "📝 Финальная реализация нейросети",
+            l5_github_title: "🚀 Инструкция по публикации на GitHub",
+            l5_github_tip_title: "💡 Структура проекта",
+            l5_github_tip_text: "ai-creator-neural-network/<br>├── src/<br>│   ├── neural_network.py (класс сети)<br>│   └── train.py (обучение)<br>├── tests/<br>├── README.md<br>└── requirements.txt",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Архитектор нейросетей", ach5_desc: "Реализовал полную нейросеть с backpropagation и опубликовал на GitHub", ach5_reward: "+400 XP · +200 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% студентов доходят до публикации своей нейросети. Ты — настоящий AI Engineer!",
+            sq_title: " Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: " Квест «Разные функции потерь»", sq1_text: "Реализуй и сравни три функции потерь: MSE, Cross-Entropy и Huber Loss. Обучи сеть на одной задаче с каждой из них и сравни скорость сходимости.", sq1_reward: "💰 Награда: 60 AI-коинов",
+            sq2_title: "⚡ Квест «Mini-batch SGD»", sq2_text: "Модифицируй код обучения так, чтобы использовать mini-batch gradient descent вместо full-batch. Попробуй разные размеры батча (16, 32, 64) и сравни результаты.", sq2_reward: "💰 Награда: 120 AI-коинов",
+            sq3_title: "🎨 Квест «TensorFlow/PyTorch»", sq3_text: "Реализуй ту же нейросеть на TensorFlow или PyTorch. Сравни скорость обучения и удобство кода с твоей NumPy-реализацией. Напиши блог-пост о различиях.", sq3_reward: "💰 Награда: 250 AI-коинов + титул «Framework Master»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял интуицию обратного распространения ошибки", sum2: "✅ Освоил цепное правило (chain rule)",
+            sum3: "✅ Реализовал backpropagation вручную", sum4: "✅ Векторизовал код для скорости",
+            sum5: "✅ Визуализировал процесс обучения", sum6: " Финальный босс — полная нейросеть опубликована на GitHub!",
+            sum_meme: "Поздравляю, Архитектор нейросетей! Ты теперь понимаешь, как учатся нейросети изнутри. Это знание отличает настоящих AI-инженеров от тех, кто просто использует готовые библиотеки. В следующем уроке 3.4 мы изучим свёрточные нейросети (CNN) для работы с изображениями!",
+            nav_back: "← Предыдущий квест", nav_back_title: "3.2 Функции активации",
+            nav_next: "Следующий квест →", nav_next_title: "3.4 Свёрточные сети (CNN)",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 3.3 • MODULE 3", title: "Backpropagation: How Networks Learn?",
+            subtitle: "Welcome to Level 3.3! 🧠 Today you'll understand the most important algorithm in Deep Learning — backpropagation. This is how neural networks understand their mistakes and become smarter!",
+            duration: "⏱ 3 hours", level: "📙 Advanced", xp: "⭐ +1000 XP", loot: "💰 +400 AI-coins", ach: " 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "💡 Intuition: How do we learn?", l0_sub: "From human learning to machine learning", l0_xp: "+60 XP",
+            l0_p1: "When you learn to play a game, you make mistakes, analyze them, and adjust your actions. A neural network does the same! It makes a prediction, compares it to the correct answer, computes the error, and adjusts its weights to make fewer mistakes next time.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you're shooting arrows at a target. First shot — miss to the right. You analyze: 'Pulled too hard to the right'. Second shot — a bit left. Third shot — bullseye! Backpropagation is the same process: the network 'shoots' a prediction, sees the error, and 'adjusts the aim' (weights).",
+            ach0_name: "Achievement: Intuitive Thinker", ach0_desc: "Understood the intuition of backpropagation", ach0_reward: "+60 XP · +25 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the archery analogy!",
+            l1_title: " Chain Rule", l1_sub: "Mathematical foundation of backpropagation", l1_xp: "+120 XP",
+            l1_p1: "To understand how to change each weight in the network, we need to know how the error depends on that weight. But weights are deep in the network! Here comes the chain rule from calculus: if y depends on x through intermediate variable z, then dy/dx = (dy/dz) * (dz/dx).",
+            l1_code_title: "📝 Chain rule in action",
+            l1_tip_title: " Why is this important?", l1_tip_text: "The chain rule allows us to 'pull' the error gradient through all layers of the network, from output to input. This is backpropagation!",
+            ach1_name: "Achievement: Chain Rule Mathematician", ach1_desc: "Understood and implemented the chain rule", ach1_reward: "+120 XP · +40 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if gradients matched!",
+            l2_title: "️ Manual Backpropagation", l2_sub: "Computing gradients for a simple network", l2_xp: "+150 XP",
+            l2_p1: "Let's implement backpropagation for a simple network: input → hidden layer (2 neurons) → output. We'll manually compute all gradients and update weights.",
+            l2_code_title: "📝 Manual backpropagation",
+            l2_warn_title: "️ Key points", l2_warn_text: "1. Forward pass: compute prediction<br>2. Compute error (loss)<br>3. Backward pass: compute gradients via chain rule<br>4. Update weights in anti-gradient direction",
+            ach2_name: "Achievement: Manual Backprop", ach2_desc: "Implemented backpropagation manually", ach2_reward: "+150 XP · +50 💰 · 🟣 Epic", ach2_btn: " Get achievement", ach2_hint: "Click if the network learned XOR!",
+            l3_title: "⚡ Vectorized Backpropagation", l3_sub: "Optimizing for speed", l3_xp: "+180 XP",
+            l3_p1: "Manual backpropagation works but is slow — we process examples one by one. In real networks, we use vectorization: process the entire batch of data simultaneously through NumPy matrix operations.",
+            l3_code_title: "📝 Vectorized version",
+            l3_lore_title: "📚 Xavier Initialization", l3_lore_text: "We use Xavier initialization for weights: multiply random numbers by sqrt(2/input_size). This helps gradients not vanish or explode in deep networks!",
+            ach3_name: "Achievement: Vectorizer", ach3_desc: "Implemented vectorized backpropagation", ach3_reward: "+180 XP · +60 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if the code runs faster!",
+            l4_title: "📊 Training Visualization", l4_sub: "Watching the network learn in real-time", l4_xp: "+180 XP",
+            l4_p1: "Let's visualize how the network learns to separate classes! We'll save the network state at different epochs and draw the decision boundary.",
+            l4_code_title: "📝 Training animation",
+            l4_meme: "See how the decision boundary evolves from chaos to a clear spiral boundary? This is the magic of backpropagation — the network finds a complex nonlinear boundary by itself!",
+            ach4_name: "Achievement: Training Visualizer", ach4_desc: "Visualized the neural network training process", ach4_reward: "+180 XP · +60 💰 ·  Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you saw the decision boundary evolution!",
+            l5_title: "BOSS FIGHT: Full Neural Network", l5_sub: "Putting it all together and publishing to GitHub", l5_xp: "+400 XP",
+            l5_meme: "You've been through the chain rule, manual backprop, vectorization, and visualization. Now let's build a full neural network with backpropagation and publish it on GitHub!",
+            l5_code_title: "📝 Final neural network implementation",
+            l5_github_title: "🚀 GitHub publication instructions",
+            l5_github_tip_title: "💡 Project structure",
+            l5_github_tip_text: "ai-creator-neural-network/<br>├── src/<br>│   ├── neural_network.py (network class)<br>│   └── train.py (training)<br>├── tests/<br>── README.md<br>└── requirements.txt",
+            ach5_name: "LEGENDARY: Neural Network Architect", ach5_desc: "Implemented full neural network with backpropagation and published on GitHub", ach5_reward: "+400 XP · +200 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of students publish their neural network. You're a real AI Engineer!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: " HARD",
+            sq1_title: " Quest «Different loss functions»", sq1_text: "Implement and compare three loss functions: MSE, Cross-Entropy, and Huber Loss. Train the network on one task with each and compare convergence speed.", sq1_reward: "💰 Reward: 60 AI-coins",
+            sq2_title: "⚡ Quest «Mini-batch SGD»", sq2_text: "Modify the training code to use mini-batch gradient descent instead of full-batch. Try different batch sizes (16, 32, 64) and compare results.", sq2_reward: "💰 Reward: 120 AI-coins",
+            sq3_title: "🎨 Quest «TensorFlow/PyTorch»", sq3_text: "Implement the same neural network in TensorFlow or PyTorch. Compare training speed and code convenience with your NumPy implementation. Write a blog post about the differences.", sq3_reward: "💰 Reward: 250 AI-coins + title «Framework Master»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood backpropagation intuition", sum2: "✅ Mastered the chain rule",
+            sum3: "✅ Implemented backpropagation manually", sum4: "✅ Vectorized code for speed",
+            sum5: "✅ Visualized the training process", sum6: "🏆 Final boss — full neural network published on GitHub!",
+            sum_meme: "Congrats, Neural Network Architect! You now understand how neural networks learn from the inside. This knowledge separates real AI engineers from those who just use ready-made libraries. In the next lesson 3.4, we'll study Convolutional Neural Networks (CNN) for image processing!",
+            nav_back: "← Previous quest", nav_back_title: "3.2 Activation Functions",
+            nav_next: "Next quest →", nav_next_title: "3.4 Convolutional Networks (CNN)",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 3.3 • MÓDULO 3", title: "Backpropagation: ¿Cómo aprende la red?", subtitle: "¡Bienvenido al Nivel 3.3! 🧠 Hoy entenderás el algoritmo más importante en Deep Learning — backpropagation.", duration: " 3 horas", level: " Avanzado", xp: "⭐ +1000 XP", loot: "💰 +400 AI-monedas", ach: " 6 logros", progress_title: " Progreso", progress_counter: "Nivel 0 / 6", l0_title: "💡 Intuición: ¿Cómo aprendemos?", l0_sub: "Del aprendizaje humano al machine learning", l0_xp: "+60 XP", l0_p1: "Cuando aprendes a jugar un juego, cometes errores, los analizas y ajustas tus acciones. ¡Una red neuronal hace lo mismo!", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que disparas flechas a un blanco. Primer disparo — fallo a la derecha. Analizas: 'Tiré muy fuerte a la derecha'. ¡Backpropagation es el mismo proceso!", ach0_name: "Logro: Pensador intuitivo", ach0_desc: "Entendió la intuición de backpropagation", ach0_reward: "+60 XP · +25 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste la analogía del arco!", l1_title: " Regla de la cadena", l1_sub: "Fundamento matemático de backpropagation", l1_xp: "+120 XP", l1_p1: "Para entender cómo cambiar cada peso, necesitamos saber cómo depende el error de ese peso. ¡Aquí viene la regla de la cadena!", l1_code_title: "📝 Regla de la cadena en acción", l1_tip_title: "💡 ¿Por qué es importante?", l1_tip_text: "La regla de la cadena nos permite 'arrastrar' el gradiente del error a través de todas las capas de la red.", ach1_name: "Logro: Matemático de regla de cadena", ach1_desc: "Entendió e implementó la regla de la cadena", ach1_reward: "+120 XP · +40 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si los gradientes coincidieron!", l2_title: "✍️ Backpropagation manual", l2_sub: "Calculando gradientes para una red simple", l2_xp: "+150 XP", l2_p1: "Implementemos backpropagation para una red simple: entrada → capa oculta (2 neuronas) → salida.", l2_code_title: "📝 Backpropagation manual", l2_warn_title: "⚠️ Puntos clave", l2_warn_text: "1. Forward pass: calcular predicción<br>2. Calcular error (loss)<br>3. Backward pass: calcular gradientes<br>4. Actualizar pesos", ach2_name: "Logro: Backprop manual", ach2_desc: "Implementó backpropagation manualmente", ach2_reward: "+150 XP · +50 💰 · 🟣 Épico", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si la red aprendió XOR!", l3_title: "⚡ Backpropagation vectorizado", l3_sub: "Optimizando para velocidad", l3_xp: "+180 XP", l3_p1: "El backpropagation manual funciona pero es lento. En redes reales usamos vectorización: procesamos todo el batch simultáneamente.", l3_code_title: "📝 Versión vectorizada", l3_lore_title: " Xavier Initialization", l3_lore_text: "Usamos Xavier initialization para pesos: multiplicamos números aleatorios por sqrt(2/input_size).", ach3_name: "Logro: Vectorizador", ach3_desc: "Implementó backpropagation vectorizado", ach3_reward: "+180 XP · +60 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si el código corre más rápido!", l4_title: "📊 Visualización del entrenamiento", l4_sub: "Viendo cómo la red aprende en tiempo real", l4_xp: "+180 XP", l4_p1: "¡Visualicemos cómo la red aprende a separar clases! Guardaremos el estado de la red en diferentes epochs.", l4_code_title: " Animación del entrenamiento", l4_meme: "¿Ves cómo el decision boundary evoluciona del caos a un límite espiral claro? ¡Esta es la magia de backpropagation!", ach4_name: "Logro: Visualizador de entrenamiento", ach4_desc: "Visualizó el proceso de entrenamiento", ach4_reward: "+180 XP · +60 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste la evolución del boundary!", l5_title: "¡PELEA JEFE: Red neuronal completa!", l5_sub: "Juntando todo y publicando en GitHub", l5_xp: "+400 XP", l5_meme: "Pasaste por la regla de la cadena, backprop manual, vectorización y visualización. ¡Ahora construyamos una red neuronal completa!", l5_code_title: "📝 Implementación final de red neuronal", l5_github_title: " Instrucciones de publicación en GitHub", l5_github_tip_title: "💡 Estructura del proyecto", l5_github_tip_text: "ai-creator-neural-network/<br>├── src/<br>│   ├── neural_network.py<br>│   └── train.py<br>├── tests/<br>├── README.md<br>└── requirements.txt", ach5_name: "LEGENDARIO: Arquitecto de redes neuronales", ach5_desc: "Implementó red neuronal completa con backpropagation y publicó en GitHub", ach5_reward: "+400 XP · +200 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% publica su red neuronal. Eres un verdadero AI Engineer!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Diferentes funciones de pérdida»", sq1_text: "Implementa y compara tres funciones de pérdida: MSE, Cross-Entropy y Huber Loss.", sq1_reward: "💰 Recompensa: 60 AI-monedas", sq2_title: "⚡ Misión «Mini-batch SGD»", sq2_text: "Modifica el código para usar mini-batch gradient descent. Prueba diferentes tamaños de batch.", sq2_reward: " Recompensa: 120 AI-monedas", sq3_title: "🎨 Misión «TensorFlow/PyTorch»", sq3_text: "Implementa la misma red en TensorFlow o PyTorch. Compara con tu implementación NumPy.", sq3_reward: "💰 Recompensa: 250 AI-monedas + título «Framework Master»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste intuición de backpropagation", sum2: "✅ Dominaste la regla de la cadena", sum3: "✅ Implementaste backpropagation manualmente", sum4: "✅ Vectorizaste el código", sum5: "✅ Visualizaste el entrenamiento", sum6: "🏆 ¡Jefe final: red neuronal publicada en GitHub!", sum_meme: "¡Felicidades, Arquitecto de redes neuronales! En la próxima lección 3.4 estudiaremos redes convolucionales (CNN).", nav_back: "← Misión anterior", nav_back_title: "3.2 Funciones de Activación", nav_next: "Siguiente misión →", nav_next_title: "3.4 Redes Convolucionales (CNN)", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 3.3 • MODUL 3", title: "Backpropagation: Wie lernt das Netz?", subtitle: "Willkommen auf Level 3.3! 🧠 Heute verstehst du den wichtigsten Algorithmus im Deep Learning — Backpropagation.", duration: " 3 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1000 XP", loot: " +400 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "💡 Intuition: Wie lernen wir?", l0_sub: "Vom menschlichen Lernen zum Machine Learning", l0_xp: "+60 XP", l0_p1: "Wenn du lernst, ein Spiel zu spielen, machst du Fehler, analysierst sie und passt deine Aktionen an. Ein neuronales Netz macht dasselbe!", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir vor, du schießt Pfeile auf eine Zielscheibe. Erster Schuss — daneben rechts. Du analysierst: 'Zu stark nach rechts gezogen'. Backpropagation ist derselbe Prozess!", ach0_name: "Erfolg: Intuitiver Denker", ach0_desc: "Verstand die Intuition von Backpropagation", ach0_reward: "+60 XP · +25 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Bogen-Analogie verstanden hast!", l1_title: "🔗 Kettenregel", l1_sub: "Mathematische Grundlage von Backpropagation", l1_xp: "+120 XP", l1_p1: "Um zu verstehen, wie man jedes Gewicht ändert, müssen wir wissen, wie der Fehler von diesem Gewicht abhängt. Hier kommt die Kettenregel!", l1_code_title: "📝 Kettenregel in Aktion", l1_tip_title: "💡 Warum ist das wichtig?", l1_tip_text: "Die Kettenregel erlaubt uns, den Fehlergradienten durch alle Schichten des Netzes zu 'ziehen'.", ach1_name: "Erfolg: Kettenregel-Mathematiker", ach1_desc: "Verstand und implementierte die Kettenregel", ach1_reward: "+120 XP · +40 💰 ·  Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn die Gradienten übereinstimmten!", l2_title: "✍️ Manuelles Backpropagation", l2_sub: "Gradienten für ein einfaches Netz berechnen", l2_xp: "+150 XP", l2_p1: "Implementieren wir Backpropagation für ein einfaches Netz: Eingang → versteckte Schicht (2 Neuronen) → Ausgang.", l2_code_title: "📝 Manuelles Backpropagation", l2_warn_title: "⚠️ Wichtige Punkte", l2_warn_text: "1. Forward pass: Vorhersage berechnen<br>2. Fehler berechnen (Loss)<br>3. Backward pass: Gradienten berechnen<br>4. Gewichte aktualisieren", ach2_name: "Erfolg: Manuelles Backprop", ach2_desc: "Implementierte Backpropagation manuell", ach2_reward: "+150 XP · +50 💰 ·  Episch", ach2_btn: " Erfolg erhalten", ach2_hint: "Klicke, wenn das Netz XOR lernte!", l3_title: "⚡ Vektorisiertes Backpropagation", l3_sub: "Für Geschwindigkeit optimieren", l3_xp: "+180 XP", l3_p1: "Manuelles Backpropagation funktioniert, ist aber langsam. In echten Netzen verwenden wir Vektorisierung.", l3_code_title: "📝 Vektorisierte Version", l3_lore_title: "📚 Xavier Initialization", l3_lore_text: "Wir verwenden Xavier Initialization für Gewichte: multiplizieren Zufallszahlen mit sqrt(2/input_size).", ach3_name: "Erfolg: Vektorisierer", ach3_desc: "Implementierte vektorisiertes Backpropagation", ach3_reward: "+180 XP · +60 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn der Code schneller läuft!", l4_title: " Trainingsvisualisierung", l4_sub: "Beobachten, wie das Netz in Echtzeit lernt", l4_xp: "+180 XP", l4_p1: "Visualisieren wir, wie das Netz lernt, Klassen zu trennen! Wir speichern den Netzstatus bei verschiedenen Epochen.", l4_code_title: "📝 Trainingsanimation", l4_meme: "Siehst du, wie die Entscheidungsgrenze vom Chaos zu einer klaren Spiralengrenze evolviert? Das ist die Magie von Backpropagation!", ach4_name: "Erfolg: Trainingsvisualisierer", ach4_desc: "Visualisierte den Trainingsprozess", ach4_reward: "+180 XP · +60 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du die Boundary-Evolution sahst!", l5_title: "BOSSKAMPF: Vollständiges neuronales Netz", l5_sub: "Alles zusammenfügen und auf GitHub veröffentlichen", l5_xp: "+400 XP", l5_meme: "Du hast die Kettenregel, manuelles Backprop, Vektorisierung und Visualisierung durchlaufen. Jetzt bauen wir ein vollständiges neuronales Netz!", l5_code_title: "📝 Finale Implementierung des neuronalen Netzes", l5_github_title: "🚀 GitHub-Veröffentlichungsanweisungen", l5_github_tip_title: "💡 Projektstruktur", l5_github_tip_text: "ai-creator-neural-network/<br>├── src/<br>│   ├── neural_network.py<br>│   └── train.py<br>├── tests/<br>├── README.md<br>└── requirements.txt", ach5_name: "LEGENDÄR: Neuronales Netz-Architekt", ach5_desc: "Implementierte vollständiges neuronales Netz mit Backpropagation und veröffentlichte auf GitHub", ach5_reward: "+400 XP · +200 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% der Studenten veröffentlichen ihr neuronales Netz. Du bist ein echter AI Engineer!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Verschiedene Loss-Funktionen»", sq1_text: "Implementiere und vergleiche drei Loss-Funktionen: MSE, Cross-Entropy und Huber Loss.", sq1_reward: "💰 Belohnung: 60 AI-Münzen", sq2_title: "⚡ Quest «Mini-batch SGD»", sq2_text: "Modifiziere den Trainingscode für Mini-batch Gradient Descent. Teste verschiedene Batch-Größen.", sq2_reward: "💰 Belohnung: 120 AI-Münzen", sq3_title: "🎨 Quest «TensorFlow/PyTorch»", sq3_text: "Implementiere dasselbe Netz in TensorFlow oder PyTorch. Vergleiche mit deiner NumPy-Implementierung.", sq3_reward: "💰 Belohnung: 250 AI-Münzen + Titel «Framework Master»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Backpropagation-Intuition verstanden", sum2: "✅ Kettenregel gemeistert", sum3: "✅ Backpropagation manuell implementiert", sum4: "✅ Code vektorisiert", sum5: "✅ Training visualisiert", sum6: " Endboss: neuronales Netz auf GitHub veröffentlicht!", sum_meme: "Glückwunsch, Neuronales Netz-Architekt! In der nächsten Lektion 3.4 studieren wir Convolutional Neural Networks (CNN).", nav_back: "← Vorheriger Quest", nav_back_title: "3.2 Aktivierungsfunktionen", nav_next: "Nächster Quest →", nav_next_title: "3.4 Convolutional Networks (CNN)", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: " КВЕСТ 3.3 • 3-МОДУЛЬ", title: "Backpropagation: Желі қалай үйренеді?", subtitle: "3.3 деңгейге қош келдің! 🧠 Бүгін Deep Learning-тегі ең маңызды алгоритмді — backpropagation-ды түсінесің.", duration: " 3 сағат", level: " Озық", xp: "⭐ +1000 XP", loot: "💰 +400 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "💡 Интуиция: Біз қалай үйренеміз?", l0_sub: "Адам үйренуінен машиналық үйренуге", l0_xp: "+60 XP", l0_p1: "Ойын ойнауды үйренгенде, қателіктер жасайсың, оларды талдайсың және әрекеттеріңді реттейсің. Нейрондық желі де дәл солай жасайды!", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Садақтан нысанаға атып жатырсың деп елестет. Бірінші ату — оңға қате. Талдайсың: 'Тым қатты оңға тарттым'. Backpropagation — дәл сол процесс!", ach0_name: "Жетістік: Интуитивті ойлаушы", ach0_desc: "Backpropagation интуициясын түсінді", ach0_reward: "+60 XP · +25 💰 · ⚪ Кәдімгі", ach0_btn: " Жетістікті алу", ach0_hint: "Садақ аналогиясын түсінсең — бас!", l1_title: "🔗 Тізбек ережесі", l1_sub: "Backpropagation математикалық негізі", l1_xp: "+120 XP", l1_p1: "Әр салмақты қалай өзгерту керектігін түсіну үшін, қатенің сол салмаққа қалай тәуелді екенін білу керек. Міне, тізбек ережесі көмекке келеді!", l1_code_title: "📝 Тізбек ережесі іс-әрекетте", l1_tip_title: "💡 Бұл неге маңызды?", l1_tip_text: "Тізбек ережесі қате градиентін желінің барлық қабаттары арқылы 'сүйреуге' мүмкіндік береді.", ach1_name: "Жетістік: Тізбек ережесі математигі", ach1_desc: "Тізбек ережесін түсінді және іске асырды", ach1_reward: "+120 XP · +40 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Градиенттер сәйкес келсе — бас!", l2_title: "✍️ Қолмен Backpropagation", l2_sub: "Қарапайым желі үшін градиенттерді есептеу", l2_xp: "+150 XP", l2_p1: "Қарапайым желі үшін backpropagation іске асырайық: кіріс → жасырын қабат (2 нейрон) → шығыс.", l2_code_title: "📝 Қолмен backpropagation", l2_warn_title: "⚠️ Негізгі нүктелер", l2_warn_text: "1. Forward pass: болжамды есептеу<br>2. Қатені есептеу (loss)<br>3. Backward pass: градиенттерді есептеу<br>4. Салмақтарды жаңарту", ach2_name: "Жетістік: Қолмен backprop", ach2_desc: "Backpropagation-ды қолмен іске асырды", ach2_reward: "+150 XP · +50 💰 · 🟣 Эпикалық", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Желі XOR үйренсе — бас!", l3_title: "⚡ Векторланған Backpropagation", l3_sub: "Жылдамдық үшін оңтайландыру", l3_xp: "+180 XP", l3_p1: "Қолмен backpropagation жұмыс істейді, бірақ баяу. Нақты желілерде векторлауды қолданамыз.", l3_code_title: "📝 Векторланған нұсқа", l3_lore_title: "📚 Xavier инициализациясы", l3_lore_text: "Салмақтар үшін Xavier инициализациясын қолданамыз: кездейсоқ сандарды sqrt(2/input_size)-ге көбейтеміз.", ach3_name: "Жетістік: Векторлаушы", ach3_desc: "Векторланған backpropagation іске асырды", ach3_reward: "+180 XP · +60 💰 ·  Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Код жылдамырақ жұмыс істесе — бас!", l4_title: "📊 Оқытуды визуализациялау", l4_sub: "Желінің нақты уақытта үйренуін бақылау", l4_xp: "+180 XP", l4_p1: "Желінің кластарды қалай бөлуді үйренетінін визуализациялайық! Әртүрлі epoch-тарда желі күйін сақтаймыз.", l4_code_title: "📝 Оқыту анимациясы", l4_meme: "Decision boundary хаостан анық спиральды шекараға қалай эволюцияланатынын көресің бе? Бұл backpropagation сиқыры!", ach4_name: "Жетістік: Оқыту визуализаторы", ach4_desc: "Нейрондық желі оқыту процесін визуализациялады", ach4_reward: "+180 XP · +60 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Boundary эволюциясын көрсең — бас!", l5_title: "БОСС-ФАЙТ: Толық нейрондық желі", l5_sub: "Бәрін біріктіру және GitHub-та жариялау", l5_xp: "+400 XP", l5_meme: "Тізбек ережесі, қолмен backprop, векторлау және визуализациядан өттің. Енді толық нейрондық желі құрайық!", l5_code_title: "📝 Нейрондық желінің соңғы іске асырылуы", l5_github_title: " GitHub-та жариялау нұсқаулары", l5_github_tip_title: "💡 Жоба құрылымы", l5_github_tip_text: "ai-creator-neural-network/<br>├── src/<br>│   ├── neural_network.py<br>│   └── train.py<br>├── tests/<br>├── README.md<br>└── requirements.txt", ach5_name: "АҢЫЗДЫҚ: Нейрондық желі сәулетшісі", ach5_desc: "Backpropagation-мен толық нейрондық желі іске асырды және GitHub-та жариялады", ach5_reward: "+400 XP · +200 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% студенттер нейрондық желісін жариялайды. Сен нағыз AI Engineer-сі!", sq_title: "📜 Қосалқы квесттер", sq_easy: " ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Әртүрлі loss функциялары»", sq1_text: "Үш loss функциясын іске асыр және салыстыр: MSE, Cross-Entropy және Huber Loss.", sq1_reward: "💰 Сыйлық: 60 ЖИ-теңге", sq2_title: " Квест «Mini-batch SGD»", sq2_text: "Оқыту кодын mini-batch gradient descent үшін өзгерт. Әртүрлі batch өлшемдерін сына.", sq2_reward: "💰 Сыйлық: 120 ЖИ-теңге", sq3_title: "🎨 Квест «TensorFlow/PyTorch»", sq3_text: "Дәл сол желіні TensorFlow немесе PyTorch-та іске асыр. NumPy іске асырылуымен салыстыр.", sq3_reward: "💰 Сыйлық: 250 ЖИ-теңге + «Framework Master» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Backpropagation интуициясын түсіндің", sum2: "✅ Тізбек ережесін игердің", sum3: "✅ Backpropagation-ды қолмен іске асырдың", sum4: "✅ Кодты векторладың", sum5: "✅ Оқытуды визуализацияладың", sum6: "🏆 Финалды босс — нейрондық желі GitHub-та жарияланды!", sum_meme: "Құттықтаймын, Нейрондық желі сәулетшісі! Келесі 3.4 сабақта Convolutional Neural Networks (CNN) зерттейміз!", nav_back: "← Алдыңғы квест", nav_back_title: "3.2 Белсендіру функциялары", nav_next: "Келесі квест →", nav_next_title: "3.4 Convolutional Networks (CNN)", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
