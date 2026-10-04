@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 3.4: PyTorch — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(238, 76, 44, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(238, 76, 44, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #ee4c2c, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(238, 76, 44, 0.1); border: 1px solid rgba(238, 76, 44, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(238, 76, 44, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #ee4c2c, #ff6b4a); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #ee4c2c, #ff6b4a); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(238, 76, 44, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(238, 76, 44, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #ee4c2c, #ff6b4a, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(238, 76, 44, 0.1); border: 1px solid rgba(238, 76, 44, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #ee4c2c, #ff6b4a, #00c8ff); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(238, 76, 44, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #ee4c2c, #00c8ff); }
+        .level.boss::before { background: linear-gradient(90deg, #ee4c2c, #ffb400); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #ee4c2c, #ff6b4a); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(238, 76, 44, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ee4c2c, #ffb400); box-shadow: 0 4px 15px rgba(238, 76, 44, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(238, 76, 44, 0.4); } 50% { box-shadow: 0 4px 25px rgba(238, 76, 44, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #ff6b4a; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(238, 76, 44, 0.1), rgba(0, 200, 255, 0.1)); border: 2px dashed rgba(238, 76, 44, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #ff9ec8; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(238, 76, 44, 0.08); border-color: #ee4c2c; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #ee4c2c; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(238, 76, 44, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #ff6b4a; background: rgba(238, 76, 44, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(238, 76, 44, 0.05); border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #ff6b4a; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(0, 200, 255, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #00c8ff); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #ee4c2c; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(238, 76, 44, 0.05); border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(238, 76, 44, 0.1); border: 1px solid rgba(238, 76, 44, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(238, 76, 44, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(238, 76, 44, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(238, 76, 44, 0.2), rgba(0, 200, 255, 0.2)); border-color: #00c8ff; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(238, 76, 44, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 3.4 • МОДУЛЬ 3</span>
+        <h1 data-i18n="title">PyTorch: Профессиональный фреймворк</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 3.4!  После того как ты вручную реализовал backpropagation в уроке 3.3, пришло время увидеть, как это делают профессионалы. PyTorch автоматизирует всю рутину!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 4 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1200 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +500 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach"> 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Installation -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Установка PyTorch</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Подключаем профессиональный инструмент</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+50 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">PyTorch — это фреймворк для глубокого обучения, созданный Meta (Facebook). Он используется в OpenAI, Tesla, Microsoft и тысячах других компаний. В отличие от NumPy, PyTorch умеет автоматически считать градиенты и работать на GPU.</p>
+
+        <h3 data-i18n="l0_code_title">📝 Установка через pip</h3>
+        <pre><code># Open terminal in VS Code and run:
+# CPU version (works on any computer)
+pip install torch torchvision torchaudio
+
+# Check installation
+python -c "import torch; print(f'PyTorch {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}')"</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l0_tip_title">💡 CPU vs GPU</strong>
+            <span data-i18n="l0_tip_text">Для этого курса хватит CPU-версии. GPU (CUDA) нужен для обучения больших моделей — это тема продвинутого уровня. Если у тебя есть NVIDIA видеокарта, можешь установить CUDA-версию с официального сайта pytorch.org.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📦</span>
+            <h3 data-i18n="ach0_name">Ачивка: Установщик PyTorch</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Успешно установил PyTorch и проверил версию</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+50 XP · +20 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson3_4_installer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если увидел версию PyTorch в терминале!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Tensors -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🔢 Тензоры: Основа PyTorch</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">NumPy на стероидах</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+120 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Тензор — это многомерный массив, как в NumPy, но с двумя суперсилами: <strong>автоматическое вычисление градиентов</strong> и <strong>работа на GPU</strong>. Скаляр — это тензор 0D, вектор — 1D, матрица — 2D, куб — 3D, и так далее.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">️</div>
+            <div class="game-text">
+                <strong data-i18n="l1_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l1_analogy_text">Если NumPy — это обычный меч, то тензор PyTorch — это магический меч с авто-наведением. Он сам знает, в какую сторону наносить удар (считать градиент), и может быть усилен магией (GPU) для критического урона!</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l1_code_title"> Создание и операции с тензорами</h3>
+        <pre><code>import torch
+import numpy as np
+
+# Create tensors from different sources
+scalar = torch.tensor(3.14)           # 0D tensor
+vector = torch.tensor([1, 2, 3])      # 1D tensor
+matrix = torch.tensor([[1, 2], [3, 4]])  # 2D tensor
+
+# Create tensors with special functions
+zeros = torch.zeros(3, 3)             # 3x3 matrix of zeros
+ones = torch.ones(2, 4)               # 2x4 matrix of ones
+random = torch.randn(3, 3)            # 3x3 with random normal values
+
+print(f"Scalar: {scalar}, shape: {scalar.shape}")
+print(f"Vector: {vector}, shape: {vector.shape}")
+print(f"Matrix:\n{matrix}, shape: {matrix.shape}")
+
+# Tensor operations (similar to NumPy)
+a = torch.tensor([1.0, 2.0, 3.0])
+b = torch.tensor([4.0, 5.0, 6.0])
+
+print(f"\nAddition: {a + b}")
+print(f"Multiplication: {a * b}")
+print(f"Dot product: {torch.dot(a, b)}")
+print(f"Matrix multiplication: {torch.matmul(matrix, matrix)}")
+
+# Convert between NumPy and PyTorch
+np_array = np.array([1, 2, 3])
+tensor_from_np = torch.from_numpy(np_array)
+np_from_tensor = tensor_from_np.numpy()
+
+print(f"\nNumPy -> Tensor: {tensor_from_np}")
+print(f"Tensor -> NumPy: {np_from_tensor}")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l1_warn_title">⚠️ Главное отличие от NumPy</strong>
+            <span data-i18n="l1_warn_text">Тензоры PyTorch могут работать на GPU! Метод <code>.to('cuda')</code> переносит тензор на видеокарту, что ускоряет вычисления в 10-100 раз для больших моделей.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔢</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер тензоров</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Создал тензоры и выполнил операции с ними</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+120 XP · +40 💰 ·  Редкая</div>
+            <a href="achievements.html?unlock=lesson3_4_tensor_master" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если понял разницу между скаляром, вектором и матрицей!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Autograd -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">⚡ Autograd: Магия градиентов</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">PyTorch сам считает производные</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+180 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Помнишь, как в уроке 3.3 мы вручную считали градиенты через цепное правило? PyTorch делает это автоматически! Просто добавь <code>requires_grad=True</code> к тензору, и PyTorch будет запоминать все операции, чтобы потом посчитать градиенты через <code>.backward()</code>.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Автоматическое дифференцирование</h3>
+        <pre><code>import torch
+
+# Create a tensor that requires gradient computation
+x = torch.tensor(2.0, requires_grad=True)
+
+# Build a computation graph
+y = x ** 2 + 3 * x + 1  # y = x^2 + 3x + 1
+
+# Compute gradients automatically
+y.backward()
+
+# Access the gradient (dy/dx = 2x + 3 = 7 when x=2)
+print(f"x = {x.item()}")
+print(f"y = x^2 + 3x + 1 = {y.item()}")
+print(f"dy/dx = {x.grad.item()}")  # Should be 7.0
+
+# More complex example: neural network layer
+print("\n--- Neural network layer example ---")
+W = torch.randn(3, 2, requires_grad=True)  # Weight matrix
+b = torch.zeros(2, requires_grad=True)      # Bias
+x_batch = torch.randn(4, 3)                 # Batch of 4 samples
+
+# Forward pass
+z = x_batch @ W + b  # Matrix multiplication + bias
+output = torch.relu(z)  # ReLU activation
+
+# Compute loss (mean of output)
+loss = output.mean()
+
+# Backward pass - computes gradients for W and b automatically!
+loss.backward()
+
+print(f"Loss: {loss.item():.4f}")
+print(f"Gradient of W:\n{W.grad}")
+print(f"Gradient of b: {b.grad}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Как это работает?</strong>
+            <span data-i18n="l2_lore_text">PyTorch строит <strong>граф вычислений</strong> (computation graph) — дерево всех операций. Когда ты вызываешь <code>.backward()</code>, он проходит по этому графу в обратном порядке и применяет цепное правило автоматически. Это именно то, что мы делали вручную в уроке 3.3!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚡</span>
+            <h3 data-i18n="ach2_name">Ачивка: Повелитель autograd</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Использовал автоматическое дифференцирование PyTorch</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+180 XP · +60 💰 ·  Редкая</div>
+            <a href="achievements.html?unlock=lesson3_4_autograd_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если градиент dy/dx получился 7.0!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: nn.Module -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🏗️ nn.Module: Создаём сеть</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Объектно-ориентированный подход</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">В PyTorch нейросети создаются как классы, наследующие от <code>nn.Module</code>. Это даёт чистую структуру: в <code>__init__</code> определяем слои, в <code>forward</code> — как данные проходят через сеть. PyTorch сам создаст все веса и biases!</p>
+
+        <h3 data-i18n="l3_code_title">📝 Первая нейросеть на PyTorch</h3>
+        <pre><code>import torch
+import torch.nn as nn
+
+class SimpleNeuralNetwork(nn.Module):
+    """A simple neural network: 2 inputs -> 16 hidden -> 1 output"""
+    
+    def __init__(self):
+        super().__init__()
+        # Define layers
+        self.hidden = nn.Linear(2, 16)  # Input to hidden
+        self.relu = nn.ReLU()           # Activation function
+        self.output = nn.Linear(16, 1)  # Hidden to output
+        self.sigmoid = nn.Sigmoid()     # Output activation
+    
+    def forward(self, x):
+        """Define how data flows through the network"""
+        x = self.hidden(x)      # Linear transformation
+        x = self.relu(x)        # ReLU activation
+        x = self.output(x)      # Linear transformation
+        x = self.sigmoid(x)     # Sigmoid for binary classification
+        return x
+
+# Create the network
+model = SimpleNeuralNetwork()
+
+# Print network architecture
+print("Network architecture:")
+print(model)
+print(f"\nTotal parameters: {sum(p.numel() for p in model.parameters())}")
+
+# Test with dummy input
+dummy_input = torch.tensor([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+output = model(dummy_input)
+print(f"\nOutput for XOR inputs:\n{output.detach().numpy()}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l3_tip_title">💡 nn.Linear что делает?</strong>
+            <span data-i18n="l3_tip_text"><code>nn.Linear(2, 16)</code> создаёт слой с 2 входами и 16 выходами. PyTorch автоматически создаёт матрицу весов 2×16 и вектор bias размера 16, инициализированные умными значениями (Kaiming initialization).</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏗️</span>
+            <h3 data-i18n="ach3_name">Ачивка: Архитектор nn.Module</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Создал нейросеть через nn.Module</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+200 XP · +70 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_4_module_architect" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел архитектуру сети и количество параметров!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Training Loop -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🔄 Цикл обучения</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Forward → Loss → Backward → Step</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Теперь самое главное — цикл обучения. В PyTorch он состоит из 4 шагов: <strong>forward pass</strong> (предсказание), <strong>compute loss</strong> (ошибка), <strong>backward pass</strong> (градиенты), <strong>optimizer step</strong> (обновление весов). Всё остальное PyTorch делает сам!</p>
+
+        <h3 data-i18n="l4_code_title">📝 Обучение сети на XOR</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Define the network (same as before)
+class SimpleNeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.hidden = nn.Linear(2, 16)
+        self.relu = nn.ReLU()
+        self.output = nn.Linear(16, 1)
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self, x):
+        x = self.relu(self.hidden(x))
+        x = self.sigmoid(self.output(x))
+        return x
+
+# Training data: XOR problem
+X = torch.tensor([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+y = torch.tensor([[0.0], [1.0], [1.0], [0.0]])
+
+# Create model, loss function, and optimizer
+model = SimpleNeuralNetwork()
+criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
+optimizer = optim.Adam(model.parameters(), lr=0.01)  # Adam optimizer
+
+# Training loop
+print("Training XOR with PyTorch...\n")
+epochs = 1000
+
+for epoch in range(epochs):
+    # 1. Forward pass
+    predictions = model(X)
+    
+    # 2. Compute loss
+    loss = criterion(predictions, y)
+    
+    # 3. Backward pass (compute gradients)
+    optimizer.zero_grad()  # Clear old gradients
+    loss.backward()        # Compute new gradients
+    
+    # 4. Update weights
+    optimizer.step()
+    
+    # Print progress
+    if epoch % 200 == 0:
+        print(f"Epoch {epoch}: Loss = {loss.item():.6f}")
+
+# Test the trained model
+print("\n=== Final Predictions ===")
+with torch.no_grad():  # No need for gradients during inference
+    predictions = model(X)
+    for i in range(len(X)):
+        print(f"Input: {X[i].tolist()} -> Output: {predictions[i].item():.4f} (Target: {y[i].item()})")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l4_warn_title">⚠️ Три критически важных строки</strong>
+            <span data-i18n="l4_warn_text">
+                1. <code>optimizer.zero_grad()</code> — очищает старые градиенты (иначе они накопятся!)<br>
+                2. <code>loss.backward()</code> — считает новые градиенты<br>
+                3. <code>optimizer.step()</code> — обновляет веса по градиентам<br>
+                Всегда в этом порядке!
+            </span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔄</span>
+            <h3 data-i18n="ach4_name">Ачивка: Тренер моделей</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Написал полный цикл обучения на PyTorch</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_4_trainer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если сеть научилась XOR!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Real Project -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Классификатор изображений</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Распознаём цифры MNIST на PyTorch</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+500 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🔢🤖</span>
+            <span data-i18n="l5_meme">MNIST — это "Hello World" компьютерного зрения: 70,000 изображений рукописных цифр 0-9. Сегодня ты создашь сеть, которая научится их распознавать с точностью 95%+!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Полноценный проект на PyTorch</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
+
+# 1. Load MNIST dataset
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))  # Normalize to mean=0, std=1
+])
+
+train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
+test_dataset = datasets.MNIST('./data', train=False, download=True, transform=transform)
+
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+
+# 2. Define the neural network
+class MNISTClassifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Flatten(),           # 28x28 -> 784
+            nn.Linear(784, 128),    # First hidden layer
+            nn.ReLU(),
+            nn.Dropout(0.2),        # Prevent overfitting
+            nn.Linear(128, 64),     # Second hidden layer
+            nn.ReLU(),
+            nn.Linear(64, 10)       # Output: 10 classes (digits 0-9)
+        )
+    
+    def forward(self, x):
+        return self.network(x)
+
+# 3. Setup training
+model = MNISTClassifier()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# 4. Training loop
+print("Training MNIST classifier...\n")
+epochs = 5
+
+for epoch in range(epochs):
+    model.train()
+    total_loss = 0
+    correct = 0
+    total = 0
+    
+    for batch_idx, (data, target) in enumerate(train_loader):
+        # Forward pass
+        output = model(data)
+        loss = criterion(output, target)
+        
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        total_loss += loss.item()
+        _, predicted = output.max(1)
+        total += target.size(0)
+        correct += predicted.eq(target).sum().item()
+    
+    accuracy = 100. * correct / total
+    avg_loss = total_loss / len(train_loader)
+    print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}, Accuracy = {accuracy:.2f}%")
+
+# 5. Test the model
+model.eval()
+test_loss = 0
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for data, target in test_loader:
+        output = model(data)
+        test_loss += criterion(output, target).item()
+        _, predicted = output.max(1)
+        total += target.size(0)
+        correct += predicted.eq(target).sum().item()
+
+test_accuracy = 100. * correct / total
+print(f"\n🎉 Test Accuracy: {test_accuracy:.2f}%")
+
+# 6. Visualize some predictions
+fig, axes = plt.subplots(2, 5, figsize=(12, 6))
+test_images = iter(test_loader).next()[0][:10]
+
+with torch.no_grad():
+    outputs = model(test_images)
+    _, predictions = outputs.max(1)
+
+for i, ax in enumerate(axes.flatten()):
+    ax.imshow(test_images[i].squeeze(), cmap='gray')
+    ax.set_title(f'Pred: {predictions[i].item()}')
+    ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print("\n✅ MNIST classifier trained successfully!")</code></pre>
+
+        <h3 data-i18n="l5_github_title"> Публикация проекта на GitHub</h3>
+        <pre><code># 1. Create new repository on GitHub
+#    Name: ai-creator-pytorch-mnist
+
+# 2. Clone and setup project structure
+git clone https://github.com/YOUR_USERNAME/ai-creator-pytorch-mnist.git
+cd ai-creator-pytorch-mnist
+
+mkdir src
+touch src/model.py
+touch src/train.py
+touch requirements.txt
+touch README.md
+
+# 3. Split code into modules:
+#    - model.py: MNISTClassifier class
+#    - train.py: training loop and visualization
+
+# 4. Create requirements.txt
+torch==2.1.0
+torchvision==0.16.0
+matplotlib==3.7.0
+
+# 5. Write README.md with:
+#    - Project description
+#    - Installation instructions
+#    - How to run training
+#    - Screenshot of results
+
+# 6. Commit and push
+git add .
+git commit -m "Add PyTorch MNIST classifier"
+git push origin main
+
+# 7. Send link to your teacher!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь скриншот предсказаний (из matplotlib)<br>
+                2. Укажи достигнутую точность на тесте<br>
+                3. Опиши архитектуру сети<br>
+                4. Добавь инструкции по запуску: <code>python src/train.py</code>
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(238, 76, 44, 0.1), rgba(255, 180, 0, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: PyTorch Engineer</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал классификатор MNIST и опубликовал проект на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+500 XP · +200 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson3_4_pytorch_engineer" class="ach-btn" style="background: linear-gradient(135deg, #ee4c2c, #ff6b4a);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% студентов доходят до публикации PyTorch-проекта. Ты — настоящий ML Engineer!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title"> Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy"> ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Сравнение оптимизаторов»</h3>
+            <p data-i18n="sq1_text">Обучи одну и ту же сеть на MNIST с разными оптимизаторами: SGD, Adam, RMSprop. Сравни скорость сходимости и финальную точность.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 80 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «GPU ускорение»</h3>
+            <p data-i18n="sq2_text">Если у тебя есть NVIDIA GPU, перенеси обучение на видеокарту через <code>.to('cuda')</code>. Измерь разницу в скорости обучения между CPU и GPU.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 150 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard"> СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title"> Квест «Transfer Learning»</h3>
+            <p data-i18n="sq3_text">Используй предобученную модель (например, ResNet18 из torchvision) и дообучи её на своём датасете (например, классификация пород собак). Это называется fine-tuning.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 300 AI-коинов + титул «Transfer Learning Master»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Установил PyTorch и проверил установку</li>
+            <li data-i18n="sum2">✅ Освоил тензоры и операции с ними</li>
+            <li data-i18n="sum3">✅ Использовал autograd для автоматических градиентов</li>
+            <li data-i18n="sum4">✅ Создал нейросеть через nn.Module</li>
+            <li data-i18n="sum5">✅ Написал полный цикл обучения</li>
+            <li data-i18n="sum6">🏆 Финальный босс — классификатор MNIST опубликован на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji"></span>
+            <span data-i18n="sum_meme">Поздравляю, PyTorch Engineer! Ты прошёл путь от ручного backpropagation до профессионального фреймворка. Теперь ты можешь создавать любые нейросети. В следующем уроке 3.5 мы изучим свёрточные сети (CNN) для работы с изображениями — и PyTorch сделает это в 10 раз проще, чем NumPy!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-3-3.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">3.3 Backpropagation</span>
+        </a>
+        <a href="lesson-3-5.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">3.5 Свёрточные сети (CNN)</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 3.4 • МОДУЛЬ 3", title: "PyTorch: Профессиональный фреймворк",
+            subtitle: "Добро пожаловать на Уровень 3.4! 🔥 После того как ты вручную реализовал backpropagation в уроке 3.3, пришло время увидеть, как это делают профессионалы. PyTorch автоматизирует всю рутину!",
+            duration: "⏱ 4 часа", level: "📙 Продвинутый", xp: "⭐ +1200 XP", loot: "💰 +500 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: " Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "📦 Установка PyTorch", l0_sub: "Подключаем профессиональный инструмент", l0_xp: "+50 XP",
+            l0_p1: "PyTorch — это фреймворк для глубокого обучения, созданный Meta (Facebook). Он используется в OpenAI, Tesla, Microsoft и тысячах других компаний. В отличие от NumPy, PyTorch умеет автоматически считать градиенты и работать на GPU.",
+            l0_code_title: "📝 Установка через pip",
+            l0_tip_title: "💡 CPU vs GPU", l0_tip_text: "Для этого курса хватит CPU-версии. GPU (CUDA) нужен для обучения больших моделей — это тема продвинутого уровня. Если у тебя есть NVIDIA видеокарта, можешь установить CUDA-версию с официального сайта pytorch.org.",
+            ach0_name: "Ачивка: Установщик PyTorch", ach0_desc: "Успешно установил PyTorch и проверил версию", ach0_reward: "+50 XP · +20 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если увидел версию PyTorch в терминале!",
+            l1_title: "🔢 Тензоры: Основа PyTorch", l1_sub: "NumPy на стероидах", l1_xp: "+120 XP",
+            l1_p1: "Тензор — это многомерный массив, как в NumPy, но с двумя суперсилами: автоматическое вычисление градиентов и работа на GPU. Скаляр — это тензор 0D, вектор — 1D, матрица — 2D, куб — 3D, и так далее.",
+            l1_analogy_title: "Игровая аналогия", l1_analogy_text: "Если NumPy — это обычный меч, то тензор PyTorch — это магический меч с авто-наведением. Он сам знает, в какую сторону наносить удар (считать градиент), и может быть усилен магией (GPU) для критического урона!",
+            l1_code_title: "📝 Создание и операции с тензорами",
+            l1_warn_title: "⚠️ Главное отличие от NumPy", l1_warn_text: "Тензоры PyTorch могут работать на GPU! Метод .to('cuda') переносит тензор на видеокарту, что ускоряет вычисления в 10-100 раз для больших моделей.",
+            ach1_name: "Ачивка: Мастер тензоров", ach1_desc: "Создал тензоры и выполнил операции с ними", ach1_reward: "+120 XP · +40 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если понял разницу между скаляром, вектором и матрицей!",
+            l2_title: "⚡ Autograd: Магия градиентов", l2_sub: "PyTorch сам считает производные", l2_xp: "+180 XP",
+            l2_p1: "Помнишь, как в уроке 3.3 мы вручную считали градиенты через цепное правило? PyTorch делает это автоматически! Просто добавь requires_grad=True к тензору, и PyTorch будет запоминать все операции, чтобы потом посчитать градиенты через .backward().",
+            l2_code_title: "📝 Автоматическое дифференцирование",
+            l2_lore_title: " Как это работает?", l2_lore_text: "PyTorch строит граф вычислений (computation graph) — дерево всех операций. Когда ты вызываешь .backward(), он проходит по этому графу в обратном порядке и применяет цепное правило автоматически. Это именно то, что мы делали вручную в уроке 3.3!",
+            ach2_name: "Ачивка: Повелитель autograd", ach2_desc: "Использовал автоматическое дифференцирование PyTorch", ach2_reward: "+180 XP · +60  · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если градиент dy/dx получился 7.0!",
+            l3_title: "🏗️ nn.Module: Создаём сеть", l3_sub: "Объектно-ориентированный подход", l3_xp: "+200 XP",
+            l3_p1: "В PyTorch нейросети создаются как классы, наследующие от nn.Module. Это даёт чистую структуру: в __init__ определяем слои, в forward — как данные проходят через сеть. PyTorch сам создаст все веса и biases!",
+            l3_code_title: "📝 Первая нейросеть на PyTorch",
+            l3_tip_title: " nn.Linear что делает?", l3_tip_text: "nn.Linear(2, 16) создаёт слой с 2 входами и 16 выходами. PyTorch автоматически создаёт матрицу весов 2×16 и вектор bias размера 16, инициализированные умными значениями (Kaiming initialization).",
+            ach3_name: "Ачивка: Архитектор nn.Module", ach3_desc: "Создал нейросеть через nn.Module", ach3_reward: "+200 XP · +70 💰 ·  Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел архитектуру сети и количество параметров!",
+            l4_title: "🔄 Цикл обучения", l4_sub: "Forward → Loss → Backward → Step", l4_xp: "+250 XP",
+            l4_p1: "Теперь самое главное — цикл обучения. В PyTorch он состоит из 4 шагов: forward pass (предсказание), compute loss (ошибка), backward pass (градиенты), optimizer step (обновление весов). Всё остальное PyTorch делает сам!",
+            l4_code_title: "📝 Обучение сети на XOR",
+            l4_warn_title: "⚠️ Три критически важных строки", l4_warn_text: "1. optimizer.zero_grad() — очищает старые градиенты (иначе они накопятся!)<br>2. loss.backward() — считает новые градиенты<br>3. optimizer.step() — обновляет веса по градиентам<br>Всегда в этом порядке!",
+            ach4_name: "Ачивка: Тренер моделей", ach4_desc: "Написал полный цикл обучения на PyTorch", ach4_reward: "+250 XP · +80 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если сеть научилась XOR!",
+            l5_title: "БОСС-ФАЙТ: Классификатор изображений", l5_sub: "Распознаём цифры MNIST на PyTorch", l5_xp: "+500 XP",
+            l5_meme: "MNIST — это 'Hello World' компьютерного зрения: 70,000 изображений рукописных цифр 0-9. Сегодня ты создашь сеть, которая научится их распознавать с точностью 95%+!",
+            l5_code_title: "📝 Полноценный проект на PyTorch",
+            l5_github_title: "🚀 Публикация проекта на GitHub",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь скриншот предсказаний (из matplotlib)<br>2. Укажи достигнутую точность на тесте<br>3. Опиши архитектуру сети<br>4. Добавь инструкции по запуску: python src/train.py",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: PyTorch Engineer", ach5_desc: "Создал классификатор MNIST и опубликовал проект на GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% студентов доходят до публикации PyTorch-проекта. Ты — настоящий ML Engineer!",
+            sq_title: " Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: " Квест «Сравнение оптимизаторов»", sq1_text: "Обучи одну и ту же сеть на MNIST с разными оптимизаторами: SGD, Adam, RMSprop. Сравни скорость сходимости и финальную точность.", sq1_reward: "💰 Награда: 80 AI-коинов",
+            sq2_title: "⚡ Квест «GPU ускорение»", sq2_text: "Если у тебя есть NVIDIA GPU, перенеси обучение на видеокарту через .to('cuda'). Измерь разницу в скорости обучения между CPU и GPU.", sq2_reward: "💰 Награда: 150 AI-коинов",
+            sq3_title: "🎨 Квест «Transfer Learning»", sq3_text: "Используй предобученную модель (например, ResNet18 из torchvision) и дообучи её на своём датасете (например, классификация пород собак). Это называется fine-tuning.", sq3_reward: "💰 Награда: 300 AI-коинов + титул «Transfer Learning Master»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Установил PyTorch и проверил установку", sum2: "✅ Освоил тензоры и операции с ними",
+            sum3: "✅ Использовал autograd для автоматических градиентов", sum4: "✅ Создал нейросеть через nn.Module",
+            sum5: "✅ Написал полный цикл обучения", sum6: " Финальный босс — классификатор MNIST опубликован на GitHub!",
+            sum_meme: "Поздравляю, PyTorch Engineer! Ты прошёл путь от ручного backpropagation до профессионального фреймворка. Теперь ты можешь создавать любые нейросети. В следующем уроке 3.5 мы изучим свёрточные сети (CNN) для работы с изображениями — и PyTorch сделает это в 10 раз проще, чем NumPy!",
+            nav_back: "← Предыдущий квест", nav_back_title: "3.3 Backpropagation",
+            nav_next: "Следующий квест →", nav_next_title: "3.5 Свёрточные сети (CNN)",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 3.4 • MODULE 3", title: "PyTorch: Professional Framework",
+            subtitle: "Welcome to Level 3.4! 🔥 After manually implementing backpropagation in lesson 3.3, it's time to see how professionals do it. PyTorch automates all the routine!",
+            duration: "⏱ 4 hours", level: "📙 Advanced", xp: "⭐ +1200 XP", loot: "💰 +500 AI-coins", ach: " 6 achievements",
+            progress_title: " Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: " Installing PyTorch", l0_sub: "Connecting the professional tool", l0_xp: "+50 XP",
+            l0_p1: "PyTorch is a deep learning framework created by Meta (Facebook). It's used at OpenAI, Tesla, Microsoft, and thousands of other companies. Unlike NumPy, PyTorch can automatically compute gradients and work on GPU.",
+            l0_code_title: "📝 Installation via pip",
+            l0_tip_title: "💡 CPU vs GPU", l0_tip_text: "CPU version is enough for this course. GPU (CUDA) is needed for training large models — that's an advanced topic. If you have an NVIDIA GPU, you can install the CUDA version from the official pytorch.org website.",
+            ach0_name: "Achievement: PyTorch Installer", ach0_desc: "Successfully installed PyTorch and checked the version", ach0_reward: "+50 XP · +20 💰 ·  Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you saw the PyTorch version in terminal!",
+            l1_title: "🔢 Tensors: PyTorch Foundation", l1_sub: "NumPy on steroids", l1_xp: "+120 XP",
+            l1_p1: "A tensor is a multi-dimensional array, like in NumPy, but with two superpowers: automatic gradient computation and GPU support. Scalar is 0D tensor, vector is 1D, matrix is 2D, cube is 3D, and so on.",
+            l1_analogy_title: "Game analogy", l1_analogy_text: "If NumPy is a regular sword, then PyTorch tensor is a magic sword with auto-aim. It knows which direction to strike (compute gradient) and can be powered by magic (GPU) for critical damage!",
+            l1_code_title: "📝 Creating and operating with tensors",
+            l1_warn_title: "⚠️ Main difference from NumPy", l1_warn_text: "PyTorch tensors can work on GPU! The .to('cuda') method moves tensor to GPU, speeding up computations 10-100x for large models.",
+            ach1_name: "Achievement: Tensor Master", ach1_desc: "Created tensors and performed operations with them", ach1_reward: "+120 XP · +40 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you understood the difference between scalar, vector, and matrix!",
+            l2_title: "⚡ Autograd: Gradient Magic", l2_sub: "PyTorch computes derivatives automatically", l2_xp: "+180 XP",
+            l2_p1: "Remember how in lesson 3.3 we manually computed gradients using chain rule? PyTorch does it automatically! Just add requires_grad=True to a tensor, and PyTorch will remember all operations to compute gradients later via .backward().",
+            l2_code_title: "📝 Automatic differentiation",
+            l2_lore_title: "📚 How does it work?", l2_lore_text: "PyTorch builds a computation graph — a tree of all operations. When you call .backward(), it traverses this graph in reverse order and applies the chain rule automatically. This is exactly what we did manually in lesson 3.3!",
+            ach2_name: "Achievement: Autograd Master", ach2_desc: "Used PyTorch automatic differentiation", ach2_reward: "+180 XP · +60 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if dy/dx gradient was 7.0!",
+            l3_title: "🏗️ nn.Module: Building a Network", l3_sub: "Object-oriented approach", l3_xp: "+200 XP",
+            l3_p1: "In PyTorch, neural networks are created as classes inheriting from nn.Module. This gives clean structure: in __init__ we define layers, in forward — how data flows through the network. PyTorch creates all weights and biases automatically!",
+            l3_code_title: "📝 First PyTorch neural network",
+            l3_tip_title: "💡 What does nn.Linear do?", l3_tip_text: "nn.Linear(2, 16) creates a layer with 2 inputs and 16 outputs. PyTorch automatically creates a 2×16 weight matrix and bias vector of size 16, initialized with smart values (Kaiming initialization).",
+            ach3_name: "Achievement: nn.Module Architect", ach3_desc: "Created a neural network via nn.Module", ach3_reward: "+200 XP · +70 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw the network architecture and parameter count!",
+            l4_title: " Training Loop", l4_sub: "Forward → Loss → Backward → Step", l4_xp: "+250 XP",
+            l4_p1: "Now the most important part — the training loop. In PyTorch it consists of 4 steps: forward pass (prediction), compute loss (error), backward pass (gradients), optimizer step (weight update). PyTorch does everything else!",
+            l4_code_title: "📝 Training network on XOR",
+            l4_warn_title: "⚠️ Three critically important lines", l4_warn_text: "1. optimizer.zero_grad() — clears old gradients (otherwise they accumulate!)<br>2. loss.backward() — computes new gradients<br>3. optimizer.step() — updates weights by gradients<br>Always in this order!",
+            ach4_name: "Achievement: Model Trainer", ach4_desc: "Wrote a full training loop in PyTorch", ach4_reward: "+250 XP · +80 💰 ·  Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if the network learned XOR!",
+            l5_title: "BOSS FIGHT: Image Classifier", l5_sub: "Recognizing MNIST digits with PyTorch", l5_xp: "+500 XP",
+            l5_meme: "MNIST is the 'Hello World' of computer vision: 70,000 images of handwritten digits 0-9. Today you'll create a network that learns to recognize them with 95%+ accuracy!",
+            l5_code_title: " Full PyTorch project",
+            l5_github_title: "🚀 Publishing project on GitHub",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add prediction screenshot (from matplotlib)<br>2. Specify achieved test accuracy<br>3. Describe network architecture<br>4. Add run instructions: python src/train.py",
+            ach5_name: "LEGENDARY: PyTorch Engineer", ach5_desc: "Created MNIST classifier and published project on GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of students publish a PyTorch project. You're a real ML Engineer!",
+            sq_title: " Side quests (additional tasks)", sq_easy: " EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Optimizer Comparison»", sq1_text: "Train the same network on MNIST with different optimizers: SGD, Adam, RMSprop. Compare convergence speed and final accuracy.", sq1_reward: "💰 Reward: 80 AI-coins",
+            sq2_title: "⚡ Quest «GPU Acceleration»", sq2_text: "If you have NVIDIA GPU, move training to GPU via .to('cuda'). Measure the speed difference between CPU and GPU training.", sq2_reward: "💰 Reward: 150 AI-coins",
+            sq3_title: " Quest «Transfer Learning»", sq3_text: "Use a pre-trained model (e.g., ResNet18 from torchvision) and fine-tune it on your dataset (e.g., dog breed classification). This is called fine-tuning.", sq3_reward: "💰 Reward: 300 AI-coins + title «Transfer Learning Master»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Installed PyTorch and verified installation", sum2: "✅ Mastered tensors and operations",
+            sum3: "✅ Used autograd for automatic gradients", sum4: "✅ Created neural network via nn.Module",
+            sum5: "✅ Wrote full training loop", sum6: "🏆 Final boss — MNIST classifier published on GitHub!",
+            sum_meme: "Congrats, PyTorch Engineer! You've gone from manual backpropagation to a professional framework. Now you can create any neural network. In the next lesson 3.5, we'll study Convolutional Neural Networks (CNN) for image processing — and PyTorch will make it 10x easier than NumPy!",
+            nav_back: "← Previous quest", nav_back_title: "3.3 Backpropagation",
+            nav_next: "Next quest →", nav_next_title: "3.5 Convolutional Networks (CNN)",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 3.4 • MÓDULO 3", title: "PyTorch: Framework Profesional", subtitle: "¡Bienvenido al Nivel 3.4! 🔥 Después de implementar backpropagation manualmente, es hora de ver cómo lo hacen los profesionales.", duration: "⏱ 4 horas", level: "📙 Avanzado", xp: "⭐ +1200 XP", loot: "💰 +500 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "📦 Instalando PyTorch", l0_sub: "Conectando la herramienta profesional", l0_xp: "+50 XP", l0_p1: "PyTorch es un framework de deep learning creado por Meta (Facebook). Se usa en OpenAI, Tesla, Microsoft.", l0_code_title: "📝 Instalación vía pip", l0_tip_title: "💡 CPU vs GPU", l0_tip_text: "La versión CPU es suficiente para este curso. GPU (CUDA) se necesita para modelos grandes.", ach0_name: "Logro: Instalador de PyTorch", ach0_desc: "Instaló PyTorch exitosamente", ach0_reward: "+50 XP · +20 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si viste la versión de PyTorch!", l1_title: " Tensores: Base de PyTorch", l1_sub: "NumPy con esteroides", l1_xp: "+120 XP", l1_p1: "Un tensor es un array multidimensional, como en NumPy, pero con dos superpoderes: gradientes automáticos y soporte GPU.", l1_analogy_title: "Analogía de juego", l1_analogy_text: "Si NumPy es una espada normal, el tensor PyTorch es una espada mágica con auto-apuntado.", l1_code_title: "📝 Creando y operando tensores", l1_warn_title: "⚠️ Diferencia principal con NumPy", l1_warn_text: "¡Los tensores PyTorch pueden trabajar en GPU! El método .to('cuda') mueve el tensor a la GPU.", ach1_name: "Logro: Maestro de tensores", ach1_desc: "Creó tensores y realizó operaciones", ach1_reward: "+120 XP · +40 💰 · 🔵 Raro", ach1_btn: " Obtener logro", ach1_hint: "¡Haz clic si entendiste la diferencia entre escalar, vector y matriz!", l2_title: " Autograd: Magia de gradientes", l2_sub: "PyTorch calcula derivadas automáticamente", l2_xp: "+180 XP", l2_p1: "¿Recuerdas cómo en la lección 3.3 calculamos gradientes manualmente? ¡PyTorch lo hace automáticamente!", l2_code_title: "📝 Diferenciación automática", l2_lore_title: " ¿Cómo funciona?", l2_lore_text: "PyTorch construye un grafo de computación. Cuando llamas .backward(), recorre este grafo en orden inverso.", ach2_name: "Logro: Maestro de autograd", ach2_desc: "Usó diferenciación automática de PyTorch", ach2_reward: "+180 XP · +60 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si el gradiente dy/dx fue 7.0!", l3_title: "🏗️ nn.Module: Construyendo una red", l3_sub: "Enfoque orientado a objetos", l3_xp: "+200 XP", l3_p1: "En PyTorch, las redes neuronales se crean como clases que heredan de nn.Module.", l3_code_title: "📝 Primera red neuronal en PyTorch", l3_tip_title: "💡 ¿Qué hace nn.Linear?", l3_tip_text: "nn.Linear(2, 16) crea una capa con 2 entradas y 16 salidas. PyTorch crea automáticamente la matriz de pesos.", ach3_name: "Logro: Arquitecto nn.Module", ach3_desc: "Creó una red neuronal vía nn.Module", ach3_reward: "+200 XP · +70 💰 ·  Épico", ach3_btn: " Obtener logro", ach3_hint: "¡Haz clic si viste la arquitectura de la red!", l4_title: "🔄 Ciclo de entrenamiento", l4_sub: "Forward → Loss → Backward → Step", l4_xp: "+250 XP", l4_p1: "Ahora la parte más importante — el ciclo de entrenamiento. En PyTorch consiste en 4 pasos.", l4_code_title: "📝 Entrenando red en XOR", l4_warn_title: "⚠️ Tres líneas críticamente importantes", l4_warn_text: "1. optimizer.zero_grad() — limpia gradientes viejos<br>2. loss.backward() — calcula nuevos gradientes<br>3. optimizer.step() — actualiza pesos", ach4_name: "Logro: Entrenador de modelos", ach4_desc: "Escribió un ciclo de entrenamiento completo en PyTorch", ach4_reward: "+250 XP · +80  · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si la red aprendió XOR!", l5_title: "¡PELEA JEFE: Clasificador de imágenes!", l5_sub: "Reconociendo dígitos MNIST con PyTorch", l5_xp: "+500 XP", l5_meme: "¡MNIST es el 'Hello World' de la visión por computadora: 70,000 imágenes de dígitos escritos a mano 0-9!", l5_code_title: "📝 Proyecto PyTorch completo", l5_github_title: " Publicando proyecto en GitHub", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade captura de predicciones<br>2. Especifica precisión en test<br>3. Describe arquitectura<br>4. Añade instrucciones: python src/train.py", ach5_name: "LEGENDARIO: Ingeniero PyTorch", ach5_desc: "Creó clasificador MNIST y publicó proyecto en GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo el 5% publica un proyecto PyTorch. Eres un verdadero ML Engineer!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Comparación de optimizadores»", sq1_text: "Entrena la misma red en MNIST con diferentes optimizadores: SGD, Adam, RMSprop.", sq1_reward: " Recompensa: 80 AI-monedas", sq2_title: "⚡ Misión «Aceleración GPU»", sq2_text: "Si tienes GPU NVIDIA, mueve el entrenamiento a GPU vía .to('cuda').", sq2_reward: "💰 Recompensa: 150 AI-monedas", sq3_title: "🎨 Misión «Transfer Learning»", sq3_text: "Usa un modelo pre-entrenado (ej. ResNet18) y ajústalo en tu dataset.", sq3_reward: "💰 Recompensa: 300 AI-monedas + título «Transfer Learning Master»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Instalaste PyTorch", sum2: "✅ Dominaste tensores", sum3: "✅ Usaste autograd", sum4: "✅ Creaste red vía nn.Module", sum5: "✅ Escribiste ciclo de entrenamiento", sum6: "🏆 ¡Jefe final: clasificador MNIST publicado!", sum_meme: "¡Felicidades, Ingeniero PyTorch! En la próxima lección 3.5 estudiaremos CNN.", nav_back: "← Misión anterior", nav_back_title: "3.3 Backpropagation", nav_next: "Siguiente misión →", nav_next_title: "3.5 Redes Convolucionales (CNN)", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 3.4 • MODUL 3", title: "PyTorch: Professionelles Framework", subtitle: "Willkommen auf Level 3.4! 🔥 Nach manueller Backpropagation-Implementierung siehst du jetzt, wie Profis es machen.", duration: " 4 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1200 XP", loot: " +500 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "📦 PyTorch installieren", l0_sub: "Professionelles Tool verbinden", l0_xp: "+50 XP", l0_p1: "PyTorch ist ein Deep-Learning-Framework von Meta (Facebook). Es wird bei OpenAI, Tesla, Microsoft verwendet.", l0_code_title: "📝 Installation via pip", l0_tip_title: "💡 CPU vs GPU", l0_tip_text: "CPU-Version reicht für diesen Kurs. GPU (CUDA) wird für große Modelle benötigt.", ach0_name: "Erfolg: PyTorch-Installateur", ach0_desc: "PyTorch erfolgreich installiert", ach0_reward: "+50 XP · +20 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die PyTorch-Version gesehen hast!", l1_title: "🔢 Tensoren: PyTorch-Grundlage", l1_sub: "NumPy auf Steroiden", l1_xp: "+120 XP", l1_p1: "Ein Tensor ist ein mehrdimensionales Array wie in NumPy, aber mit zwei Superkräften: automatische Gradienten und GPU-Support.", l1_analogy_title: "Spiel-Analogie", l1_analogy_text: "Wenn NumPy ein normales Schwert ist, dann ist PyTorch-Tensor ein magisches Schwert mit Auto-Ziel.", l1_code_title: "📝 Tensoren erstellen und operieren", l1_warn_title: "⚠️ Hauptunterschied zu NumPy", l1_warn_text: "PyTorch-Tensoren können auf GPU arbeiten! Die .to('cuda')-Methode beschleunigt Berechnungen 10-100x.", ach1_name: "Erfolg: Tensor-Meister", ach1_desc: "Tensoren erstellt und Operationen durchgeführt", ach1_reward: "+120 XP · +40 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du den Unterschied zwischen Skalar, Vektor und Matrix verstanden hast!", l2_title: "⚡ Autograd: Gradienten-Magie", l2_sub: "PyTorch berechnet Ableitungen automatisch", l2_xp: "+180 XP", l2_p1: "Erinnerst du dich, wie wir in Lektion 3.3 Gradienten manuell berechnet haben? PyTorch macht es automatisch!", l2_code_title: "📝 Automatische Differentiation", l2_lore_title: "📚 Wie funktioniert das?", l2_lore_text: "PyTorch baut einen Berechnungsgraph. Wenn du .backward() aufrufst, durchläuft er diesen Graph rückwärts.", ach2_name: "Erfolg: Autograd-Meister", ach2_desc: "PyTorch automatische Differentiation verwendet", ach2_reward: "+180 XP · +60 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn dy/dx Gradient 7.0 war!", l3_title: "🏗️ nn.Module: Netzwerk bauen", l3_sub: "Objektorientierter Ansatz", l3_xp: "+200 XP", l3_p1: "In PyTorch werden neuronale Netze als Klassen erstellt, die von nn.Module erben.", l3_code_title: "📝 Erstes PyTorch-Netzwerk", l3_tip_title: "💡 Was macht nn.Linear?", l3_tip_text: "nn.Linear(2, 16) erstellt eine Schicht mit 2 Eingängen und 16 Ausgängen. PyTorch erstellt automatisch die Gewichtsmatrix.", ach3_name: "Erfolg: nn.Module-Architekt", ach3_desc: "Neuronales Netz via nn.Module erstellt", ach3_reward: "+200 XP · +70  · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du die Netzwerkarchitektur gesehen hast!", l4_title: "🔄 Trainingsschleife", l4_sub: "Forward → Loss → Backward → Step", l4_xp: "+250 XP", l4_p1: "Jetzt der wichtigste Teil — die Trainingsschleife. In PyTorch besteht sie aus 4 Schritten.", l4_code_title: "📝 Netzwerk auf XOR trainieren", l4_warn_title: "️ Drei kritisch wichtige Zeilen", l4_warn_text: "1. optimizer.zero_grad() — löscht alte Gradienten<br>2. loss.backward() — berechnet neue Gradienten<br>3. optimizer.step() — aktualisiert Gewichte", ach4_name: "Erfolg: Modell-Trainer", ach4_desc: "Vollständige Trainingsschleife in PyTorch geschrieben", ach4_reward: "+250 XP · +80 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn das Netz XOR gelernt hat!", l5_title: "BOSSKAMPF: Bildklassifizierer", l5_sub: "MNIST-Ziffern mit PyTorch erkennen", l5_xp: "+500 XP", l5_meme: "MNIST ist das 'Hello World' des Computer Vision: 70.000 Bilder handgeschriebener Ziffern 0-9!", l5_code_title: "📝 Vollständiges PyTorch-Projekt", l5_github_title: "🚨 Projekt auf GitHub veröffentlichen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Füge Vorhersage-Screenshot hinzu<br>2. Gib Testgenauigkeit an<br>3. Beschreibe Netzwerkarchitektur<br>4. Füge Laufanweisungen hinzu", ach5_name: "LEGENDÄR: PyTorch-Ingenieur", ach5_desc: "MNIST-Klassifizierer erstellt und auf GitHub veröffentlicht", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% der Studenten veröffentlichen ein PyTorch-Projekt!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: " SCHWER", sq1_title: "🧮 Quest «Optimizer-Vergleich»", sq1_text: "Trainiere dasselbe Netz auf MNIST mit verschiedenen Optimizern: SGD, Adam, RMSprop.", sq1_reward: "💰 Belohnung: 80 AI-Münzen", sq2_title: "⚡ Quest «GPU-Beschleunigung»", sq2_text: "Wenn du NVIDIA GPU hast, verschiebe Training auf GPU via .to('cuda').", sq2_reward: "💰 Belohnung: 150 AI-Münzen", sq3_title: "🎨 Quest «Transfer Learning»", sq3_text: "Verwende ein vortrainiertes Modell (z.B. ResNet18) und fine-tune es auf deinem Dataset.", sq3_reward: "💰 Belohnung: 300 AI-Münzen + Titel «Transfer Learning Master»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ PyTorch installiert", sum2: "✅ Tensoren gemeistert", sum3: "✅ Autograd verwendet", sum4: "✅ Netz via nn.Module erstellt", sum5: "✅ Trainingsschleife geschrieben", sum6: "🏆 Endboss: MNIST-Klassifizierer auf GitHub!", sum_meme: "Glückwunsch, PyTorch-Ingenieur! In der nächsten Lektion 3.5 studieren wir CNN.", nav_back: "← Vorheriger Quest", nav_back_title: "3.3 Backpropagation", nav_next: "Nächster Quest →", nav_next_title: "3.5 Convolutional Networks (CNN)", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 3.4 • 3-МОДУЛЬ", title: "PyTorch: Кәсіби фреймворк", subtitle: "3.4 деңгейге қош келдің! 🔥 3.3 сабақта backpropagation-ды қолмен іске асырғаннан кейін, кәсіпқойлардың қалай жасайтынын көру уақыты келді.", duration: "⏱ 4 сағат", level: "📙 Озық", xp: "⭐ +1200 XP", loot: "💰 +500 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "📦 PyTorch орнату", l0_sub: "Кәсіби құралды қосу", l0_xp: "+50 XP", l0_p1: "PyTorch — Meta (Facebook) жасаған deep learning фреймворкі. OpenAI, Tesla, Microsoft компанияларында қолданылады.", l0_code_title: "📝 pip арқылы орнату", l0_tip_title: "💡 CPU vs GPU", l0_tip_text: "Бұл курс үшін CPU нұсқасы жеткілікті. GPU (CUDA) үлкен модельдерді оқыту үшін қажет.", ach0_name: "Жетістік: PyTorch орнатушы", ach0_desc: "PyTorch-ты сәтті орнатты", ach0_reward: "+50 XP · +20 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Терминалда PyTorch нұсқасын көрсең — бас!", l1_title: " Тензорлар: PyTorch негізі", l1_sub: "Стероидтегі NumPy", l1_xp: "+120 XP", l1_p1: "Тензор — NumPy-дегідей көп өлшемді массив, бірақ екі суперкүші бар: автоматты градиенттер және GPU қолдауы.", l1_analogy_title: "Ойын аналогиясы", l1_analogy_text: "NumPy қалыпты қылыш болса, PyTorch тензоры — авто-нысанаға алатын сиқырлы қылыш.", l1_code_title: "📝 Тензорларды жасау және операциялар", l1_warn_title: "⚠️ NumPy-ден негізгі айырмашылық", l1_warn_text: "PyTorch тензорлары GPU-да жұмыс істей алады! .to('cuda') әдісі тензорды GPU-ға жылжытады.", ach1_name: "Жетістік: Тензор шебері", ach1_desc: "Тензорлар жасады және операциялар орындады", ach1_reward: "+120 XP · +40 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Скаляр, вектор және матрица айырмасын түсінсең — бас!", l2_title: "⚡ Autograd: Градиент сиқыры", l2_sub: "PyTorch туындыларды автоматты түрде есептейді", l2_xp: "+180 XP", l2_p1: "3.3 сабақта градиенттерді қолмен есептегеніңді есіңде ме? PyTorch мұны автоматты түрде жасайды!", l2_code_title: "📝 Автоматты дифференциация", l2_lore_title: "📚 Бұл қалай жұмыс істейді?", l2_lore_text: "PyTorch есептеу графын салады. .backward() шақырғанда, ол бұл графты кері ретпен өтеді.", ach2_name: "Жетістік: Autograd шебері", ach2_desc: "PyTorch автоматты дифференциацияны қолданды", ach2_reward: "+180 XP · +60 💰 ·  Сирек", ach2_btn: " Жетістікті алу", ach2_hint: "dy/dx градиенті 7.0 болса — бас!", l3_title: "🏗️ nn.Module: Желі құру", l3_sub: "Объектіге бағытталған тәсіл", l3_xp: "+200 XP", l3_p1: "PyTorch-та нейрондық желілер nn.Module-ден мұра алатын кластар ретінде жасалады.", l3_code_title: "📝 Бірінші PyTorch нейрондық желісі", l3_tip_title: "💡 nn.Linear не істейді?", l3_tip_text: "nn.Linear(2, 16) 2 кірісі және 16 шығысы бар қабат жасайды. PyTorch автоматты түрде салмақ матрицасын жасайды.", ach3_name: "Жетістік: nn.Module сәулетшісі", ach3_desc: "nn.Module арқылы нейрондық желі жасады", ach3_reward: "+200 XP · +70 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Желі архитектурасын көрсең — бас!", l4_title: "🔄 Оқыту циклі", l4_sub: "Forward → Loss → Backward → Step", l4_xp: "+250 XP", l4_p1: "Ең маңызды бөлігі — оқыту циклі. PyTorch-та ол 4 қадамнан тұрады.", l4_code_title: " XOR-да желіні оқыту", l4_warn_title: "⚠️ Үш сыни маңызды жол", l4_warn_text: "1. optimizer.zero_grad() — ескі градиенттерді тазалайды<br>2. loss.backward() — жаңа градиенттерді есептейді<br>3. optimizer.step() — салмақтарды жаңартады", ach4_name: "Жетістік: Модель жаттықтырушысы", ach4_desc: "PyTorch-та толық оқыту циклін жазды", ach4_reward: "+250 XP · +80  · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Желі XOR үйренсе — бас!", l5_title: "БОСС-ФАЙТ: Сурет классификаторы", l5_sub: "PyTorch-та MNIST цифрларын тану", l5_xp: "+500 XP", l5_meme: "MNIST — компьютерлік көрудің 'Hello World'-і: қолмен жазылған 0-9 цифрларының 70,000 суреті!", l5_code_title: "📝 Толық PyTorch жобасы", l5_github_title: "🚀 Жобаны GitHub-та жариялау", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. Болжам скриншотын қос<br>2. Тест дәлдігін көрсет<br>3. Желі архитектурасын сипатта<br>4. Іске қосу нұсқауларын қос", ach5_name: "АҢЫЗДЫҚ: PyTorch инженері", ach5_desc: "MNIST классификаторын жасады және жобаны GitHub-та жариялады", ach5_reward: "+500 XP · +200 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% студенттер PyTorch жобасын жариялайды. Сен нағыз ML Engineer-сі!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕІЛ", sq_medium: " ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: " Квест «Оптимизаторларды салыстыру»", sq1_text: "Бірдей желіні MNIST-те әртүрлі оптимизаторлармен оқыт: SGD, Adam, RMSprop.", sq1_reward: "💰 Сыйлық: 80 ЖИ-теңге", sq2_title: "⚡ Квест «GPU жылдамдату»", sq2_text: "NVIDIA GPU болса, оқытуды .to('cuda') арқылы GPU-ға жылжыт.", sq2_reward: "💰 Сыйлық: 150 ЖИ-теңге", sq3_title: " Квест «Transfer Learning»", sq3_text: "Алдын ала оқытылған модельді (мысалы, ResNet18) өз деректер жиынтығыңда fine-tune жаса.", sq3_reward: " Сыйлық: 300 ЖИ-теңге + «Transfer Learning Master» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ PyTorch орнаттың", sum2: "✅ Тензорларды игердің", sum3: "✅ Autograd қолдандың", sum4: "✅ nn.Module арқылы желі жасадың", sum5: "✅ Оқыту циклін жаздың", sum6: "🏆 Финалды босс — MNIST классификаторы GitHub-та!", sum_meme: "Құттықтаймын, PyTorch инженері! Келесі 3.5 сабақта CNN зерттейміз.", nav_back: "← Алдыңғы квест", nav_back_title: "3.3 Backpropagation", nav_next: "Келесі квест →", nav_next_title: "3.5 Convolutional Networks (CNN)", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
