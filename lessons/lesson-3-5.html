@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 3.5: CNN и компьютерное зрение — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(0, 200, 100, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 180, 0, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 200, 100, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #00c864, #ffb400); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(0, 200, 100, 0.1); border: 1px solid rgba(0, 200, 100, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(0, 200, 100, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #00c864, #ffb400); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #00c864, #ffb400); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 200, 100, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(0, 200, 100, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #00c864, #ffb400, #ff50a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(0, 200, 100, 0.1); border: 1px solid rgba(0, 200, 100, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00c864, #ffb400, #ff50a0); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 200, 100, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #00c864, #ffb400); }
+        .level.boss::before { background: linear-gradient(90deg, #ff50a0, #ffb400); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #00c864, #ffb400); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ff50a0, #ffb400); box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 80, 160, 0.4); } 50% { box-shadow: 0 4px 25px rgba(255, 80, 160, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #ffb400; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(0, 200, 100, 0.1), rgba(255, 180, 0, 0.1)); border: 2px dashed rgba(0, 200, 100, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #9ec8ff; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(255, 80, 160, 0.08); border-color: #ff50a0; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #00c864; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(0, 200, 100, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #ffb400; background: rgba(255, 180, 0, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(0, 200, 100, 0.05); border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #ffb400; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(0, 200, 100, 0.08), rgba(255, 180, 0, 0.08)); border: 2px solid rgba(0, 200, 100, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 200, 100, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 200, 100, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #00c864, #ffb400); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 200, 100, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 200, 100, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #00c864; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(0, 200, 100, 0.05); border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(0, 200, 100, 0.1); border: 1px solid rgba(0, 200, 100, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(0, 200, 100, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 200, 100, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(0, 200, 100, 0.2), rgba(255, 180, 0, 0.2)); border-color: #ffb400; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(0, 200, 100, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 3.5 • МОДУЛЬ 3</span>
+        <h1 data-i18n="title">CNN и компьютерное зрение</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 3.5! ️ Сегодня ты узнаешь, как нейросети "видят" изображения. Свёрточные сети (CNN) — это основа современного компьютерного зрения: от распознавания лиц до автономных автомобилей!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 4 часа</span>
+            <span class="meta-tag" data-i18n="level"> Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1500 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +600 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach"> 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Why CNN? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Почему обычные сети не работают с изображениями?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Проблема пространственной структуры</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Если подать изображение 28×28 пикселей в обычную нейросеть, нужно "сплющить" его в вектор из 784 чисел. Но при этом теряется важная информация: <strong>соседние пиксели связаны</strong>! Глаз кошки не может быть в левом верхнем углу, а ухо — в правом нижнем. Пространственная структура критична.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🖼️</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты разбираешь пазл на отдельные кусочки и перемешиваешь их. Обычная нейросеть пытается угадать картинку по перемешанным кусочкам. CNN же смотрит на кусочки в их правильном порядке, находя паттерны: "здесь всегда глаз, здесь — нос".</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🤔</span>
+            <h3 data-i18n="ach0_name">Ачивка: Аналитик проблем</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, почему MLP не подходит для изображений</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+80 XP · +30 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson3_5_analyst" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял проблему пространственной структуры!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: What is Convolution? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🔍 Что такое свёртка?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Фильтры и ядра (kernels)</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Свёртка — это операция применения <strong>фильтра</strong> (или ядра) к изображению. Фильтр — это маленькая матрица (обычно 3×3 или 5×5), которая "скользит" по изображению и вычисляет взвешенную сумму пикселей. Разные фильтры находят разные паттерны: горизонтальные линии, вертикальные линии, углы, текстуры.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Визуализация свёртки</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+# Simple 5x5 image (grayscale)
+image = np.array([
+    [0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0],
+    [0, 1, 1, 1, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0]
+])
+
+# Edge detection filter (3x3 kernel)
+edge_filter = np.array([
+    [-1, -1, -1],
+    [-1,  8, -1],
+    [-1, -1, -1]
+])
+
+# Apply convolution manually
+def convolve2d(image, kernel):
+    """Apply 2D convolution to image with given kernel"""
+    h, w = image.shape
+    k_h, k_w = kernel.shape
+    output = np.zeros((h - k_h + 1, w - k_w + 1))
+    
+    for i in range(h - k_h + 1):
+        for j in range(w - k_w + 1):
+            # Element-wise multiplication and sum
+            output[i, j] = np.sum(image[i:i+k_h, j:j+k_w] * kernel)
+    
+    return output
+
+# Apply edge detection
+edges = convolve2d(image, edge_filter)
+
+print("Original image:")
+print(image)
+print("\nEdge detection filter:")
+print(edge_filter)
+print("\nDetected edges:")
+print(edges)
+
+# Visualize
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+axes[0].imshow(image, cmap='gray')
+axes[0].set_title('Original Image')
+axes[0].axis('off')
+
+axes[1].imshow(edge_filter, cmap='gray')
+axes[1].set_title('Edge Filter')
+axes[1].axis('off')
+
+axes[2].imshow(edges, cmap='gray')
+axes[2].set_title('Detected Edges')
+axes[2].axis('off')
+
+plt.tight_layout()
+plt.show()</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l1_lore_title">📚 Как это работает?</strong>
+            <span data-i18n="l1_lore_text">Фильтр "скользит" по изображению с шагом 1 пиксель (stride=1). В каждой позиции он умножает свои веса на соответствующие пиксели и суммирует результат. Если паттерн совпадает (например, вертикальная линия), получается большое число. Если нет — близкое к нулю.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔍</span>
+            <h3 data-i18n="ach1_name">Ачивка: Исследователь свёрток</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Понял и реализовал операцию свёртки</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+150 XP · +50  · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson3_5_convolution" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел обнаруженные края!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: CNN Architecture -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">️ Архитектура CNN</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Conv → ReLU → Pool → FC</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Типичная CNN состоит из чередующихся слоёв: <strong>свёрточные слои</strong> (извлекают признаки), <strong>слои подвыборки</strong> (уменьшают размерность), и в конце <strong>полносвязные слои</strong> (классифицируют). Это как конвейер: сырое изображение → края → текстуры → части объектов → целые объекты → класс.</p>
+
+        <h3 data-i18n="l2_code_title">📝 CNN на PyTorch для MNIST</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+# Define CNN architecture
+class MNIST_CNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)  # 1 input channel, 32 filters
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)  # 32 -> 64 filters
+        
+        # Pooling layer
+        self.pool = nn.MaxPool2d(2, 2)  # 2x2 max pooling
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)  # After two poolings: 28->14->7
+        self.fc2 = nn.Linear(128, 10)  # 10 classes (digits 0-9)
+        
+        # Activation and regularization
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
+    
+    def forward(self, x):
+        # First conv block
+        x = self.pool(self.relu(self.conv1(x)))  # 28x28 -> 14x14
+        
+        # Second conv block
+        x = self.pool(self.relu(self.conv2(x)))  # 14x14 -> 7x7
+        
+        # Flatten for fully connected layers
+        x = x.view(-1, 64 * 7 * 7)
+        
+        # Fully connected layers
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        
+        return x
+
+# Create model
+model = MNIST_CNN()
+
+# Print architecture
+print("CNN Architecture:")
+print(model)
+print(f"\nTotal parameters: {sum(p.numel() for p in model.parameters()):,}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l2_tip_title">💡 Ключевые параметры</strong>
+            <span data-i18n="l2_tip_text"><strong>kernel_size=3</strong>: размер фильтра 3×3<br><strong>padding=1</strong>: добавляет рамку нулей, чтобы размер не менялся<br><strong>MaxPool2d(2,2)</strong>: берёт максимум из каждого 2×2 блока, уменьшая размер вдвое<br><strong>dropout=0.5</strong>: случайно "выключает" 50% нейронов для предотвращения переобучения</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">️</span>
+            <h3 data-i18n="ach2_name">Ачивка: Архитектор CNN</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Создал свёрточную нейросеть на PyTorch</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+200 XP · +70 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_5_architect" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел архитектуру и количество параметров!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Training CNN -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🔄 Обучение CNN на MNIST</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Достигаем 99% точности</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Теперь обучим нашу CNN на MNIST. Благодаря свёрточным слоям, точность должна быть выше 99% — значительно лучше, чем 95% у обычной сети из урока 3.4!</p>
+
+        <h3 data-i18n="l3_code_title">📝 Полный цикл обучения CNN</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
+
+# Data preparation
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
+])
+
+train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
+test_dataset = datasets.MNIST('./data', train=False, download=True, transform=transform)
+
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+
+# Model, loss, optimizer
+model = MNIST_CNN()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+print("Training CNN on MNIST...\n")
+epochs = 10
+train_losses = []
+test_accuracies = []
+
+for epoch in range(epochs):
+    model.train()
+    total_loss = 0
+    
+    for batch_idx, (data, target) in enumerate(train_loader):
+        # Forward pass
+        output = model(data)
+        loss = criterion(output, target)
+        
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        total_loss += loss.item()
+    
+    avg_loss = total_loss / len(train_loader)
+    train_losses.append(avg_loss)
+    
+    # Test accuracy
+    model.eval()
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for data, target in test_loader:
+            output = model(data)
+            _, predicted = output.max(1)
+            total += target.size(0)
+            correct += predicted.eq(target).sum().item()
+    
+    accuracy = 100. * correct / total
+    test_accuracies.append(accuracy)
+    
+    print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}, Test Accuracy = {accuracy:.2f}%")
+
+# Plot training progress
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+ax1.plot(train_losses, marker='o')
+ax1.set_title('Training Loss')
+ax1.set_xlabel('Epoch')
+ax1.set_ylabel('Loss')
+ax1.grid(True, alpha=0.3)
+
+ax2.plot(test_accuracies, marker='o', color='green')
+ax2.set_title('Test Accuracy')
+ax2.set_xlabel('Epoch')
+ax2.set_ylabel('Accuracy (%)')
+ax2.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+print(f"\n Final Test Accuracy: {test_accuracies[-1]:.2f}%")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">📈</span>
+            <span data-i18n="l3_meme">CNN достигает 99%+ точности на MNIST всего за 10 эпох! Обычная сеть из урока 3.4 давала ~95%. Разница в 4% кажется небольшой, но это означает в 4 раза меньше ошибок на 70,000 изображений!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔄</span>
+            <h3 data-i18n="ach3_name">Ачивка: Тренер CNN</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Обучил CNN на MNIST с точностью 99%+</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+300 XP · +100 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_5_trainer" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если точность выше 99%!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Visualizing Filters -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">️ Визуализация фильтров</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Что научилась видеть сеть?</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Самое интересное в CNN — можно посмотреть, какие паттерны научились распознавать фильтры! Первые слои обычно находят простые вещи (края, углы), а глубокие слои — сложные (части объектов, целые объекты).</p>
+
+        <h3 data-i18n="l4_code_title">📝 Визуализация весов свёрточных слоёв</h3>
+        <pre><code>import torch
+import matplotlib.pyplot as plt
+
+# Get weights from first convolutional layer
+conv1_weights = model.conv1.weight.data  # Shape: [32, 1, 3, 3]
+
+# Visualize first 16 filters
+fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+axes = axes.flatten()
+
+for i in range(16):
+    # Get i-th filter (3x3)
+    filter_weights = conv1_weights[i, 0, :, :]  # [3, 3]
+    
+    axes[i].imshow(filter_weights, cmap='gray')
+    axes[i].set_title(f'Filter {i+1}')
+    axes[i].axis('off')
+
+plt.suptitle('First 16 Convolutional Filters', fontsize=16, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+# Also visualize feature maps for a sample image
+print("\n--- Feature Maps Visualization ---")
+
+# Get a sample image
+sample_image, _ = test_dataset[0]
+sample_image = sample_image.unsqueeze(0)  # Add batch dimension
+
+# Pass through first conv layer
+with torch.no_grad():
+    conv1_output = model.conv1(sample_image)
+    conv1_output = model.relu(conv1_output)
+
+print(f"Input shape: {sample_image.shape}")
+print(f"After Conv1 shape: {conv1_output.shape}")  # [1, 32, 28, 28]
+
+# Visualize first 16 feature maps
+fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+axes = axes.flatten()
+
+for i in range(16):
+    feature_map = conv1_output[0, i, :, :]  # [28, 28]
+    axes[i].imshow(feature_map, cmap='viridis')
+    axes[i].set_title(f'Feature Map {i+1}')
+    axes[i].axis('off')
+
+plt.suptitle('Feature Maps After First Conv Layer', fontsize=16, fontweight='bold')
+plt.tight_layout()
+plt.show()</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l4_tip_title">💡 Что мы видим?</strong>
+            <span data-i18n="l4_tip_text"><strong>Фильтры</strong> (первый график): каждый фильтр — это маленький паттерн, который сеть ищет в изображении. Некоторые похожи на детекторы горизонтальных линий, другие — вертикальных или диагональных.<br><br><strong>Карты признаков</strong> (второй график): показывают, где в изображении найден каждый паттерн. Яркие области — где фильтр "сработал".</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">👁️</span>
+            <h3 data-i18n="ach4_name">Ачивка: Визуализатор фильтров</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Визуализировал фильтры и карты признаков CNN</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson3_5_visualizer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел паттерны в фильтрах!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Webcam Gesture Recognition -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Распознавание жестов через веб-камеру</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Real-time компьютерное зрение</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+600 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">📷</span>
+            <span data-i18n="l5_meme">Пришло время самого крутого проекта! Мы создадим систему распознавания жестов рук в реальном времени через веб-камеру. Это основа технологий управления жестами в VR/AR!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Распознавание жестов с OpenCV и CNN</h3>
+        <pre><code>import cv2
+import torch
+import numpy as np
+import torch.nn as nn
+from torchvision import transforms
+
+# Simplified CNN for gesture recognition (5 classes: 0-4 fingers)
+class GestureCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.fc2 = nn.Linear(128, 5)  # 5 gesture classes
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
+    
+    def forward(self, x):
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = x.view(-1, 64 * 7 * 7)
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x
+
+# Load pre-trained model (you would train this first)
+# model = GestureCNN()
+# model.load_state_dict(torch.load('gesture_model.pth'))
+# model.eval()
+
+# Image preprocessing
+transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((28, 28)),
+    transforms.Grayscale(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+
+# Gesture classes
+gestures = ['Fist (0)', 'One finger (1)', 'Two fingers (2)', 
+            'Three fingers (3)', 'Four fingers (4)']
+
+# Start webcam
+cap = cv2.VideoCapture(0)
+print("Starting webcam... Press 'q' to quit")
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    # Flip frame for mirror effect
+    frame = cv2.flip(frame, 1)
+    
+    # Define ROI (Region of Interest) for hand
+    roi = frame[100:400, 100:400]
+    
+    # Preprocess ROI
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    # Threshold to isolate hand
+    _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+    
+    # Prepare for model (if model is loaded)
+    # input_tensor = transform(thresh).unsqueeze(0)
+    # with torch.no_grad():
+    #     output = model(input_tensor)
+    #     _, predicted = torch.max(output, 1)
+    #     gesture = gestures[predicted.item()]
+    
+    # Display
+    cv2.rectangle(frame, (100, 100), (400, 400), (0, 255, 0), 2)
+    cv2.imshow('Gesture Recognition', frame)
+    cv2.imshow('ROI', thresh)
+    
+    # Show prediction (placeholder)
+    # cv2.putText(frame, f'Gesture: {gesture}', (10, 50), 
+    #             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+print("Webcam closed")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l5_warn_title">️ Для полноценной работы нужно:</strong>
+            <span data-i18n="l5_warn_text">
+                1. Собрать датасет жестов (сфотографировать руку в 5 позициях)<br>
+                2. Обучить модель GestureCNN на этом датасете<br>
+                3. Сохранить веса: <code>torch.save(model.state_dict(), 'gesture_model.pth')</code><br>
+                4. Раскомментировать код предсказания в цикле
+            </span>
+        </div>
+
+        <h3 data-i18n="l5_github_title"> Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir cnn-gesture-recognition
+cd cnn-gesture-recognition
+
+mkdir src data models
+touch src/model.py
+touch src/train.py
+touch src/webcam.py
+touch requirements.txt
+touch README.md
+
+# 2. Install dependencies
+pip install torch torchvision opencv-python matplotlib
+
+# 3. requirements.txt
+torch==2.1.0
+torchvision==0.16.0
+opencv-python==4.8.0
+matplotlib==3.7.0
+
+# 4. Train the model first
+python src/train.py
+
+# 5. Test with webcam
+python src/webcam.py
+
+# 6. Commit and push to GitHub
+git add .
+git commit -m "Add CNN gesture recognition with webcam"
+git push origin main
+
+# 7. Record a demo video and add to README!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь GIF или видео демонстрации работы<br>
+                2. Покажи архитектуру сети и точность<br>
+                3. Опиши, как собрать свой датасет жестов<br>
+                4. Добавь скриншоты карт признаков (из уровня 4)
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(0, 200, 100, 0.1), rgba(255, 180, 0, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Computer Vision Engineer</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал систему распознавания жестов и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+600 XP · +250 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson3_5_cv_engineer" class="ach-btn" style="background: linear-gradient(135deg, #00c864, #ffb400);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 3% студентов создают работающие CV-проекты. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title"> Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Data Augmentation»</h3>
+            <p data-i18n="sq1_text">Добавь аугментацию данных в обучение CNN: случайные повороты, сдвиги, масштабирование. Это увеличит точность на 1-2%.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title"> Квест «Transfer Learning»</h3>
+            <p data-i18n="sq2_text">Используй предобученную модель ResNet18 из torchvision и дообучи её на датасете CIFAR-10 (10 классов объектов). Это называется fine-tuning.</p>
+            <div class="quest-reward" data-i18n="sq2_reward"> Награда: 200 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Object Detection»</h3>
+            <p data-i18n="sq3_text">Используй YOLOv5 или SSD для обнаружения объектов на изображении (не только классификация, но и bounding boxes). Протестируй на своих фото.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 400 AI-коинов + титул «Object Detection Master»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял, почему CNN лучше MLP для изображений</li>
+            <li data-i18n="sum2">✅ Освоил операцию свёртки и фильтры</li>
+            <li data-i18n="sum3">✅ Создал архитектуру CNN на PyTorch</li>
+            <li data-i18n="sum4">✅ Обучил CNN на MNIST с точностью 99%+</li>
+            <li data-i18n="sum5">✅ Визуализировал фильтры и карты признаков</li>
+            <li data-i18n="sum6">🏆 Финальный босс — система распознавания жестов через веб-камеру!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🎓</span>
+            <span data-i18n="sum_meme">Поздравляю, Computer Vision Engineer! Ты прошёл весь Модуль 3: от перцептрона до CNN. Теперь ты понимаешь, как работают нейросети изнутри и умеешь использовать профессиональные инструменты. В следующем модуле мы изучим генеративные модели и создадим свой ChatGPT! 🚀</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-3-4.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">3.4 PyTorch</span>
+        </a>
+        <a href="lesson-4-1.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий модуль →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">4.1 Генеративные модели</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 3.5 • МОДУЛЬ 3", title: "CNN и компьютерное зрение",
+            subtitle: "Добро пожаловать на Уровень 3.5! 👁️ Сегодня ты узнаешь, как нейросети 'видят' изображения. Свёрточные сети (CNN) — это основа современного компьютерного зрения: от распознавания лиц до автономных автомобилей!",
+            duration: " 4 часа", level: "📙 Продвинутый", xp: "⭐ +1500 XP", loot: "💰 +600 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: " Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🤔 Почему обычные сети не работают с изображениями?", l0_sub: "Проблема пространственной структуры", l0_xp: "+80 XP",
+            l0_p1: "Если подать изображение 28×28 пикселей в обычную нейросеть, нужно 'сплющить' его в вектор из 784 чисел. Но при этом теряется важная информация: соседние пиксели связаны! Глаз кошки не может быть в левом верхнем углу, а ухо — в правом нижнем. Пространственная структура критична.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты разбираешь пазл на отдельные кусочки и перемешиваешь их. Обычная нейросеть пытается угадать картинку по перемешанным кусочкам. CNN же смотрит на кусочки в их правильном порядке, находя паттерны: 'здесь всегда глаз, здесь — нос'.",
+            ach0_name: "Ачивка: Аналитик проблем", ach0_desc: "Понял, почему MLP не подходит для изображений", ach0_reward: "+80 XP · +30 💰 ·  Обычная", ach0_btn: " Получить ачивку", ach0_hint: "Нажми, если понял проблему пространственной структуры!",
+            l1_title: "🔍 Что такое свёртка?", l1_sub: "Фильтры и ядра (kernels)", l1_xp: "+150 XP",
+            l1_p1: "Свёртка — это операция применения фильтра (или ядра) к изображению. Фильтр — это маленькая матрица (обычно 3×3 или 5×5), которая 'скользит' по изображению и вычисляет взвешенную сумму пикселей. Разные фильтры находят разные паттерны: горизонтальные линии, вертикальные линии, углы, текстуры.",
+            l1_code_title: "📝 Визуализация свёртки",
+            l1_lore_title: "📚 Как это работает?", l1_lore_text: "Фильтр 'скользит' по изображению с шагом 1 пиксель (stride=1). В каждой позиции он умножает свои веса на соответствующие пиксели и суммирует результат. Если паттерн совпадает (например, вертикальная линия), получается большое число. Если нет — близкое к нулю.",
+            ach1_name: "Ачивка: Исследователь свёрток", ach1_desc: "Понял и реализовал операцию свёртки", ach1_reward: "+150 XP · +50 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если увидел обнаруженные края!",
+            l2_title: "🏗️ Архитектура CNN", l2_sub: "Conv → ReLU → Pool → FC", l2_xp: "+200 XP",
+            l2_p1: "Типичная CNN состоит из чередующихся слоёв: свёрточные слои (извлекают признаки), слои подвыборки (уменьшают размерность), и в конце полносвязные слои (классифицируют). Это как конвейер: сырое изображение → края → текстуры → части объектов → целые объекты → класс.",
+            l2_code_title: "📝 CNN на PyTorch для MNIST",
+            l2_tip_title: "💡 Ключевые параметры", l2_tip_text: "kernel_size=3: размер фильтра 3×3<br>padding=1: добавляет рамку нулей, чтобы размер не менялся<br>MaxPool2d(2,2): берёт максимум из каждого 2×2 блока, уменьшая размер вдвое<br>dropout=0.5: случайно 'выключает' 50% нейронов для предотвращения переобучения",
+            ach2_name: "Ачивка: Архитектор CNN", ach2_desc: "Создал свёрточную нейросеть на PyTorch", ach2_reward: "+200 XP · +70 💰 · 🟣 Эпическая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел архитектуру и количество параметров!",
+            l3_title: "🔄 Обучение CNN на MNIST", l3_sub: "Достигаем 99% точности", l3_xp: "+300 XP",
+            l3_p1: "Теперь обучим нашу CNN на MNIST. Благодаря свёрточным слоям, точность должна быть выше 99% — значительно лучше, чем 95% у обычной сети из урока 3.4!",
+            l3_code_title: "📝 Полный цикл обучения CNN",
+            l3_meme: "CNN достигает 99%+ точности на MNIST всего за 10 эпох! Обычная сеть из урока 3.4 давала ~95%. Разница в 4% кажется небольшой, но это означает в 4 раза меньше ошибок на 70,000 изображений!",
+            ach3_name: "Ачивка: Тренер CNN", ach3_desc: "Обучил CNN на MNIST с точностью 99%+", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если точность выше 99%!",
+            l4_title: "👁️ Визуализация фильтров", l4_sub: "Что научилась видеть сеть?", l4_xp: "+250 XP",
+            l4_p1: "Самое интересное в CNN — можно посмотреть, какие паттерны научились распознавать фильтры! Первые слои обычно находят простые вещи (края, углы), а глубокие слои — сложные (части объектов, целые объекты).",
+            l4_code_title: " Визуализация весов свёрточных слоёв",
+            l4_tip_title: "💡 Что мы видим?", l4_tip_text: "Фильтры (первый график): каждый фильтр — это маленький паттерн, который сеть ищет в изображении. Некоторые похожи на детекторы горизонтальных линий, другие — вертикальных или диагональных.<br><br>Карты признаков (второй график): показывают, где в изображении найден каждый паттерн. Яркие области — где фильтр 'сработал'.",
+            ach4_name: "Ачивка: Визуализатор фильтров", ach4_desc: "Визуализировал фильтры и карты признаков CNN", ach4_reward: "+250 XP · +80 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел паттерны в фильтрах!",
+            l5_title: "БОСС-ФАЙТ: Распознавание жестов через веб-камеру", l5_sub: "Real-time компьютерное зрение", l5_xp: "+600 XP",
+            l5_meme: "Пришло время самого крутого проекта! Мы создадим систему распознавания жестов рук в реальном времени через веб-камеру. Это основа технологий управления жестами в VR/AR!",
+            l5_code_title: "📝 Распознавание жестов с OpenCV и CNN",
+            l5_warn_title: "⚠️ Для полноценной работы нужно:", l5_warn_text: "1. Собрать датасет жестов (сфотографировать руку в 5 позициях)<br>2. Обучить модель GestureCNN на этом датасете<br>3. Сохранить веса: torch.save(model.state_dict(), 'gesture_model.pth')<br>4. Раскомментировать код предсказания в цикле",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь GIF или видео демонстрации работы<br>2. Покажи архитектуру сети и точность<br>3. Опиши, как собрать свой датасет жестов<br>4. Добавь скриншоты карт признаков (из уровня 4)",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Computer Vision Engineer", ach5_desc: "Создал систему распознавания жестов и опубликовал на GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 3% студентов создают работающие CV-проекты. Ты — элита!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Data Augmentation»", sq1_text: "Добавь аугментацию данных в обучение CNN: случайные повороты, сдвиги, масштабирование. Это увеличит точность на 1-2%.", sq1_reward: "💰 Награда: 100 AI-коинов",
+            sq2_title: " Квест «Transfer Learning»", sq2_text: "Используй предобученную модель ResNet18 из torchvision и дообучи её на датасете CIFAR-10 (10 классов объектов). Это называется fine-tuning.", sq2_reward: "💰 Награда: 200 AI-коинов",
+            sq3_title: " Квест «Object Detection»", sq3_text: "Используй YOLOv5 или SSD для обнаружения объектов на изображении (не только классификация, но и bounding boxes). Протестируй на своих фото.", sq3_reward: "💰 Награда: 400 AI-коинов + титул «Object Detection Master»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял, почему CNN лучше MLP для изображений", sum2: "✅ Освоил операцию свёртки и фильтры",
+            sum3: "✅ Создал архитектуру CNN на PyTorch", sum4: "✅ Обучил CNN на MNIST с точностью 99%+",
+            sum5: "✅ Визуализировал фильтры и карты признаков", sum6: "🏆 Финальный босс — система распознавания жестов через веб-камеру!",
+            sum_meme: "Поздравляю, Computer Vision Engineer! Ты прошёл весь Модуль 3: от перцептрона до CNN. Теперь ты понимаешь, как работают нейросети изнутри и умеешь использовать профессиональные инструменты. В следующем модуле мы изучим генеративные модели и создадим свой ChatGPT! 🚀",
+            nav_back: "← Предыдущий квест", nav_back_title: "3.4 PyTorch",
+            nav_next: "Следующий модуль →", nav_next_title: "4.1 Генеративные модели",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 3.5 • MODULE 3", title: "CNN and Computer Vision",
+            subtitle: "Welcome to Level 3.5! 👁️ Today you'll learn how neural networks 'see' images. Convolutional Neural Networks (CNN) are the foundation of modern computer vision: from face recognition to autonomous cars!",
+            duration: "⏱ 4 hours", level: "📙 Advanced", xp: "⭐ +1500 XP", loot: " +600 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🤔 Why don't regular networks work with images?", l0_sub: "The spatial structure problem", l0_xp: "+80 XP",
+            l0_p1: "If you feed a 28×28 pixel image into a regular neural network, you need to 'flatten' it into a vector of 784 numbers. But this loses important information: neighboring pixels are connected! A cat's eye can't be in the top-left corner while the ear is in the bottom-right. Spatial structure is critical.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you take apart a puzzle into individual pieces and shuffle them. A regular neural network tries to guess the picture from shuffled pieces. CNN looks at pieces in their correct order, finding patterns: 'eye is always here, nose is here'.",
+            ach0_name: "Achievement: Problem Analyst", ach0_desc: "Understood why MLP doesn't work for images", ach0_reward: "+80 XP · +30 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the spatial structure problem!",
+            l1_title: "🔍 What is convolution?", l1_sub: "Filters and kernels", l1_xp: "+150 XP",
+            l1_p1: "Convolution is the operation of applying a filter (or kernel) to an image. A filter is a small matrix (usually 3×3 or 5×5) that 'slides' over the image and computes weighted sum of pixels. Different filters find different patterns: horizontal lines, vertical lines, corners, textures.",
+            l1_code_title: "📝 Convolution visualization",
+            l1_lore_title: "📚 How does it work?", l1_lore_text: "The filter 'slides' over the image with stride=1 pixel. At each position, it multiplies its weights by corresponding pixels and sums the result. If the pattern matches (e.g., vertical line), you get a large number. If not — close to zero.",
+            ach1_name: "Achievement: Convolution Explorer", ach1_desc: "Understood and implemented convolution operation", ach1_reward: "+150 XP · +50 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you saw detected edges!",
+            l2_title: "🏗️ CNN Architecture", l2_sub: "Conv → ReLU → Pool → FC", l2_xp: "+200 XP",
+            l2_p1: "A typical CNN consists of alternating layers: convolutional layers (extract features), pooling layers (reduce dimensionality), and finally fully connected layers (classify). It's like a conveyor belt: raw image → edges → textures → object parts → whole objects → class.",
+            l2_code_title: " CNN in PyTorch for MNIST",
+            l2_tip_title: "💡 Key parameters", l2_tip_text: "kernel_size=3: 3×3 filter size<br>padding=1: adds zero border to keep size<br>MaxPool2d(2,2): takes max from each 2×2 block, halving size<br>dropout=0.5: randomly 'turns off' 50% of neurons to prevent overfitting",
+            ach2_name: "Achievement: CNN Architect", ach2_desc: "Created convolutional neural network in PyTorch", ach2_reward: "+200 XP · +70 💰 · 🟣 Epic", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw the architecture and parameter count!",
+            l3_title: "🔄 Training CNN on MNIST", l3_sub: "Achieving 99% accuracy", l3_xp: "+300 XP",
+            l3_p1: "Now let's train our CNN on MNIST. Thanks to convolutional layers, accuracy should be above 99% — significantly better than 95% from the regular network in lesson 3.4!",
+            l3_code_title: "📝 Full CNN training loop",
+            l3_meme: "CNN achieves 99%+ accuracy on MNIST in just 10 epochs! The regular network from lesson 3.4 gave ~95%. The 4% difference seems small, but it means 4x fewer errors on 70,000 images!",
+            ach3_name: "Achievement: CNN Trainer", ach3_desc: "Trained CNN on MNIST with 99%+ accuracy", ach3_reward: "+300 XP · +100 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if accuracy is above 99%!",
+            l4_title: "👁️ Filter visualization", l4_sub: "What did the network learn to see?", l4_xp: "+250 XP",
+            l4_p1: "The most interesting thing about CNN is that you can see what patterns the filters learned to recognize! Early layers usually find simple things (edges, corners), while deep layers find complex ones (object parts, whole objects).",
+            l4_code_title: "📝 Visualizing convolutional layer weights",
+            l4_tip_title: "💡 What do we see?", l4_tip_text: "Filters (first graph): each filter is a small pattern the network searches for in the image. Some look like horizontal line detectors, others — vertical or diagonal.<br><br>Feature maps (second graph): show where in the image each pattern was found. Bright areas are where the filter 'fired'.",
+            ach4_name: "Achievement: Filter Visualizer", ach4_desc: "Visualized CNN filters and feature maps", ach4_reward: "+250 XP · +80 💰 ·  Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you saw patterns in filters!",
+            l5_title: "BOSS FIGHT: Gesture recognition via webcam", l5_sub: "Real-time computer vision", l5_xp: "+600 XP",
+            l5_meme: "Time for the coolest project! We'll create a real-time hand gesture recognition system via webcam. This is the foundation of gesture control technologies in VR/AR!",
+            l5_code_title: "📝 Gesture recognition with OpenCV and CNN",
+            l5_warn_title: "⚠️ For full functionality you need:", l5_warn_text: "1. Collect gesture dataset (photograph hand in 5 positions)<br>2. Train GestureCNN model on this dataset<br>3. Save weights: torch.save(model.state_dict(), 'gesture_model.pth')<br>4. Uncomment prediction code in the loop",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add GIF or video demo of working system<br>2. Show network architecture and accuracy<br>3. Describe how to collect your own gesture dataset<br>4. Add feature map screenshots (from level 4)",
+            ach5_name: "LEGENDARY: Computer Vision Engineer", ach5_desc: "Created gesture recognition system and published on GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 3% of students create working CV projects. You're elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: " HARD",
+            sq1_title: " Quest «Data Augmentation»", sq1_text: "Add data augmentation to CNN training: random rotations, shifts, scaling. This will increase accuracy by 1-2%.", sq1_reward: "💰 Reward: 100 AI-coins",
+            sq2_title: "⚡ Quest «Transfer Learning»", sq2_text: "Use pre-trained ResNet18 model from torchvision and fine-tune it on CIFAR-10 dataset (10 object classes).", sq2_reward: "💰 Reward: 200 AI-coins",
+            sq3_title: "🎨 Quest «Object Detection»", sq3_text: "Use YOLOv5 or SSD for object detection in images (not just classification, but bounding boxes). Test on your photos.", sq3_reward: "💰 Reward: 400 AI-coins + title «Object Detection Master»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood why CNN is better than MLP for images", sum2: "✅ Mastered convolution operation and filters",
+            sum3: "✅ Created CNN architecture in PyTorch", sum4: "✅ Trained CNN on MNIST with 99%+ accuracy",
+            sum5: "✅ Visualized filters and feature maps", sum6: "🏆 Final boss — gesture recognition system via webcam!",
+            sum_meme: "Congrats, Computer Vision Engineer! You've completed Module 3: from perceptron to CNN. Now you understand how neural networks work from the inside and can use professional tools. In the next module, we'll study generative models and create our own ChatGPT! 🚀",
+            nav_back: "← Previous quest", nav_back_title: "3.4 PyTorch",
+            nav_next: "Next module →", nav_next_title: "4.1 Generative Models",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 3.5 • MÓDULO 3", title: "CNN y Visión por Computadora", subtitle: "¡Bienvenido al Nivel 3.5! 👁️ Hoy aprenderás cómo las redes neuronales 'ven' imágenes.", duration: "⏱ 4 horas", level: "📙 Avanzado", xp: "⭐ +1500 XP", loot: "💰 +600 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🤔 ¿Por qué las redes normales no funcionan con imágenes?", l0_sub: "El problema de la estructura espacial", l0_xp: "+80 XP", l0_p1: "Si alimentas una imagen de 28×28 píxeles en una red normal, necesitas 'aplanarla' en un vector de 784 números. Pero esto pierde información importante.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que desarmas un rompecabezas y mezclas las piezas. Una red normal intenta adivinar la imagen desde piezas mezcladas. CNN mira las piezas en su orden correcto.", ach0_name: "Logro: Analista de problemas", ach0_desc: "Entendió por qué MLP no funciona para imágenes", ach0_reward: "+80 XP · +30  · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste el problema de estructura espacial!", l1_title: "🔍 ¿Qué es convolución?", l1_sub: "Filtros y kernels", l1_xp: "+150 XP", l1_p1: "Convolución es la operación de aplicar un filtro a una imagen. Un filtro es una pequeña matriz que 'se desliza' sobre la imagen.", l1_code_title: "📝 Visualización de convolución", l1_lore_title: " ¿Cómo funciona?", l1_lore_text: "El filtro se desliza sobre la imagen con stride=1. En cada posición, multiplica sus pesos por píxeles correspondientes y suma el resultado.", ach1_name: "Logro: Explorador de convoluciones", ach1_desc: "Entendió e implementó operación de convolución", ach1_reward: "+150 XP · +50 💰 · 🔵 Raro", ach1_btn: " Obtener logro", ach1_hint: "¡Haz clic si viste bordes detectados!", l2_title: "🏗️ Arquitectura CNN", l2_sub: "Conv → ReLU → Pool → FC", l2_xp: "+200 XP", l2_p1: "Una CNN típica consiste en capas alternantes: convolucionales, de pooling y totalmente conectadas.", l2_code_title: "📝 CNN en PyTorch para MNIST", l2_tip_title: "💡 Parámetros clave", l2_tip_text: "kernel_size=3: tamaño de filtro 3×3<br>padding=1: añade borde de ceros<br>MaxPool2d(2,2): toma máximo de cada bloque 2×2<br>dropout=0.5: apaga aleatoriamente 50% de neuronas", ach2_name: "Logro: Arquitecto CNN", ach2_desc: "Creó red neuronal convolucional en PyTorch", ach2_reward: "+200 XP · +70 💰 · 🟣 Épico", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste la arquitectura!", l3_title: "🔄 Entrenando CNN en MNIST", l3_sub: "Alcanzando 99% de precisión", l3_xp: "+300 XP", l3_p1: "Ahora entrenemos nuestra CNN en MNIST. Gracias a las capas convolucionales, la precisión debe ser superior al 99%.", l3_code_title: "📝 Ciclo completo de entrenamiento CNN", l3_meme: "¡CNN alcanza 99%+ de precisión en MNIST en solo 10 épocas! La red normal del lesson 3.4 daba ~95%.", ach3_name: "Logro: Entrenador CNN", ach3_desc: "Entrenó CNN en MNIST con 99%+ de precisión", ach3_reward: "+300 XP · +100 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si la precisión es superior al 99%!", l4_title: "👁️ Visualización de filtros", l4_sub: "¿Qué aprendió a ver la red?", l4_xp: "+250 XP", l4_p1: "¡Lo más interesante de CNN es que puedes ver qué patrones aprendieron a reconocer los filtros!", l4_code_title: "📝 Visualizando pesos de capas convolucionales", l4_tip_title: "💡 ¿Qué vemos?", l4_tip_text: "Filtros (primer gráfico): cada filtro es un pequeño patrón que la red busca en la imagen.<br><br>Mapas de características (segundo gráfico): muestran dónde en la imagen se encontró cada patrón.", ach4_name: "Logro: Visualizador de filtros", ach4_desc: "Visualizó filtros y mapas de características CNN", ach4_reward: "+250 XP · +80  · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste patrones en filtros!", l5_title: "¡PELEA JEFE: Reconocimiento de gestos vía webcam!", l5_sub: "Visión por computadora en tiempo real", l5_xp: "+600 XP", l5_meme: "¡Tiempo para el proyecto más genial! Crearemos un sistema de reconocimiento de gestos de manos en tiempo real vía webcam.", l5_code_title: "📝 Reconocimiento de gestos con OpenCV y CNN", l5_warn_title: "⚠️ Para funcionalidad completa necesitas:", l5_warn_text: "1. Recopilar dataset de gestos<br>2. Entrenar modelo GestureCNN<br>3. Guardar pesos<br>4. Descomentar código de predicción", l5_github_title: " Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade GIF o video demo<br>2. Muestra arquitectura y precisión<br>3. Describe cómo recopilar dataset<br>4. Añade capturas de mapas de características", ach5_name: "LEGENDARIO: Ingeniero de Visión por Computadora", ach5_desc: "Creó sistema de reconocimiento de gestos y publicó en GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendario", ach5_btn: " Obtener logro legendario", ach5_hint: "¡Solo el 3% crea proyectos CV funcionales. Eres élite!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Data Augmentation»", sq1_text: "Añade aumento de datos al entrenamiento CNN.", sq1_reward: "💰 Recompensa: 100 AI-monedas", sq2_title: "⚡ Misión «Transfer Learning»", sq2_text: "Usa modelo pre-entrenado ResNet18 y ajústalo en CIFAR-10.", sq2_reward: "💰 Recompensa: 200 AI-monedas", sq3_title: "🎨 Misión «Detección de objetos»", sq3_text: "Usa YOLOv5 o SSD para detección de objetos en imágenes.", sq3_reward: "💰 Recompensa: 400 AI-monedas + título «Object Detection Master»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste por qué CNN es mejor que MLP", sum2: "✅ Dominaste convolución y filtros", sum3: "✅ Creaste arquitectura CNN en PyTorch", sum4: "✅ Entrenaste CNN en MNIST con 99%+", sum5: "✅ Visualizaste filtros y mapas", sum6: "🏆 ¡Jefe final: reconocimiento de gestos!", sum_meme: "¡Felicidades, Ingeniero de Visión por Computadora! Completaste Módulo 3.", nav_back: "← Misión anterior", nav_back_title: "3.4 PyTorch", nav_next: "Siguiente módulo →", nav_next_title: "4.1 Modelos Generativos", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 3.5 • MODUL 3", title: "CNN und Computer Vision", subtitle: "Willkommen auf Level 3.5! 👁️ Heute lernst du, wie neuronale Netze Bilder 'sehen'.", duration: " 4 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1500 XP", loot: " +600 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🤔 Warum funktionieren normale Netze nicht mit Bildern?", l0_sub: "Das räumliche Strukturproblem", l0_xp: "+80 XP", l0_p1: "Wenn du ein 28×28 Pixel-Bild in ein normales Netz gibst, musst du es in einen 784er-Vektor 'flatten'. Dabei geht wichtige Information verloren.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir vor, du zerlegst ein Puzzle und mischst die Teile. Ein normales Netz versucht, das Bild aus gemischten Teilen zu erraten. CNN betrachtet Teile in richtiger Reihenfolge.", ach0_name: "Erfolg: Problem-Analyst", ach0_desc: "Verstand, warum MLP nicht für Bilder funktioniert", ach0_reward: "+80 XP · +30 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du das Strukturproblem verstanden hast!", l1_title: "🔍 Was ist Faltung?", l1_sub: "Filter und Kernel", l1_xp: "+150 XP", l1_p1: "Faltung ist die Operation, einen Filter auf ein Bild anzuwenden. Ein Filter ist eine kleine Matrix, die über das Bild 'gleitet'.", l1_code_title: "📝 Faltungsvisualisierung", l1_lore_title: "📚 Wie funktioniert das?", l1_lore_text: "Der Filter gleitet mit stride=1 über das Bild. An jeder Position multipliziert er Gewichte mit entsprechenden Pixeln und summiert.", ach1_name: "Erfolg: Faltungs-Explorer", ach1_desc: "Verstand und implementierte Faltungsoperation", ach1_reward: "+150 XP · +50 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du erkannte Kanten sahst!", l2_title: "️ CNN-Architektur", l2_sub: "Conv → ReLU → Pool → FC", l2_xp: "+200 XP", l2_p1: "Ein typisches CNN besteht aus abwechselnden Schichten: Faltungsschichten, Pooling-Schichten und vollverbundene Schichten.", l2_code_title: "📝 CNN in PyTorch für MNIST", l2_tip_title: "💡 Wichtige Parameter", l2_tip_text: "kernel_size=3: 3×3 Filtergröße<br>padding=1: fügt Nullrand hinzu<br>MaxPool2d(2,2): nimmt Maximum aus jedem 2×2-Block<br>dropout=0.5: schaltet zufällig 50% der Neuronen aus", ach2_name: "Erfolg: CNN-Architekt", ach2_desc: "Erstellte Faltungsnetz in PyTorch", ach2_reward: "+200 XP · +70 💰 · 🟣 Episch", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du die Architektur sahst!", l3_title: "🔄 CNN auf MNIST trainieren", l3_sub: "99% Genauigkeit erreichen", l3_xp: "+300 XP", l3_p1: "Jetzt trainieren wir unsere CNN auf MNIST. Dank Faltungsschichten sollte die Genauigkeit über 99% liegen.", l3_code_title: "📝 Vollständiger CNN-Trainingsloop", l3_meme: "CNN erreicht 99%+ Genauigkeit auf MNIST in nur 10 Epochen! Das normale Netz aus Lektion 3.4 gab ~95%.", ach3_name: "Erfolg: CNN-Trainer", ach3_desc: "Trainierte CNN auf MNIST mit 99%+ Genauigkeit", ach3_reward: "+300 XP · +100 💰 ·  Episch", ach3_btn: " Erfolg erhalten", ach3_hint: "Klicke, wenn Genauigkeit über 99% ist!", l4_title: "👁️ Filtervisualisierung", l4_sub: "Was hat das Netz sehen gelernt?", l4_xp: "+250 XP", l4_p1: "Das Interessanteste an CNN ist, dass du sehen kannst, welche Muster die Filter erkennen lernten!", l4_code_title: "📝 Visualisierung von Faltungsschicht-Gewichten", l4_tip_title: "💡 Was sehen wir?", l4_tip_text: "Filter (erster Graph): jeder Filter ist ein kleines Muster, das das Netz im Bild sucht.<br><br>Feature Maps (zweiter Graph): zeigen, wo im Bild jedes Muster gefunden wurde.", ach4_name: "Erfolg: Filter-Visualisierer", ach4_desc: "Visualisierte CNN-Filter und Feature Maps", ach4_reward: "+250 XP · +80 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du Muster in Filtern sahst!", l5_title: "BOSSKAMPF: Gestenerkennung via Webcam", l5_sub: "Echtzeit-Computer-Vision", l5_xp: "+600 XP", l5_meme: "Zeit für das coolste Projekt! Wir erstellen ein Echtzeit-Handgesten-Erkennungssystem via Webcam.", l5_code_title: "📝 Gestenerkennung mit OpenCV und CNN", l5_warn_title: "⚠️ Für volle Funktionalität brauchst du:", l5_warn_text: "1. Gesten-Dataset sammeln<br>2. GestureCNN-Modell trainieren<br>3. Gewichte speichern<br>4. Vorhersagecode einkommentieren", l5_github_title: "🚀 Projektveröffentlichungsanweisungen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Füge GIF oder Video-Demo hinzu<br>2. Zeige Architektur und Genauigkeit<br>3. Beschreibe Dataset-Sammlung<br>4. Füge Feature-Map-Screenshots hinzu", ach5_name: "LEGENDÄR: Computer Vision-Ingenieur", ach5_desc: "Erstellte Gestenerkennungssystem und veröffentlichte auf GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 3% erstellen funktionierende CV-Projekte. Du bist Elite!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: " SCHWER", sq1_title: " Quest «Data Augmentation»", sq1_text: "Füge Datenaugmentierung zum CNN-Training hinzu.", sq1_reward: "💰 Belohnung: 100 AI-Münzen", sq2_title: "⚡ Quest «Transfer Learning»", sq2_text: "Verwende vortrainiertes ResNet18 und fine-tune auf CIFAR-10.", sq2_reward: "💰 Belohnung: 200 AI-Münzen", sq3_title: "🎨 Quest «Objekterkennung»", sq3_text: "Verwende YOLOv5 oder SSD für Objekterkennung in Bildern.", sq3_reward: "💰 Belohnung: 400 AI-Münzen + Titel «Object Detection Master»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Verstanden, warum CNN besser als MLP ist", sum2: "✅ Faltung und Filter gemeistert", sum3: "✅ CNN-Architektur in PyTorch erstellt", sum4: "✅ CNN auf MNIST mit 99%+ trainiert", sum5: "✅ Filter und Feature Maps visualisiert", sum6: "🏆 Endboss: Gestenerkennung via Webcam!", sum_meme: "Glückwunsch, Computer Vision-Ingenieur! Du hast Modul 3 abgeschlossen.", nav_back: "← Vorheriger Quest", nav_back_title: "3.4 PyTorch", nav_next: "Nächstes Modul →", nav_next_title: "4.1 Generative Modelle", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 3.5 • 3-МОДУЛЬ", title: "CNN және компьютерлік көру", subtitle: "3.5 деңгейге қош келдің! 👁️ Бүгін нейрондық желілердің суреттерді қалай 'көретінін' білесің.", duration: " 4 сағат", level: " Озық", xp: "⭐ +1500 XP", loot: "💰 +600 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🤔 Неліктен қалыпты желілер суреттермен жұмыс істемейді?", l0_sub: "Кеңістіктік құрылым мәселесі", l0_xp: "+80 XP", l0_p1: "Егер 28×28 пиксель суретті қалыпты желіге берсең, оны 784 сандар векторына 'тегістеу' керек. Бірақ бұл маңызды ақпаратты жоғалтады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Пазлды бөлшектеп, араластырдың деп елестет. Қалыпты желі аралас бөлшектерден суретті болжайды. CNN бөлшектерді дұрыс ретпен қарайды.", ach0_name: "Жетістік: Мәселе талдаушысы", ach0_desc: "MLP-нің суреттер үшін неге жұмыс істемейтінін түсінді", ach0_reward: "+80 XP · +30 💰 ·  Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Құрылым мәселесін түсінсең — бас!", l1_title: "🔍 Конволюция деген не?", l1_sub: "Фильтрлер және ядролар", l1_xp: "+150 XP", l1_p1: "Конволюция — суретке фильтр қолдану операциясы. Фильтр — сурет бойымен 'сырғитын' кішкентай матрица.", l1_code_title: "📝 Конволюцияны визуализациялау", l1_lore_title: "📚 Бұл қалай жұмыс істейді?", l1_lore_text: "Фильтр stride=1 пиксельмен сурет бойымен сырғиды. Әр позицияда салмақтарды сәйкес пиксельдерге көбейтіп, қосындылайды.", ach1_name: "Жетістік: Конволюция зерттеушісі", ach1_desc: "Конволюция операциясын түсінді және іске асырды", ach1_reward: "+150 XP · +50 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Анықталған шеттерді көрсең — бас!", l2_title: "🏗️ CNN архитектурасы", l2_sub: "Conv → ReLU → Pool → FC", l2_xp: "+200 XP", l2_p1: "Типтік CNN ауыспалы қабаттардан тұрады: конволюциялық, pooling және толық байланысқан.", l2_code_title: "📝 MNIST үшін PyTorch-та CNN", l2_tip_title: "💡 Негізгі параметрлер", l2_tip_text: "kernel_size=3: 3×3 фильтр өлшемі<br>padding=1: нөлдік жиек қосады<br>MaxPool2d(2,2): әр 2×2 блоктан максимум алады<br>dropout=0.5: нейрондардың 50% кездейсоқ өшіреді", ach2_name: "Жетістік: CNN сәулетшісі", ach2_desc: "PyTorch-та конволюциялық желі жасады", ach2_reward: "+200 XP · +70 💰 ·  Эпикалық", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Архитектураны көрсең — бас!", l3_title: " MNIST-те CNN оқыту", l3_sub: "99% дәлдікке жету", l3_xp: "+300 XP", l3_p1: "Енді CNN-ді MNIST-те оқытайық. Конволюциялық қабаттардың арқасында дәлдік 99%-дан жоғары болуы керек.", l3_code_title: "📝 Толық CNN оқыту циклі", l3_meme: "CNN MNIST-те 10 эпохада 99%+ дәлдікке жетеді! 3.4 сабақтағы қалыпты желі ~95% берді.", ach3_name: "Жетістік: CNN жаттықтырушысы", ach3_desc: "MNIST-те 99%+ дәлдікпен CNN оқытты", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Дәлдік 99%-дан жоғары болса — бас!", l4_title: "👁️ Фильтрлерді визуализациялау", l4_sub: "Желі не көруді үйренді?", l4_xp: "+250 XP", l4_p1: "CNN-дегі ең қызығы — фильтрлердің қандай үлгілерді тануды үйренгенін көре аласың!", l4_code_title: "📝 Конволюциялық қабат салмақтарын визуализациялау", l4_tip_title: "💡 Біз не көреміз?", l4_tip_text: "Фильтрлер (бірінші график): әр фильтр — желі суреттен іздейтін кішкентай үлгі.<br><br>Ерекшелік карталары (екінші график): суретте әр үлгінің қайда табылғанын көрсетеді.", ach4_name: "Жетістік: Фильтр визуализаторы", ach4_desc: "CNN фильтрлері мен ерекшелік карталарын визуализациялады", ach4_reward: "+250 XP · +80 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Фильтрлерде үлгілерді көрсең — бас!", l5_title: "БОСС-ФАЙТ: Веб-камера арқылы ымдау тану", l5_sub: "Нақты уақыттағы компьютерлік көру", l5_xp: "+600 XP", l5_meme: "Ең керемет жоба уақыты келді! Веб-камера арқылы нақты уақытта қол ымдау тану жүйесін жасаймыз.", l5_code_title: " OpenCV және CNN-мен ымдау тану", l5_warn_title: "️ Толық функционалдылық үшін қажет:", l5_warn_text: "1. мдау деректер жиынтығын жинау<br>2. GestureCNN моделін оқыту<br>3. Салмақтарды сақтау<br>4. Болжау кодын ашу", l5_github_title: "🚀 Жобаны жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. GIF немесе видео демо қос<br>2. Архитектура мен дәлдікті көрсет<br>3. Деректер жиынтығын жинауды сипатта<br>4. Ерекшелік карталары скриншоттарын қос", ach5_name: "АҢЫЗДЫҚ: Компьютерлік көру инженері", ach5_desc: "Ымдау тану жүйесін жасады және GitHub-та жариялады", ach5_reward: "+600 XP · +250 💰 ·  Аңыздық", ach5_btn: " Аңыздық жетістікті алу", ach5_hint: "Тек 3% студенттер жұмыс істейтін CV жобаларын жасайды. Сен элитасы!", sq_title: " Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Data Augmentation»", sq1_text: "CNN оқытуына деректерді ұлғайтуды қос.", sq1_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq2_title: "⚡ Квест «Transfer Learning»", sq2_text: "Алдын ала оқытылған ResNet18 қолдан және CIFAR-10-да fine-tune жаса.", sq2_reward: "💰 Сыйлық: 200 ЖИ-теңге", sq3_title: "🎨 Квест «Объектіні анықтау»", sq3_text: "Суреттерде объектілерді анықтау үшін YOLOv5 немесе SSD қолдан.", sq3_reward: "💰 Сыйлық: 400 ЖИ-теңге + «Object Detection Master» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ CNN-нің MLP-ден неге жақсы екенін түсіндің", sum2: "✅ Конволюция мен фильтрлерді игердің", sum3: "✅ PyTorch-та CNN архитектурасын жасадың", sum4: "✅ MNIST-те 99%+ дәлдікпен CNN оқыттың", sum5: "✅ Фильтрлер мен карталарды визуализацияладың", sum6: "🏆 Финалды босс — веб-камера арқылы ымдау тану!", sum_meme: "Құттықтаймын, Компьютерлік көру инженері! 3-модульді аяқтадың.", nav_back: "← Алдыңғы квест", nav_back_title: "3.4 PyTorch", nav_next: "Келесі модуль →", nav_next_title: "4.1 Генеративті модельдер", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
