@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 4.1: Transfer Learning — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(168, 85, 247, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(168, 85, 247, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #a855f7, #ec4899); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #a855f7, #ec4899); }
+        .level.boss::before { background: linear-gradient(90deg, #f59e0b, #ec4899); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #f59e0b, #ec4899); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); } 50% { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #ec4899; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1)); border: 2px dashed rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #d8b4fe; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(168, 85, 247, 0.08); border-color: #a855f7; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #a855f7; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(168, 85, 247, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #ec4899; background: rgba(236, 72, 153, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #ec4899; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(236, 72, 153, 0.08)); border: 2px solid rgba(168, 85, 247, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #a855f7; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(168, 85, 247, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(168, 85, 247, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-color: #ec4899; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(168, 85, 247, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 4.1 • МОДУЛЬ 4</span>
+        <h1 data-i18n="title">Transfer Learning: Обучение у мастеров</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать в Модуль 4!  Сегодня ты узнаешь главный секрет индустрии: не обучай нейросеть с нуля! Используй предобученные модели и адаптируй их под свою задачу за минуты вместо дней.</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1200 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +500 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Why Transfer Learning? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Зачем изобретать велосипед?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Проблема обучения с нуля</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Обучение CNN с нуля требует <strong>миллионов изображений</strong> и <strong>дней вычислений</strong> на мощных GPU. У тебя есть 100 фото твоих котов? Этого недостаточно. Но что если взять модель, которая уже научилась распознавать 1000 классов объектов на ImageNet (1.2 миллиона изображений), и просто "дообучить" её на твоих котах?</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎓</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты хочешь научиться играть на гитаре. Можно начать с нуля: учить ноты, аккорды, технику (годы практики). А можно взять мастера, который уже всё умеет, и попросить его показать специфические приёмы для твоего стиля (недели практики). Transfer Learning — это обучение у мастера!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach0_name">Ачивка: Мудрый ученик</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял преимущества Transfer Learning перед обучением с нуля</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+80 XP · +30 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson4_1_wise_student" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял аналогию с обучением у мастера!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Pre-trained Models -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🏆 Предобученные модели в torchvision</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">ResNet, VGG, EfficientNet и другие</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">PyTorch предоставляет доступ к десяткам предобученных моделей через <code>torchvision.models</code>. Самые популярные: <strong>ResNet</strong> (остаточные связи), <strong>VGG</strong> (простая архитектура), <strong>EfficientNet</strong> (оптимальный баланс точности и скорости). Все они обучены на ImageNet — огромном датасете из 1.2 миллиона изображений.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Загрузка предобученной модели</h3>
+        <pre><code>import torch
+import torchvision.models as models
+
+# Load pre-trained ResNet18 (trained on ImageNet)
+resnet18 = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+# Print model architecture
+print("ResNet18 Architecture:")
+print(resnet18)
+
+# Check number of parameters
+total_params = sum(p.numel() for p in resnet18.parameters())
+print(f"\nTotal parameters: {total_params:,}")
+
+# The last layer is the classifier (1000 classes for ImageNet)
+print(f"\nOriginal classifier: {resnet18.fc}")
+print(f"Input features: {resnet18.fc.in_features}")
+print(f"Output classes: {resnet18.fc.out_features}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l1_lore_title"> Что такое ImageNet?</strong>
+            <span data-i18n="l1_lore_text">ImageNet — это датасет из 1.2 миллиона изображений в 1000 категориях (собаки, кошки, машины, еда и т.д.). Модели, обученные на ImageNet, научились распознавать общие паттерны: края, текстуры, формы, части объектов. Эти знания можно перенести на любую другую задачу!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach1_name">Ачивка: Коллекционер моделей</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Загрузил и изучил предобученную модель ResNet</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+150 XP · +50 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_1_model_collector" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел архитектуру ResNet!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Feature Extraction -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🔒 Feature Extraction: Заморозка весов</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Используем модель как экстрактор признаков</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Первый подход к Transfer Learning — <strong>Feature Extraction</strong>. Мы "замораживаем" все слои предобученной модели (они не будут обновляться) и заменяем только последний классификационный слой на новый, который обучаем на своих данных. Модель работает как мощный экстрактор признаков!</p>
+
+        <h3 data-i18n="l2_code_title">📝 Feature Extraction на PyTorch</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torchvision.models as models
+
+# Load pre-trained ResNet18
+model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+# Freeze all layers (set requires_grad = False)
+for param in model.parameters():
+    param.requires_grad = False
+
+# Replace the final fully connected layer
+# ResNet18 has 512 features before the classifier
+num_features = model.fc.in_features
+num_classes = 5  # For example: 5 dog breeds
+
+model.fc = nn.Linear(num_features, num_classes)
+
+# Now only model.fc parameters are trainable
+trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+total_params = sum(p.numel() for p in model.parameters())
+
+print(f"Total parameters: {total_params:,}")
+print(f"Trainable parameters: {trainable_params:,}")
+print(f"Frozen parameters: {total_params - trainable_params:,}")
+
+# Check which layers are trainable
+print("\nTrainable layers:")
+for name, param in model.named_parameters():
+    if param.requires_grad:
+        print(f"  {name}: {param.shape}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l2_tip_title">💡 Почему это работает?</strong>
+            <span data-i18n="l2_tip_text">Ранние слои CNN учатся распознавать общие паттерны (края, текстуры, формы), которые полезны для любой задачи изображения. Только последние слои специфичны для конкретных классов ImageNet. Замораживая ранние слои, мы сохраняем общие знания и обучаем только специфичный классификатор!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔒</span>
+            <h3 data-i18n="ach2_name">Ачивка: Мастер заморозки</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Реализовал Feature Extraction с заморозкой весов</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+200 XP · +70 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_1_freeze_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел количество обучаемых параметров!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Fine-tuning -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🔓 Fine-tuning: Тонкая настройка</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Разморозка части слоёв для лучшей адаптации</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Если у тебя достаточно данных, можно пойти дальше: <strong>Fine-tuning</strong>. После Feature Extraction размораживаем последние несколько слоёв базовой модели и обучаем их вместе с новым классификатором. Это позволяет модели адаптировать свои знания под конкретную задачу!</p>
+
+        <h3 data-i18n="l3_code_title">📝 Fine-tuning с частичной разморозкой</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torchvision.models as models
+
+# Load pre-trained ResNet50 (deeper than ResNet18)
+model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+
+# Step 1: Freeze all layers initially
+for param in model.parameters():
+    param.requires_grad = False
+
+# Step 2: Replace classifier
+num_features = model.fc.in_features
+model.fc = nn.Sequential(
+    nn.Dropout(0.5),
+    nn.Linear(num_features, 256),
+    nn.ReLU(),
+    nn.Dropout(0.3),
+    nn.Linear(256, 10)  # 10 classes
+)
+
+# Step 3: Unfreeze last 2 layers (layer4 and fc)
+# This allows fine-tuning of high-level features
+unfreeze_layers = ['layer4', 'fc']
+for name, child in model.named_children():
+    if name in unfreeze_layers:
+        print(f"Unfreezing: {name}")
+        for param in child.parameters():
+            param.requires_grad = True
+
+# Count trainable parameters
+trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+frozen = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+
+print(f"\nTrainable: {trainable:,} ({100*trainable/(trainable+frozen):.1f}%)")
+print(f"Frozen: {frozen:,} ({100*frozen/(trainable+frozen):.1f}%)")
+
+# Use different learning rates for different layers
+optimizer = torch.optim.Adam([
+    {'params': model.layer4.parameters(), 'lr': 1e-5},  # Small LR for base
+    {'params': model.fc.parameters(), 'lr': 1e-3}       # Larger LR for classifier
+])
+
+print("\nOptimizer parameter groups:")
+for i, group in enumerate(optimizer.param_groups):
+    print(f"  Group {i}: lr={group['lr']}, params={len(group['params'])}")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l3_warn_title">⚠️ Важное правило Fine-tuning</strong>
+            <span data-i18n="l3_warn_text">Используй <strong>меньший learning rate</strong> для размороженных слоёв базовой модели (например, 1e-5) и <strong>больший</strong> для нового классификатора (1e-3). Это предотвращает "разрушение" уже выученных признаков!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Fine-tuner</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал Fine-tuning с частичной разморозкой</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_1_finetuner" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если настроил разные learning rates!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Practical Project -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🐕 Практика: Классификация пород собак</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Применяем Transfer Learning на реальном датасете</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Теперь применим Transfer Learning на практике! Возьмём датасет пород собак (например, 5 пород: лабрадор, хаски, корги, бульдог, пудель) и обучим классификатор, используя предобученный ResNet50.</p>
+
+        <h3 data-i18n="l4_code_title"> Полный проект: Dog Breed Classifier</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms, models
+import matplotlib.pyplot as plt
+
+# Data augmentation and preprocessing
+train_transform = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(20),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+test_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+# Load datasets (replace with your dataset path)
+# train_dataset = datasets.ImageFolder('data/dogs/train', transform=train_transform)
+# test_dataset = datasets.ImageFolder('data/dogs/test', transform=test_transform)
+
+# For demo, let's use CIFAR-10 (10 classes)
+train_dataset = datasets.CIFAR10('./data', train=True, download=True, transform=train_transform)
+test_dataset = datasets.CIFAR10('./data', train=False, download=True, transform=test_transform)
+
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+# Create model with Transfer Learning
+model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+
+# Freeze all layers
+for param in model.parameters():
+    param.requires_grad = False
+
+# Replace classifier
+model.fc = nn.Sequential(
+    nn.Dropout(0.5),
+    nn.Linear(2048, 512),
+    nn.ReLU(),
+    nn.Dropout(0.3),
+    nn.Linear(512, 10)  # CIFAR-10 has 10 classes
+)
+
+# Move to GPU if available
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
+# Training setup
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.fc.parameters(), lr=1e-3)
+
+# Training loop
+print(f"Training on {device}\n")
+epochs = 10
+
+for epoch in range(epochs):
+    model.train()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+    
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+        
+        # Forward pass
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        running_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += labels.size(0)
+        correct += predicted.eq(labels).sum().item()
+    
+    train_acc = 100. * correct / total
+    avg_loss = running_loss / len(train_loader)
+    
+    # Test accuracy
+    model.eval()
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+    
+    test_acc = 100. * correct / total
+    
+    print(f"Epoch {epoch+1}/{epochs}: Loss={avg_loss:.4f}, Train Acc={train_acc:.2f}%, Test Acc={test_acc:.2f}%")
+
+print(f"\n🎉 Final Test Accuracy: {test_acc:.2f}%")
+print("With Transfer Learning, we achieved high accuracy with minimal training!")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">⚡</span>
+            <span data-i18n="l4_meme">С Transfer Learning мы достигаем 85-90% точности на CIFAR-10 всего за 10 эпох! Обучение с нуля заняло бы 100+ эпох и дало бы только 70-75%. Экономия времени и ресурсов огромная!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🐕</span>
+            <h3 data-i18n="ach4_name">Ачивка: Практик Transfer Learning</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Обучил классификатор с Transfer Learning на реальном датасете</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+300 XP · +100 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_1_practitioner" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если точность выше 85%!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Custom Dataset -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number"></div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Собственный датасет с телефона</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Создай свой датасет и обучи модель</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+500 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">📱</span>
+            <span data-i18n="l5_meme">Пришло время создать свой собственный датасет! Сфотографируй 5-10 объектов вокруг себя (например, разные виды фруктов, канцелярию, игрушки) по 20-30 фото каждого. Это будет твой уникальный датасет!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Создание и обучение на собственном датасете</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms, models
+import os
+
+# Your custom dataset structure:
+# my_dataset/
+# ├── train/
+# │   ├── class1/  (20-30 images)
+# │   ├── class2/
+# │   └── class3/
+# └── test/
+#     ├── class1/  (5-10 images)
+#     ├── class2/
+#     └── class3/
+
+# Data transforms
+train_transform = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(15),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+test_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+# Load your custom dataset
+dataset_path = 'my_dataset'
+train_dataset = datasets.ImageFolder(os.path.join(dataset_path, 'train'), transform=train_transform)
+test_dataset = datasets.ImageFolder(os.path.join(dataset_path, 'test'), transform=test_transform)
+
+print(f"Training classes: {train_dataset.classes}")
+print(f"Training samples: {len(train_dataset)}")
+print(f"Test samples: {len(test_dataset)}")
+
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+
+# Create model
+model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+# Freeze base layers
+for param in model.parameters():
+    param.requires_grad = False
+
+# Replace classifier for your number of classes
+num_classes = len(train_dataset.classes)
+model.fc = nn.Sequential(
+    nn.Dropout(0.5),
+    nn.Linear(512, num_classes)
+)
+
+# Training
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.fc.parameters(), lr=1e-3)
+
+print(f"\nTraining on {device} for {num_classes} classes...\n")
+
+# Train for 15 epochs
+for epoch in range(15):
+    model.train()
+    running_loss = 0.0
+    
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+        
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        running_loss += loss.item()
+    
+    # Test
+    model.eval()
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+    
+    accuracy = 100. * correct / total
+    print(f"Epoch {epoch+1}/15: Loss={running_loss/len(train_loader):.4f}, Accuracy={accuracy:.2f}%")
+
+# Save the model
+torch.save(model.state_dict(), 'my_custom_model.pth')
+print("\n✅ Model saved to 'my_custom_model.pth'")
+
+# Inference function
+def predict_image(image_path, model, classes):
+    from PIL import Image
+    
+    transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    
+    image = Image.open(image_path).convert('RGB')
+    image_tensor = transform(image).unsqueeze(0).to(device)
+    
+    model.eval()
+    with torch.no_grad():
+        output = model(image_tensor)
+        _, predicted = output.max(1)
+        confidence = torch.nn.functional.softmax(output, dim=1)[0][predicted].item()
+    
+    print(f"Predicted: {classes[predicted]} (confidence: {confidence:.2%})")
+    return classes[predicted]
+
+# Test with a new image
+# predict_image('test_image.jpg', model, train_dataset.classes)</code></pre>
+
+        <h3 data-i18n="l5_github_title"> Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir transfer-learning-project
+cd transfer-learning-project
+
+mkdir src data models notebooks
+touch src/train.py
+touch src/predict.py
+touch src/model.py
+touch requirements.txt
+touch README.md
+
+# 2. Add your dataset
+# my_dataset/
+# ├── train/
+# │   ├── class1/
+# │   ├── class2/
+# │   ── class3/
+# └── test/
+#     ├── class1/
+#     ├── class2/
+#     └── class3/
+
+# 3. requirements.txt
+torch==2.1.0
+torchvision==0.16.0
+matplotlib==3.7.0
+Pillow==10.0.0
+
+# 4. Train the model
+python src/train.py
+
+# 5. Test prediction
+python src/predict.py --image test.jpg
+
+# 6. Commit and push
+git add .
+git commit -m "Add Transfer Learning project with custom dataset"
+git push origin main
+
+# 7. Add demo images and accuracy to README!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь фото примеров из твоего датасета<br>
+                2. Покажи архитектуру модели и точность<br>
+                3. Опиши, как собрать свой датасет (структура папок)<br>
+                4. Добавь скриншоты предсказаний на новых фото<br>
+                5. Укажи время обучения и сравнение с обучением с нуля
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(245, 158, 11, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Transfer Learning Master</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал собственный датасет, обучил модель и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+500 XP · +200 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson4_1_tl_master" class="ach-btn" style="background: linear-gradient(135deg, #a855f7, #f59e0b);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% студентов создают работающие проекты с собственными данными. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Сравнение моделей»</h3>
+            <p data-i18n="sq1_text">Обучи три разные модели (ResNet18, ResNet50, EfficientNet-B0) на одном датасете. Сравни точность, размер модели и скорость обучения.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title"> Квест «Grad-CAM визуализация»</h3>
+            <p data-i18n="sq2_text">Реализуй Grad-CAM (Gradient-weighted Class Activation Mapping) для визуализации, на какие части изображения смотрит модель при принятии решения.</p>
+            <div class="quest-reward" data-i18n="sq2_reward"> Награда: 200 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Мобильное приложение»</h3>
+            <p data-i18n="sq3_text">Конвертируй обученную модель в формат ONNX или TorchScript и создай простое веб-приложение (Flask/FastAPI) или мобильное приложение для распознавания в реальном времени.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 400 AI-коинов + титул «ML Deploy Master»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял преимущества Transfer Learning</li>
+            <li data-i18n="sum2">✅ Изучил предобученные модели (ResNet, VGG, EfficientNet)</li>
+            <li data-i18n="sum3">✅ Освоил Feature Extraction с заморозкой весов</li>
+            <li data-i18n="sum4">✅ Реализовал Fine-tuning с частичной разморозкой</li>
+            <li data-i18n="sum5">✅ Обучил классификатор на реальном датасете</li>
+            <li data-i18n="sum6">🏆 Финальный босс — собственный датасет и модель на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, Transfer Learning Master! Ты теперь знаешь главный секрет индустрии: не обучай с нуля, используй предобученные модели! Это экономит дни вычислений и даёт лучшую точность. В следующем уроке 4.2 мы изучим генеративные модели и создадим свой собственный ChatGPT! 🤖</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-3-5.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">3.5 CNN и компьютерное зрение</span>
+        </a>
+        <a href="lesson-4-2.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">4.2 Генеративные модели</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 4.1 • МОДУЛЬ 4", title: "Transfer Learning: Обучение у мастеров",
+            subtitle: "Добро пожаловать в Модуль 4! 🎓 Сегодня ты узнаешь главный секрет индустрии: не обучай нейросеть с нуля! Используй предобученные модели и адаптируй их под свою задачу за минуты вместо дней.",
+            duration: "⏱ 3 часа", level: " Продвинутый", xp: "⭐ +1200 XP", loot: "💰 +500 AI-коинов", ach: " 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "💡 Зачем изобретать велосипед?", l0_sub: "Проблема обучения с нуля", l0_xp: "+80 XP",
+            l0_p1: "Обучение CNN с нуля требует миллионов изображений и дней вычислений на мощных GPU. У тебя есть 100 фото твоих котов? Этого недостаточно. Но что если взять модель, которая уже научилась распознавать 1000 классов объектов на ImageNet (1.2 миллиона изображений), и просто 'дообучить' её на твоих котах?",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты хочешь научиться играть на гитаре. Можно начать с нуля: учить ноты, аккорды, технику (годы практики). А можно взять мастера, который уже всё умеет, и попросить его показать специфические приёмы для твоего стиля (недели практики). Transfer Learning — это обучение у мастера!",
+            ach0_name: "Ачивка: Мудрый ученик", ach0_desc: "Понял преимущества Transfer Learning перед обучением с нуля", ach0_reward: "+80 XP · +30 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял аналогию с обучением у мастера!",
+            l1_title: "🏆 Предобученные модели в torchvision", l1_sub: "ResNet, VGG, EfficientNet и другие", l1_xp: "+150 XP",
+            l1_p1: "PyTorch предоставляет доступ к десяткам предобученных моделей через torchvision.models. Самые популярные: ResNet (остаточные связи), VGG (простая архитектура), EfficientNet (оптимальный баланс точности и скорости). Все они обучены на ImageNet — огромном датасете из 1.2 миллиона изображений.",
+            l1_code_title: " Загрузка предобученной модели",
+            l1_lore_title: "📚 Что такое ImageNet?", l1_lore_text: "ImageNet — это датасет из 1.2 миллиона изображений в 1000 категориях (собаки, кошки, машины, еда и т.д.). Модели, обученные на ImageNet, научились распознавать общие паттерны: края, текстуры, формы, части объектов. Эти знания можно перенести на любую другую задачу!",
+            ach1_name: "Ачивка: Коллекционер моделей", ach1_desc: "Загрузил и изучил предобученную модель ResNet", ach1_reward: "+150 XP · +50 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если увидел архитектуру ResNet!",
+            l2_title: " Feature Extraction: Заморозка весов", l2_sub: "Используем модель как экстрактор признаков", l2_xp: "+200 XP",
+            l2_p1: "Первый подход к Transfer Learning — Feature Extraction. Мы 'замораживаем' все слои предобученной модели (они не будут обновляться) и заменяем только последний классификационный слой на новый, который обучаем на своих данных. Модель работает как мощный экстрактор признаков!",
+            l2_code_title: "📝 Feature Extraction на PyTorch",
+            l2_tip_title: " Почему это работает?", l2_tip_text: "Ранние слои CNN учатся распознавать общие паттерны (края, текстуры, формы), которые полезны для любой задачи изображения. Только последние слои специфичны для конкретных классов ImageNet. Замораживая ранние слои, мы сохраняем общие знания и обучаем только специфичный классификатор!",
+            ach2_name: "Ачивка: Мастер заморозки", ach2_desc: "Реализовал Feature Extraction с заморозкой весов", ach2_reward: "+200 XP · +70 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел количество обучаемых параметров!",
+            l3_title: "🔓 Fine-tuning: Тонкая настройка", l3_sub: "Разморозка части слоёв для лучшей адаптации", l3_xp: "+250 XP",
+            l3_p1: "Если у тебя достаточно данных, можно пойти дальше: Fine-tuning. После Feature Extraction размораживаем последние несколько слоёв базовой модели и обучаем их вместе с новым классификатором. Это позволяет модели адаптировать свои знания под конкретную задачу!",
+            l3_code_title: "📝 Fine-tuning с частичной разморозкой",
+            l3_warn_title: "️ Важное правило Fine-tuning", l3_warn_text: "Используй меньший learning rate для размороженных слоёв базовой модели (например, 1e-5) и больший для нового классификатора (1e-3). Это предотвращает 'разрушение' уже выученных признаков!",
+            ach3_name: "Ачивка: Fine-tuner", ach3_desc: "Реализовал Fine-tuning с частичной разморозкой", ach3_reward: "+250 XP · +80 💰 ·  Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если настроил разные learning rates!",
+            l4_title: "🐕 Практика: Классификация пород собак", l4_sub: "Применяем Transfer Learning на реальном датасете", l4_xp: "+300 XP",
+            l4_p1: "Теперь применим Transfer Learning на практике! Возьмём датасет пород собак (например, 5 пород: лабрадор, хаски, корги, бульдог, пудель) и обучим классификатор, используя предобученный ResNet50.",
+            l4_code_title: "📝 Полный проект: Dog Breed Classifier",
+            l4_meme: "С Transfer Learning мы достигаем 85-90% точности на CIFAR-10 всего за 10 эпох! Обучение с нуля заняло бы 100+ эпох и дало бы только 70-75%. Экономия времени и ресурсов огромная!",
+            ach4_name: "Ачивка: Практик Transfer Learning", ach4_desc: "Обучил классификатор с Transfer Learning на реальном датасете", ach4_reward: "+300 XP · +100  · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если точность выше 85%!",
+            l5_title: "БОСС-ФАЙТ: Собственный датасет с телефона", l5_sub: "Создай свой датасет и обучи модель", l5_xp: "+500 XP",
+            l5_meme: "Пришло время создать свой собственный датасет! Сфотографируй 5-10 объектов вокруг себя (например, разные виды фруктов, канцелярию, игрушки) по 20-30 фото каждого. Это будет твой уникальный датасет!",
+            l5_code_title: "📝 Создание и обучение на собственном датасете",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь фото примеров из твоего датасета<br>2. Покажи архитектуру модели и точность<br>3. Опиши, как собрать свой датасет (структура папок)<br>4. Добавь скриншоты предсказаний на новых фото<br>5. Укажи время обучения и сравнение с обучением с нуля",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Transfer Learning Master", ach5_desc: "Создал собственный датасет, обучил модель и опубликовал на GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% студентов создают работающие проекты с собственными данными. Ты — элита!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: " ЛЁГКИЙ", sq_medium: " СРЕДНИЙ", sq_hard: " СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Сравнение моделей»", sq1_text: "Обучи три разные модели (ResNet18, ResNet50, EfficientNet-B0) на одном датасете. Сравни точность, размер модели и скорость обучения.", sq1_reward: "💰 Награда: 100 AI-коинов",
+            sq2_title: "⚡ Квест «Grad-CAM визуализация»", sq2_text: "Реализуй Grad-CAM (Gradient-weighted Class Activation Mapping) для визуализации, на какие части изображения смотрит модель при принятии решения.", sq2_reward: "💰 Награда: 200 AI-коинов",
+            sq3_title: "🎨 Квест «Мобильное приложение»", sq3_text: "Конвертируй обученную модель в формат ONNX или TorchScript и создай простое веб-приложение (Flask/FastAPI) или мобильное приложение для распознавания в реальном времени.", sq3_reward: "💰 Награда: 400 AI-коинов + титул «ML Deploy Master»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял преимущества Transfer Learning", sum2: "✅ Изучил предобученные модели (ResNet, VGG, EfficientNet)",
+            sum3: "✅ Освоил Feature Extraction с заморозкой весов", sum4: "✅ Реализовал Fine-tuning с частичной разморозкой",
+            sum5: "✅ Обучил классификатор на реальном датасете", sum6: " Финальный босс — собственный датасет и модель на GitHub!",
+            sum_meme: "Поздравляю, Transfer Learning Master! Ты теперь знаешь главный секрет индустрии: не обучай с нуля, используй предобученные модели! Это экономит дни вычислений и даёт лучшую точность. В следующем уроке 4.2 мы изучим генеративные модели и создадим свой собственный ChatGPT! 🤖",
+            nav_back: "← Предыдущий квест", nav_back_title: "3.5 CNN и компьютерное зрение",
+            nav_next: "Следующий квест →", nav_next_title: "4.2 Генеративные модели",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 4.1 • MODULE 4", title: "Transfer Learning: Learning from Masters",
+            subtitle: "Welcome to Module 4! 🎓 Today you'll learn the industry's main secret: don't train neural networks from scratch! Use pre-trained models and adapt them to your task in minutes instead of days.",
+            duration: "⏱ 3 hours", level: "📙 Advanced", xp: "⭐ +1200 XP", loot: "💰 +500 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "💡 Why reinvent the wheel?", l0_sub: "The problem with training from scratch", l0_xp: "+80 XP",
+            l0_p1: "Training CNN from scratch requires millions of images and days of computation on powerful GPUs. You have 100 photos of your cats? That's not enough. But what if we take a model that already learned to recognize 1000 object classes on ImageNet (1.2 million images) and just 'fine-tune' it on your cats?",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you want to learn guitar. You can start from scratch: learn notes, chords, technique (years of practice). Or you can take a master who already knows everything and ask them to show specific techniques for your style (weeks of practice). Transfer Learning is learning from a master!",
+            ach0_name: "Achievement: Wise Student", ach0_desc: "Understood Transfer Learning advantages over training from scratch", ach0_reward: "+80 XP · +30 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the master learning analogy!",
+            l1_title: "🏆 Pre-trained models in torchvision", l1_sub: "ResNet, VGG, EfficientNet and others", l1_xp: "+150 XP",
+            l1_p1: "PyTorch provides access to dozens of pre-trained models through torchvision.models. The most popular: ResNet (residual connections), VGG (simple architecture), EfficientNet (optimal balance of accuracy and speed). All are trained on ImageNet — a huge dataset of 1.2 million images.",
+            l1_code_title: " Loading a pre-trained model",
+            l1_lore_title: "📚 What is ImageNet?", l1_lore_text: "ImageNet is a dataset of 1.2 million images in 1000 categories (dogs, cats, cars, food, etc.). Models trained on ImageNet learned to recognize general patterns: edges, textures, shapes, object parts. This knowledge can be transferred to any other task!",
+            ach1_name: "Achievement: Model Collector", ach1_desc: "Loaded and studied pre-trained ResNet model", ach1_reward: "+150 XP · +50 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you saw ResNet architecture!",
+            l2_title: " Feature Extraction: Freezing weights", l2_sub: "Using model as feature extractor", l2_xp: "+200 XP",
+            l2_p1: "First approach to Transfer Learning — Feature Extraction. We 'freeze' all layers of pre-trained model (they won't update) and replace only the last classification layer with a new one, which we train on our data. The model works as a powerful feature extractor!",
+            l2_code_title: "📝 Feature Extraction in PyTorch",
+            l2_tip_title: "💡 Why does this work?", l2_tip_text: "Early CNN layers learn to recognize general patterns (edges, textures, shapes) useful for any image task. Only last layers are specific to ImageNet classes. By freezing early layers, we preserve general knowledge and train only the specific classifier!",
+            ach2_name: "Achievement: Freeze Master", ach2_desc: "Implemented Feature Extraction with weight freezing", ach2_reward: "+200 XP · +70 💰 · 🔵 Rare", ach2_btn: " Get achievement", ach2_hint: "Click if you saw the number of trainable parameters!",
+            l3_title: "🔓 Fine-tuning: Fine adjustment", l3_sub: "Unfreezing part of layers for better adaptation", l3_xp: "+250 XP",
+            l3_p1: "If you have enough data, you can go further: Fine-tuning. After Feature Extraction, we unfreeze the last few layers of the base model and train them together with the new classifier. This allows the model to adapt its knowledge to the specific task!",
+            l3_code_title: "📝 Fine-tuning with partial unfreezing",
+            l3_warn_title: "️ Important Fine-tuning rule", l3_warn_text: "Use smaller learning rate for unfrozen base model layers (e.g., 1e-5) and larger for new classifier (1e-3). This prevents 'destroying' already learned features!",
+            ach3_name: "Achievement: Fine-tuner", ach3_desc: "Implemented Fine-tuning with partial unfreezing", ach3_reward: "+250 XP · +80 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you configured different learning rates!",
+            l4_title: "🐕 Practice: Dog breed classification", l4_sub: "Applying Transfer Learning on real dataset", l4_xp: "+300 XP",
+            l4_p1: "Now let's apply Transfer Learning in practice! We'll take a dog breeds dataset (e.g., 5 breeds: labrador, husky, corgi, bulldog, poodle) and train a classifier using pre-trained ResNet50.",
+            l4_code_title: " Full project: Dog Breed Classifier",
+            l4_meme: "With Transfer Learning we achieve 85-90% accuracy on CIFAR-10 in just 10 epochs! Training from scratch would take 100+ epochs and give only 70-75%. The time and resource savings are huge!",
+            ach4_name: "Achievement: Transfer Learning Practitioner", ach4_desc: "Trained classifier with Transfer Learning on real dataset", ach4_reward: "+300 XP · +100  · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if accuracy is above 85%!",
+            l5_title: "BOSS FIGHT: Custom dataset from phone", l5_sub: "Create your own dataset and train a model", l5_xp: "+500 XP",
+            l5_meme: "Time to create your own dataset! Photograph 5-10 objects around you (e.g., different fruits, stationery, toys) with 20-30 photos each. This will be your unique dataset!",
+            l5_code_title: "📝 Creating and training on custom dataset",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add sample photos from your dataset<br>2. Show model architecture and accuracy<br>3. Describe how to collect your dataset (folder structure)<br>4. Add prediction screenshots on new photos<br>5. Specify training time and comparison with training from scratch",
+            ach5_name: "LEGENDARY: Transfer Learning Master", ach5_desc: "Created custom dataset, trained model and published on GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% of students create working projects with custom data. You're elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: " HARD",
+            sq1_title: " Quest «Model Comparison»", sq1_text: "Train three different models (ResNet18, ResNet50, EfficientNet-B0) on one dataset. Compare accuracy, model size and training speed.", sq1_reward: "💰 Reward: 100 AI-coins",
+            sq2_title: "⚡ Quest «Grad-CAM visualization»", sq2_text: "Implement Grad-CAM (Gradient-weighted Class Activation Mapping) to visualize which parts of the image the model looks at when making decisions.", sq2_reward: "💰 Reward: 200 AI-coins",
+            sq3_title: " Quest «Mobile Application»", sq3_text: "Convert trained model to ONNX or TorchScript format and create a simple web app (Flask/FastAPI) or mobile app for real-time recognition.", sq3_reward: "💰 Reward: 400 AI-coins + title «ML Deploy Master»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood Transfer Learning advantages", sum2: "✅ Studied pre-trained models (ResNet, VGG, EfficientNet)",
+            sum3: "✅ Mastered Feature Extraction with weight freezing", sum4: "✅ Implemented Fine-tuning with partial unfreezing",
+            sum5: "✅ Trained classifier on real dataset", sum6: "🏆 Final boss — custom dataset and model on GitHub!",
+            sum_meme: "Congrats, Transfer Learning Master! You now know the industry's main secret: don't train from scratch, use pre-trained models! This saves days of computation and gives better accuracy. In the next lesson 4.2, we'll study generative models and create our own ChatGPT! 🤖",
+            nav_back: "← Previous quest", nav_back_title: "3.5 CNN and Computer Vision",
+            nav_next: "Next quest →", nav_next_title: "4.2 Generative Models",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 4.1 • MÓDULO 4", title: "Transfer Learning: Aprendiendo de Maestros", subtitle: "¡Bienvenido al Módulo 4!  Hoy aprenderás el secreto principal de la industria: ¡no entrenes redes neuronales desde cero!", duration: "⏱ 3 horas", level: "📙 Avanzado", xp: "⭐ +1200 XP", loot: "💰 +500 AI-monedas", ach: " 6 logros", progress_title: " Progreso", progress_counter: "Nivel 0 / 6", l0_title: "💡 ¿Por qué reinventar la rueda?", l0_sub: "El problema de entrenar desde cero", l0_xp: "+80 XP", l0_p1: "Entrenar CNN desde cero requiere millones de imágenes y días de cómputo. ¿Tienes 100 fotos de tus gatos? No es suficiente. ¿Pero si tomamos un modelo que ya aprendió a reconocer 1000 clases en ImageNet?", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que quieres aprender guitarra. Puedes empezar desde cero (años de práctica) o tomar un maestro que ya sabe todo y pedirle que te muestre técnicas específicas (semanas de práctica).", ach0_name: "Logro: Estudiante Sabio", ach0_desc: "Entendió ventajas de Transfer Learning", ach0_reward: "+80 XP · +30 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste la analogía!", l1_title: "🏆 Modelos pre-entrenados en torchvision", l1_sub: "ResNet, VGG, EfficientNet", l1_xp: "+150 XP", l1_p1: "PyTorch proporciona acceso a docenas de modelos pre-entrenados. Los más populares: ResNet, VGG, EfficientNet. Todos entrenados en ImageNet.", l1_code_title: "📝 Cargando modelo pre-entrenado", l1_lore_title: " ¿Qué es ImageNet?", l1_lore_text: "ImageNet es un dataset de 1.2 millones de imágenes en 1000 categorías. Los modelos aprendieron patrones generales: bordes, texturas, formas.", ach1_name: "Logro: Coleccionista de Modelos", ach1_desc: "Cargó y estudió modelo ResNet pre-entrenado", ach1_reward: "+150 XP · +50 💰 · 🔵 Raro", ach1_btn: " Obtener logro", ach1_hint: "¡Haz clic si viste la arquitectura ResNet!", l2_title: "🔒 Feature Extraction: Congelando pesos", l2_sub: "Usando modelo como extractor de características", l2_xp: "+200 XP", l2_p1: "Primer enfoque: Feature Extraction. 'Congelamos' todas las capas del modelo pre-entrenado y reemplazamos solo la última capa clasificadora.", l2_code_title: "📝 Feature Extraction en PyTorch", l2_tip_title: "💡 ¿Por qué funciona?", l2_tip_text: "Las capas tempranas aprenden patrones generales útiles para cualquier tarea de imagen. Solo las últimas capas son específicas para ImageNet.", ach2_name: "Logro: Maestro de Congelación", ach2_desc: "Implementó Feature Extraction con congelamiento", ach2_reward: "+200 XP · +70 💰 · 🔵 Raro", ach2_btn: " Obtener logro", ach2_hint: "¡Haz clic si viste el número de parámetros entrenables!", l3_title: "🔓 Fine-tuning: Ajuste fino", l3_sub: "Descongelando parte de capas para mejor adaptación", l3_xp: "+250 XP", l3_p1: "Si tienes suficientes datos, puedes ir más lejos: Fine-tuning. Después de Feature Extraction, descongelamos las últimas capas y las entrenamos con el nuevo clasificador.", l3_code_title: "📝 Fine-tuning con descongelamiento parcial", l3_warn_title: "⚠️ Regla importante de Fine-tuning", l3_warn_text: "Usa learning rate menor para capas descongeladas (1e-5) y mayor para el nuevo clasificador (1e-3).", ach3_name: "Logro: Fine-tuner", ach3_desc: "Implementó Fine-tuning con descongelamiento parcial", ach3_reward: "+250 XP · +80  · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si configuraste diferentes learning rates!", l4_title: "🐕 Práctica: Clasificación de razas de perros", l4_sub: "Aplicando Transfer Learning en dataset real", l4_xp: "+300 XP", l4_p1: "¡Ahora apliquemos Transfer Learning en la práctica! Tomaremos un dataset de razas de perros y entrenaremos un clasificador usando ResNet50 pre-entrenado.", l4_code_title: "📝 Proyecto completo: Dog Breed Classifier", l4_meme: "¡Con Transfer Learning alcanzamos 85-90% de precisión en CIFAR-10 en solo 10 épocas! Entrenar desde cero tomaría 100+ épocas.", ach4_name: "Logro: Practicante de Transfer Learning", ach4_desc: "Entrenó clasificador con Transfer Learning en dataset real", ach4_reward: "+300 XP · +100 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si la precisión es superior al 85%!", l5_title: "¡PELEA JEFE: Dataset personalizado desde el teléfono!", l5_sub: "Crea tu propio dataset y entrena un modelo", l5_xp: "+500 XP", l5_meme: "¡Tiempo de crear tu propio dataset! Fotografía 5-10 objetos a tu alrededor con 20-30 fotos cada uno.", l5_code_title: "📝 Creando y entrenando en dataset personalizado", l5_github_title: "🚀 Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade fotos de ejemplo<br>2. Muestra arquitectura y precisión<br>3. Describe cómo colectar dataset<br>4. Añade capturas de predicciones<br>5. Especifica tiempo de entrenamiento", ach5_name: "LEGENDARIO: Maestro de Transfer Learning", ach5_desc: "Creó dataset personalizado, entrenó modelo y publicó en GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendario", ach5_btn: " Obtener logro legendario", ach5_hint: "¡Solo el 5% crea proyectos con datos personalizados!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Comparación de Modelos»", sq1_text: "Entrena tres modelos diferentes en un dataset.", sq1_reward: "💰 Recompensa: 100 AI-monedas", sq2_title: "⚡ Misión «Visualización Grad-CAM»", sq2_text: "Implementa Grad-CAM para visualizar qué partes de la imagen observa el modelo.", sq2_reward: "💰 Recompensa: 200 AI-monedas", sq3_title: "🎨 Misión «Aplicación Móvil»", sq3_text: "Convierte el modelo a ONNX o TorchScript y crea una app web o móvil.", sq3_reward: "💰 Recompensa: 400 AI-monedas + título «ML Deploy Master»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste ventajas de Transfer Learning", sum2: "✅ Estudiaste modelos pre-entrenados", sum3: "✅ Dominaste Feature Extraction", sum4: "✅ Implementaste Fine-tuning", sum5: "✅ Entrenaste clasificador en dataset real", sum6: "🏆 ¡Jefe final: dataset y modelo en GitHub!", sum_meme: "¡Felicidades, Maestro de Transfer Learning! En la próxima lección 4.2 estudiaremos modelos generativos.", nav_back: "← Misión anterior", nav_back_title: "3.5 CNN y Visión por Computadora", nav_next: "Siguiente misión →", nav_next_title: "4.2 Modelos Generativos", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 4.1 • MODUL 4", title: "Transfer Learning: Lernen von Meistern", subtitle: "Willkommen in Modul 4! 🎓 Heute lernst du das Hauptgeheimnis der Industrie: Trainiere neuronale Netze nicht von Grund auf!", duration: "⏱ 3 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1200 XP", loot: "💰 +500 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "💡 Warum das Rad neu erfinden?", l0_sub: "Das Problem beim Training von Grund auf", l0_xp: "+80 XP", l0_p1: "Das Training von CNN von Grund auf erfordert Millionen von Bildern und Tage der Berechnung. Du hast 100 Fotos deiner Katzen? Das reicht nicht. Aber was, wenn wir ein Modell nehmen, das bereits 1000 Klassen auf ImageNet gelernt hat?", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir vor, du willst Gitarre lernen. Du kannst von Grund auf beginnen (Jahre Übung) oder einen Meister nehmen, der alles kann, und ihn bitten, spezifische Techniken zu zeigen (Wochen Übung).", ach0_name: "Erfolg: Weiser Schüler", ach0_desc: "Verstand Transfer Learning Vorteile", ach0_reward: "+80 XP · +30 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Analogie verstanden hast!", l1_title: " Vortrainierte Modelle in torchvision", l1_sub: "ResNet, VGG, EfficientNet", l1_xp: "+150 XP", l1_p1: "PyTorch bietet Zugang zu Dutzenden vortrainierter Modelle. Die beliebtesten: ResNet, VGG, EfficientNet. Alle auf ImageNet trainiert.", l1_code_title: " Vortrainiertes Modell laden", l1_lore_title: "📚 Was ist ImageNet?", l1_lore_text: "ImageNet ist ein Dataset mit 1.2 Millionen Bildern in 1000 Kategorien. Modelle lernten allgemeine Muster: Kanten, Texturen, Formen.", ach1_name: "Erfolg: Modell-Sammler", ach1_desc: "Lud und studierte vortrainiertes ResNet-Modell", ach1_reward: "+150 XP · +50 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du ResNet-Architektur sahst!", l2_title: "🔒 Feature Extraction: Gewichte einfrieren", l2_sub: "Modell als Feature-Extraktor verwenden", l2_xp: "+200 XP", l2_p1: "Erster Ansatz: Feature Extraction. Wir 'frieren' alle Schichten des vortrainierten Modells ein und ersetzen nur die letzte Klassifikationsschicht.", l2_code_title: "📝 Feature Extraction in PyTorch", l2_tip_title: "💡 Warum funktioniert das?", l2_tip_text: "Frühe Schichten lernen allgemeine Muster, die für jede Bildaufgabe nützlich sind. Nur letzte Schichten sind ImageNet-spezifisch.", ach2_name: "Erfolg: Freeze-Meister", ach2_desc: "Implementierte Feature Extraction mit Einfrieren", ach2_reward: "+200 XP · +70 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du die Anzahl trainierbarer Parameter sahst!", l3_title: "🔓 Fine-tuning: Feinabstimmung", l3_sub: "Teilweises Auftauen für bessere Anpassung", l3_xp: "+250 XP", l3_p1: "Wenn du genug Daten hast, kannst du weiter gehen: Fine-tuning. Nach Feature Extraction tauen wir die letzten Schichten auf und trainieren sie mit dem neuen Klassifikator.", l3_code_title: "📝 Fine-tuning mit teilweisem Auftauen", l3_warn_title: "⚠️ Wichtige Fine-tuning Regel", l3_warn_text: "Verwende kleinere Learning Rate für aufgetaute Schichten (1e-5) und größere für neuen Klassifikator (1e-3).", ach3_name: "Erfolg: Fine-tuner", ach3_desc: "Implementierte Fine-tuning mit teilweisem Auftauen", ach3_reward: "+250 XP · +80  · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du verschiedene Learning Rates konfiguriert hast!", l4_title: " Praxis: Hunderassen-Klassifikation", l4_sub: "Transfer Learning auf realem Dataset anwenden", l4_xp: "+300 XP", l4_p1: "Jetzt wenden wir Transfer Learning in der Praxis an! Wir nehmen ein Hunderassen-Dataset und trainieren einen Klassifikator mit vortrainiertem ResNet50.", l4_code_title: " Vollständiges Projekt: Dog Breed Classifier", l4_meme: "Mit Transfer Learning erreichen wir 85-90% Genauigkeit auf CIFAR-10 in nur 10 Epochen! Training von Grund auf würde 100+ Epochen dauern.", ach4_name: "Erfolg: Transfer Learning Praktiker", ach4_desc: "Trainierte Klassifikator mit Transfer Learning auf realem Dataset", ach4_reward: "+300 XP · +100 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn Genauigkeit über 85% ist!", l5_title: "BOSSKAMPF: Eigenes Dataset vom Handy", l5_sub: "Erstelle dein eigenes Dataset und trainiere ein Modell", l5_xp: "+500 XP", l5_meme: "Zeit, dein eigenes Dataset zu erstellen! Fotografiere 5-10 Objekte um dich herum mit je 20-30 Fotos.", l5_code_title: "📝 Erstellen und Trainieren auf eigenem Dataset", l5_github_title: "🚀 Projektveröffentlichungsanweisungen", l5_github_tip_title: " README.md Tipps", l5_github_tip_text: "1. Füge Beispielfotos hinzu<br>2. Zeige Architektur und Genauigkeit<br>3. Beschreibe Dataset-Sammlung<br>4. Füge Vorhersage-Screenshots hinzu<br>5. Gib Trainingszeit an", ach5_name: "LEGENDÄR: Transfer Learning Meister", ach5_desc: "Erstellte eigenes Dataset, trainierte Modell und veröffentlichte auf GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% erstellen Projekte mit eigenen Daten!", sq_title: " Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Modellvergleich»", sq1_text: "Trainiere drei verschiedene Modelle auf einem Dataset.", sq1_reward: "💰 Belohnung: 100 AI-Münzen", sq2_title: "⚡ Quest «Grad-CAM Visualisierung»", sq2_text: "Implementiere Grad-CAM zur Visualisierung, auf welche Bildteile das Modell schaut.", sq2_reward: "💰 Belohnung: 200 AI-Münzen", sq3_title: "🎨 Quest «Mobile Anwendung»", sq3_text: "Konvertiere Modell zu ONNX oder TorchScript und erstelle eine Web- oder Mobile-App.", sq3_reward: "💰 Belohnung: 400 AI-Münzen + Titel «ML Deploy Master»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Transfer Learning Vorteile verstanden", sum2: "✅ Vortrainierte Modelle studiert", sum3: "✅ Feature Extraction gemeistert", sum4: "✅ Fine-tuning implementiert", sum5: "✅ Klassifikator auf realem Dataset trainiert", sum6: "🏆 Endboss: eigenes Dataset und Modell auf GitHub!", sum_meme: "Glückwunsch, Transfer Learning Meister! In der nächsten Lektion 4.2 studieren wir generative Modelle.", nav_back: "← Vorheriger Quest", nav_back_title: "3.5 CNN und Computer Vision", nav_next: "Nächster Quest →", nav_next_title: "4.2 Generative Modelle", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 4.1 • 4-МОДУЛЬ", title: "Transfer Learning: Шеберлерден үйрену", subtitle: "4-модульге қош келдің! 🎓 Бүгін индустрияның басты құпиясын білесің: нейрондық желілерді нөлден оқытпа!", duration: "⏱ 3 сағат", level: "📙 Озық", xp: "⭐ +1200 XP", loot: "💰 +500 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: " Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "💡 Дөңгелекті қайта ойлап табу неге керек?", l0_sub: "Нөлден оқыту мәселесі", l0_xp: "+80 XP", l0_p1: "CNN-ді нөлден оқыту миллиондаған суреттерді және қуатты GPU-ларда есептеу күндерін талап етеді. Сенің 100 мысық фотоң бар? Бұл жеткіліксіз. Бірақ ImageNet-те 1000 класты үйренген модельді алсақ ше?", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Гитара ойнауды үйренгің келеді делік. Нөлден бастауға болады (жылдар тәжірибе) немесе бәрін білетін шеберді алып, нақты техникаларды көрсетуін сұрауға болады (апталар тәжірибе).", ach0_name: "Жетістік: Даналық оқушы", ach0_desc: "Transfer Learning артықшылықтарын түсінді", ach0_reward: "+80 XP · +30 💰 · ⚪ Кәдімгі", ach0_btn: " Жетістікті алу", ach0_hint: "Аналогияны түсінсең — бас!", l1_title: " torchvision-да алдын ала оқытылған модельдер", l1_sub: "ResNet, VGG, EfficientNet", l1_xp: "+150 XP", l1_p1: "PyTorch torchvision.models арқылы ондаған алдын ала оқытылған модельдерге қол жетімділік береді. Ең танымал: ResNet, VGG, EfficientNet. Барлығы ImageNet-те оқытылған.", l1_code_title: "📝 Алдын ала оқытылған модельді жүктеу", l1_lore_title: " ImageNet деген не?", l1_lore_text: "ImageNet — 1000 санаттағы 1.2 миллион сурет деректер жиынтығы. Модельдер жалпы үлгілерді үйренді: жиектер, текстуралар, пішіндер.", ach1_name: "Жетістік: Модель коллекционері", ach1_desc: "Алдын ала оқытылған ResNet моделін жүктеді және зерттеді", ach1_reward: "+150 XP · +50 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "ResNet архитектурасын көрсең — бас!", l2_title: " Feature Extraction: Салмақтарды тоңазыту", l2_sub: "Модельді ерекшелік экстракторы ретінде қолдану", l2_xp: "+200 XP", l2_p1: "Transfer Learning-ге бірінші тәсіл — Feature Extraction. Алдын ала оқытылған модельдің барлық қабаттарын 'тоңазытамыз' және тек соңғы классификация қабатын ауыстырамыз.", l2_code_title: "📝 PyTorch-та Feature Extraction", l2_tip_title: "💡 Бұл неге жұмыс істейді?", l2_tip_text: "Ерте қабаттар кез келген сурет тапсырмасы үшін пайдалы жалпы үлгілерді үйренеді. Тек соңғы қабаттар ImageNet-ке тән.", ach2_name: "Жетістік: Тоңазыту шебері", ach2_desc: "Салмақтарды тоңазытумен Feature Extraction іске асырды", ach2_reward: "+200 XP · +70 💰 ·  Сирек", ach2_btn: " Жетістікті алу", ach2_hint: "Оқытылатын параметрлер санын көрсең — бас!", l3_title: "🔓 Fine-tuning: Жұқа баптау", l3_sub: "Жақсырақ бейімделу үшін қабаттардың бір бөлігін ашу", l3_xp: "+250 XP", l3_p1: "Жеткілікті деректер болса, әрі қарай жүруге болады: Fine-tuning. Feature Extraction-дан кейін базалық модельдің соңғы қабаттарын ашып, оларды жаңа классификатормен бірге оқытамыз.", l3_code_title: "📝 Ішінара ашумен Fine-tuning", l3_warn_title: "⚠️ Маңызды Fine-tuning ережесі", l3_warn_text: "Ашылған қабаттар үшін кішірек learning rate (1e-5) және жаңа классификатор үшін үлкенірек (1e-3) қолдан.", ach3_name: "Жетістік: Fine-tuner", ach3_desc: "Ішінара ашумен Fine-tuning іске асырды", ach3_reward: "+250 XP · +80 💰 ·  Эпикалық", ach3_btn: " Жетістікті алу", ach3_hint: "Әртүрлі learning rates баптаған болсаң — бас!", l4_title: "🐕 Тәжірибе: Ит тұқымдарын классификациялау", l4_sub: "Нақты деректер жиынтығында Transfer Learning қолдану", l4_xp: "+300 XP", l4_p1: "Енді Transfer Learning-ді тәжірибеде қолданайық! Ит тұқымдары деректер жиынтығын алып, алдын ала оқытылған ResNet50 көмегімен классификатор оқытамыз.", l4_code_title: "📝 Толық жоба: Dog Breed Classifier", l4_meme: "Transfer Learning-мен CIFAR-10-да небәрі 10 эпохада 85-90% дәлдікке жетеміз! Нөлден оқыту 100+ эпоха алады.", ach4_name: "Жетістік: Transfer Learning тәжірибешісі", ach4_desc: "Нақты деректер жиынтығында Transfer Learning-мен классификатор оқытты", ach4_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Дәлдік 85%-дан жоғары болса — бас!", l5_title: "БОСС-ФАЙТ: Телефоннан жеке деректер жиынтығы", l5_sub: "Өз деректер жиынтығыңды жаса және модель оқыт", l5_xp: "+500 XP", l5_meme: "Өз деректер жиынтығыңды жасау уақыты келді! Айналаңдағы 5-10 объектті әрқайсысынан 20-30 фото түсір.", l5_code_title: "📝 Жеке деректер жиынтығында жасау және оқыту", l5_github_title: " Жобаны жариялау нұсқаулары", l5_github_tip_title: " README.md кеңестері", l5_github_tip_text: "1. Үлгі фотоларды қос<br>2. Архитектура мен дәлдікті көрсет<br>3. Деректер жиынтығын жинауды сипатта<br>4. Болжау скриншоттарын қос<br>5. Оқыту уақытын көрсет", ach5_name: "АҢЫЗДЫҚ: Transfer Learning шебері", ach5_desc: "Жеке деректер жиынтығын жасады, модель оқытты және GitHub-та жариялады", ach5_reward: "+500 XP · +200  · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% студенттер жеке деректермен жұмыс істейтін жобалар жасайды!", sq_title: " Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Модельдерді салыстыру»", sq1_text: "Бір деректер жиынтығында үш түрлі модель оқыт.", sq1_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq2_title: "⚡ Квест «Grad-CAM визуализациясы»", sq2_text: "Модель шешім қабылдағанда суреттің қай бөліктеріне қарайтынын визуализациялау үшін Grad-CAM іске асыр.", sq2_reward: "💰 Сыйлық: 200 ЖИ-теңге", sq3_title: "🎨 Квест «Мобильді қосымша»", sq3_text: "Оқытылған модельді ONNX немесе TorchScript форматына түрлендір және веб немесе мобильді қосымша жаса.", sq3_reward: "💰 Сыйлық: 400 ЖИ-теңге + «ML Deploy Master» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Transfer Learning артықшылықтарын түсіндің", sum2: "✅ Алдын ала оқытылған модельдерді зерттедің", sum3: "✅ Салмақтарды тоңазытумен Feature Extraction игердің", sum4: "✅ Ішінара ашумен Fine-tuning іске асырдың", sum5: "✅ Нақты деректер жиынтығында классификатор оқыттың", sum6: "🏆 Финалды босс — жеке деректер жиынтығы және модель GitHub-та!", sum_meme: "Құттықтаймын, Transfer Learning шебері! Келесі 4.2 сабақта генеративті модельдерді зерттейміз.", nav_back: "← Алдыңғы квест", nav_back_title: "3.5 CNN және компьютерлік көру", nav_next: "Келесі квест →", nav_next_title: "4.2 Генеративті модельдер", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
