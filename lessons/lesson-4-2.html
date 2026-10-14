@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 4.2: Токенизация и эмбеддинги — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(168, 85, 247, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(168, 85, 247, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #a855f7, #ec4899); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #a855f7, #ec4899); }
+        .level.boss::before { background: linear-gradient(90deg, #f59e0b, #ec4899); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #f59e0b, #ec4899); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); } 50% { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #ec4899; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1)); border: 2px dashed rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #d8b4fe; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(168, 85, 247, 0.08); border-color: #a855f7; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #a855f7; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(168, 85, 247, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #ec4899; background: rgba(236, 72, 153, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #ec4899; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(236, 72, 153, 0.08)); border: 2px solid rgba(168, 85, 247, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #a855f7; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(168, 85, 247, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(168, 85, 247, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-color: #ec4899; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(168, 85, 247, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 4.2 • МОДУЛЬ 4</span>
+        <h1 data-i18n="title">Токенизация и эмбеддинги</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 4.2! 📝 Сегодня ты узнаешь, как нейросети "читают" текст. Прежде чем ChatGPT сможет ответить на вопрос, текст нужно разбить на токены и превратить в числа — эмбеддинги!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1200 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +500 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Why Tokenization? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Почему нейросети не понимают текст?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Проблема представления текста</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+80 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Нейросети работают только с <strong>числами</strong>. Они не могут напрямую обработать строку "Привет, мир!". Нам нужно превратить текст в числа. Но как? Просто присвоить каждому слову номер? Это не работает — нейросеть не поймёт, что "кот" и "кошка" похожи!</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎮</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты играешь в RPG, где каждый предмет имеет ID. Меч = 1, Щит = 2, Зелье = 3. Но ID не говорит ничего о том, что меч и щит — это оружие, а зелье — еда. Нам нужно более умное представление!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🤔</span>
+            <h3 data-i18n="ach0_name">Ачивка: Аналитик проблем</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, почему текст нужно превращать в числа</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+80 XP · +30 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson4_2_analyst" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял проблему представления текста!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: What is Tokenization? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">✂️ Что такое токенизация?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Разбиение текста на части</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1"><strong>Токенизация</strong> — это процесс разбиения текста на меньшие части, называемые <strong>токенами</strong>. Токен может быть словом, частью слова или даже символом. Например, "ChatGPT" может быть разбит на ["Chat", "G", "PT"] или ["Chat", "GPT"] в зависимости от метода.</p>
+
+        <h3 data-i18n="l1_code_title"> Токенизация с HuggingFace</h3>
+        <pre><code>from transformers import AutoTokenizer
+
+# Load pre-trained tokenizer (GPT-2)
+tokenizer = AutoTokenizer.from_pretrained('gpt2')
+
+# Tokenize text
+text = "Hello, world! ChatGPT is amazing."
+tokens = tokenizer.tokenize(text)
+
+print(f"Original text: {text}")
+print(f"Tokens: {tokens}")
+
+# Convert tokens to IDs (numbers)
+token_ids = tokenizer.convert_tokens_to_ids(tokens)
+print(f"Token IDs: {token_ids}")
+
+# Full tokenization (returns dictionary)
+encoded = tokenizer(text, return_tensors='pt')
+print(f"\nEncoded output:")
+print(f"Input IDs: {encoded['input_ids']}")
+print(f"Attention mask: {encoded['attention_mask']}")
+
+# Decode back to text
+decoded = tokenizer.decode(encoded['input_ids'][0])
+print(f"\nDecoded: {decoded}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Что такое attention mask?</strong>
+            <span data-i18n="l1_tip_text">Attention mask показывает, какие токены являются реальными (1), а какие — padding (0). Padding добавляется, чтобы все последовательности в батче имели одинаковую длину.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">️</span>
+            <h3 data-i18n="ach1_name">Ачивка: Токенизатор</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Использовал токенизатор HuggingFace</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+150 XP · +50  · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_2_tokenizer" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел токены и их ID!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Types of Tokenization -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title"> Типы токенизации</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Word, Subword, Character</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Существует три основных типа токенизации: <strong>Word-level</strong> (по словам), <strong>Subword-level</strong> (по частям слов), и <strong>Character-level</strong> (по символам). Каждый имеет свои плюсы и минусы. Современные модели (GPT, BERT) используют subword токенизацию.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Сравнение типов токенизации</h3>
+        <pre><code># Word-level tokenization (simple split)
+text = "The quick brown fox jumps"
+word_tokens = text.split()
+print(f"Word tokens: {word_tokens}")
+print(f"Vocabulary size: ~100,000 words")
+
+# Subword tokenization (BPE - Byte Pair Encoding)
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+text = "unbelievable"
+subword_tokens = tokenizer.tokenize(text)
+print(f"\nSubword tokens: {subword_tokens}")
+print(f"Vocabulary size: ~30,000 tokens")
+
+# Character-level tokenization
+char_tokens = list(text)
+print(f"\nCharacter tokens: {char_tokens}")
+print(f"Vocabulary size: ~100 characters")
+
+# Show tokenization of rare word
+rare_word = "supercalifragilisticexpialidocious"
+print(f"\nRare word: {rare_word}")
+print(f"Word tokens: ['{rare_word}'] (OOV problem!)")
+print(f"Subword tokens: {tokenizer.tokenize(rare_word)}")
+print(f"Character tokens: {list(rare_word)}")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Проблема OOV</strong>
+            <span data-i18n="l2_lore_text">OOV (Out-of-Vocabulary) — когда слово не встречается в словаре токенизатора. Word-level токенизация не знает, что делать с редкими словами. Subword токенизация решает эту проблему, разбивая редкие слова на известные части!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach2_name">Ачивка: Эксперт токенизации</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Понял различия между типами токенизации</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+200 XP · +70 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_2_expert" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если понял проблему OOV!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: What are Embeddings? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🔢 Что такое эмбеддинги?</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Векторное представление слов</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1"><strong>Эмбеддинг</strong> — это вектор (список чисел), который представляет токен в многомерном пространстве. Слова с похожим значением имеют близкие векторы. Например, векторы "кот" и "кошка" будут ближе друг к другу, чем к вектору "автомобиль".</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🗺️</div>
+            <div class="game-text">
+                <strong data-i18n="l3_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l3_analogy_text">Представь карту мира, где города — это слова. Близкие по смыслу слова (Москва и Санкт-Петербург) находятся рядом. Далёкие по смыслу (Москва и ананас) — далеко друг от друга. Эмбеддинги — это координаты слов на этой карте!</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l3_code_title">📝 Визуализация эмбеддингов</h3>
+        <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+# Simulated word embeddings (300-dimensional like Word2Vec)
+# In reality, these would come from a pre-trained model
+word_embeddings = {
+    'king': np.random.randn(300),
+    'queen': np.random.randn(300),
+    'man': np.random.randn(300),
+    'woman': np.random.randn(300),
+    'prince': np.random.randn(300),
+    'princess': np.random.randn(300),
+    'car': np.random.randn(300),
+    'bicycle': np.random.randn(300),
+    'airplane': np.random.randn(300),
+    'cat': np.random.randn(300),
+    'dog': np.random.randn(300),
+    'apple': np.random.randn(300)
+}
+
+# Make similar words actually similar (for demo)
+word_embeddings['queen'] = word_embeddings['king'] + np.random.randn(300) * 0.1
+word_embeddings['woman'] = word_embeddings['man'] + np.random.randn(300) * 0.1
+word_embeddings['princess'] = word_embeddings['prince'] + np.random.randn(300) * 0.1
+word_embeddings['dog'] = word_embeddings['cat'] + np.random.randn(300) * 0.1
+word_embeddings['bicycle'] = word_embeddings['car'] + np.random.randn(300) * 0.1
+
+# Reduce dimensionality to 2D for visualization
+words = list(word_embeddings.keys())
+embeddings_matrix = np.array([word_embeddings[w] for w in words])
+
+pca = PCA(n_components=2)
+embeddings_2d = pca.fit_transform(embeddings_matrix)
+
+# Plot
+plt.figure(figsize=(12, 8))
+plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1], s=200, alpha=0.6)
+
+for i, word in enumerate(words):
+    plt.annotate(word, (embeddings_2d[i, 0], embeddings_2d[i, 1]), 
+                fontsize=12, fontweight='bold')
+
+plt.title('Word Embeddings Visualization (PCA)', fontsize=14, fontweight='bold')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print("Embeddings visualized! Similar words should cluster together.")</code></pre>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Мастер эмбеддингов</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Визуализировал векторное пространство слов</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_2_embedding_master" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел кластеры похожих слов!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Modern Embeddings -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🤖 Современные эмбеддинги</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">BERT, GPT и контекстуальные эмбеддинги</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Классические эмбеддинги (Word2Vec, GloVe) дают каждому слову <strong>один фиксированный вектор</strong>. Но слово "bank" может означать "банк" (финансовый) или "берег" (реки)! Современные модели (BERT, GPT) создают <strong>контекстуальные эмбеддинги</strong> — вектор зависит от контекста.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Контекстуальные эмбеддинги с BERT</h3>
+        <pre><code>import torch
+from transformers import AutoTokenizer, AutoModel
+
+# Load BERT model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+model = AutoModel.from_pretrained('bert-base-uncased')
+
+# Two sentences with the word "bank" in different contexts
+sentences = [
+    "I deposited money in the bank.",
+    "We sat on the river bank."
+]
+
+# Tokenize and get embeddings
+for sentence in sentences:
+    inputs = tokenizer(sentence, return_tensors='pt')
+    
+    with torch.no_grad():
+        outputs = model(**inputs)
+    
+    # Get embeddings for all tokens
+    embeddings = outputs.last_hidden_state
+    
+    # Find "bank" token
+    tokens = tokenizer.tokenize(sentence)
+    bank_idx = tokens.index('bank')
+    
+    bank_embedding = embeddings[0, bank_idx + 1]  # +1 for [CLS] token
+    
+    print(f"Sentence: {sentence}")
+    print(f"Tokens: {tokens}")
+    print(f"Bank embedding shape: {bank_embedding.shape}")
+    print(f"Bank embedding (first 5 dims): {bank_embedding[:5]}")
+    print()
+
+# Compare embeddings
+inputs1 = tokenizer(sentences[0], return_tensors='pt')
+inputs2 = tokenizer(sentences[1], return_tensors='pt')
+
+with torch.no_grad():
+    emb1 = model(**inputs1).last_hidden_state
+    emb2 = model(**inputs2).last_hidden_state
+
+# Cosine similarity between "bank" in two contexts
+bank1 = emb1[0, 5]  # "bank" in first sentence
+bank2 = emb2[0, 6]  # "bank" in second sentence
+
+similarity = torch.nn.functional.cosine_similarity(bank1, bank2, dim=0)
+print(f"Cosine similarity between 'bank' in two contexts: {similarity.item():.4f}")
+print("(Lower similarity = different meanings!)")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l4_warn_title">⚠️ Почему это важно?</strong>
+            <span data-i18n="l4_warn_text">Контекстуальные эмбеддинги — это прорыв! BERT понимает, что "bank" в разных предложениях имеет разные значения. Именно это позволяет GPT и другим моделям генерировать осмысленный текст!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach4_name">Ачивка: BERT исследователь</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Использовал контекстуальные эмбеддинги BERT</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+300 XP · +100 💰 ·  Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_2_bert_explorer" class="ach-btn" data-i18n="ach4_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если увидел разницу в эмбеддингах "bank"!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Custom Embedding Project -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Поиск похожих текстов</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Семантический поиск на эмбеддингах</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+500 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🔍</span>
+            <span data-i18n="l5_meme">Пришло время создать реальный проект! Мы построим систему семантического поиска, которая находит похожие тексты по смыслу, а не по ключевым словам. Это основа современных поисковых систем!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Семантический поиск с эмбеддингами</h3>
+        <pre><code>import torch
+import numpy as np
+from transformers import AutoTokenizer, AutoModel
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load model
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+model = AutoModel.from_pretrained('bert-base-uncased')
+
+# Database of texts (e.g., product descriptions, articles)
+database = [
+    "The quick brown fox jumps over the lazy dog",
+    "A fast animal leaps across a sleeping pet",
+    "Machine learning is a subset of artificial intelligence",
+    "Deep learning uses neural networks with many layers",
+    "The stock market crashed today",
+    "Financial markets experienced significant losses",
+    "How to bake a chocolate cake",
+    "Recipe for making delicious brownies"
+]
+
+# Function to get text embeddings
+def get_embedding(text):
+    inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    # Use mean pooling
+    return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+
+# Get embeddings for all database texts
+print("Computing embeddings for database...")
+db_embeddings = [get_embedding(text) for text in database]
+
+# Search query
+query = "AI and neural networks"
+query_embedding = get_embedding(query)
+
+# Calculate similarity
+similarities = cosine_similarity([query_embedding], db_embeddings)[0]
+
+# Get top 3 most similar texts
+top_indices = np.argsort(similarities)[::-1][:3]
+
+print(f"\nQuery: {query}")
+print(f"\nTop 3 most similar texts:")
+for rank, idx in enumerate(top_indices, 1):
+    print(f"{rank}. (Similarity: {similarities[idx]:.4f})")
+    print(f"   {database[idx]}")
+    print()
+
+# Interactive search
+print("\n--- Interactive Search ---")
+while True:
+    user_query = input("\nEnter search query (or 'quit' to exit): ")
+    if user_query.lower() == 'quit':
+        break
+    
+    query_emb = get_embedding(user_query)
+    sims = cosine_similarity([query_emb], db_embeddings)[0]
+    top_idx = np.argsort(sims)[::-1][:3]
+    
+    print(f"\nTop results for '{user_query}':")
+    for rank, idx in enumerate(top_idx, 1):
+        print(f"{rank}. (Score: {sims[idx]:.4f}) {database[idx]}")</code></pre>
+
+        <h3 data-i18n="l5_github_title"> Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir semantic-search-engine
+cd semantic-search-engine
+
+mkdir src data notebooks
+touch src/search.py
+touch src/embeddings.py
+touch requirements.txt
+touch README.md
+
+# 2. requirements.txt
+torch==2.1.0
+transformers==4.35.0
+scikit-learn==1.3.0
+numpy==1.24.0
+
+# 3. Add your own database (e.g., articles, products)
+# data/database.txt - one text per line
+
+# 4. Run the search engine
+python src/search.py
+
+# 5. Commit and push
+git add .
+git commit -m "Add semantic search engine with embeddings"
+git push origin main
+
+# 6. Add demo to README with example queries!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title"> Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Объясни, как работает семантический поиск<br>
+                2. Покажи примеры запросов и результатов<br>
+                3. Добавь визуализацию эмбеддингов (t-SNE или PCA)<br>
+                4. Опиши, как добавить свой датасет<br>
+                5. Укажи время поиска и точность
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(245, 158, 11, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: NLP Engineer</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал систему семантического поиска и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+500 XP · +200 💰 ·  Легендарная</div>
+            <a href="achievements.html?unlock=lesson4_2_nlp_engineer" class="ach-btn" style="background: linear-gradient(135deg, #a855f7, #f59e0b);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% студентов создают работающие NLP-проекты. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Аналогия слов»</h3>
+            <p data-i18n="sq1_text">Используй Word2Vec эмбеддинги для решения аналогий: "king - man + woman = ?". Найди другие интересные аналогии!</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Визуализация эмбеддингов»</h3>
+            <p data-i18n="sq2_text">Возьми 1000 слов из Wikipedia, получи их эмбеддинги и визуализируй в 2D с помощью t-SNE. Найди кластеры тем!</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 200 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Чат-бот с памятью»</h3>
+            <p data-i18n="sq3_text">Создай чат-бота, который использует эмбеддинги для поиска похожих вопросов в базе знаний и даёт релевантные ответы. Это основа RAG (Retrieval-Augmented Generation)!</p>
+            <div class="quest-reward" data-i18n="sq3_reward"> Награда: 400 AI-коинов + титул «RAG Developer»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял, зачем нужна токенизация</li>
+            <li data-i18n="sum2">✅ Освоил типы токенизации (word, subword, character)</li>
+            <li data-i18n="sum3">✅ Понял концепцию эмбеддингов</li>
+            <li data-i18n="sum4">✅ Визуализировал векторное пространство слов</li>
+            <li data-i18n="sum5">✅ Использовал контекстуальные эмбеддинги BERT</li>
+            <li data-i18n="sum6">🏆 Финальный босс — система семантического поиска на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji"></span>
+            <span data-i18n="sum_meme">Поздравляю, NLP Engineer! Ты теперь понимаешь, как текст превращается в числа, которые понимают нейросети. Это фундамент для создания ChatGPT! В следующем уроке 4.3 мы изучим архитектуру Transformer и начнём создавать свою языковую модель! 🤖</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-4-1.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">4.1 Transfer Learning</span>
+        </a>
+        <a href="lesson-4-3.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">4.3 Архитектура Transformer</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 4.2 • МОДУЛЬ 4", title: "Токенизация и эмбеддинги",
+            subtitle: "Добро пожаловать на Уровень 4.2! 📝 Сегодня ты узнаешь, как нейросети 'читают' текст. Прежде чем ChatGPT сможет ответить на вопрос, текст нужно разбить на токены и превратить в числа — эмбеддинги!",
+            duration: "⏱ 3 часа", level: "📙 Продвинутый", xp: "⭐ +1200 XP", loot: "💰 +500 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🤔 Почему нейросети не понимают текст?", l0_sub: "Проблема представления текста", l0_xp: "+80 XP",
+            l0_p1: "Нейросети работают только с числами. Они не могут напрямую обработать строку 'Привет, мир!'. Нам нужно превратить текст в числа. Но как? Просто присвоить каждому слову номер? Это не работает — нейросеть не поймёт, что 'кот' и 'кошка' похожи!",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты играешь в RPG, где каждый предмет имеет ID. Меч = 1, Щит = 2, Зелье = 3. Но ID не говорит ничего о том, что меч и щит — это оружие, а зелье — еда. Нам нужно более умное представление!",
+            ach0_name: "Ачивка: Аналитик проблем", ach0_desc: "Понял, почему текст нужно превращать в числа", ach0_reward: "+80 XP · +30 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял проблему представления текста!",
+            l1_title: "✂️ Что такое токенизация?", l1_sub: "Разбиение текста на части", l1_xp: "+150 XP",
+            l1_p1: "Токенизация — это процесс разбиения текста на меньшие части, называемые токенами. Токен может быть словом, частью слова или даже символом. Например, 'ChatGPT' может быть разбит на ['Chat', 'G', 'PT'] или ['Chat', 'GPT'] в зависимости от метода.",
+            l1_code_title: "📝 Токенизация с HuggingFace",
+            l1_tip_title: " Что такое attention mask?", l1_tip_text: "Attention mask показывает, какие токены являются реальными (1), а какие — padding (0). Padding добавляется, чтобы все последовательности в батче имели одинаковую длину.",
+            ach1_name: "Ачивка: Токенизатор", ach1_desc: "Использовал токенизатор HuggingFace", ach1_reward: "+150 XP · +50 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если увидел токены и их ID!",
+            l2_title: "🔤 Типы токенизации", l2_sub: "Word, Subword, Character", l2_xp: "+200 XP",
+            l2_p1: "Существует три основных типа токенизации: Word-level (по словам), Subword-level (по частям слов), и Character-level (по символам). Каждый имеет свои плюсы и минусы. Современные модели (GPT, BERT) используют subword токенизацию.",
+            l2_code_title: " Сравнение типов токенизации",
+            l2_lore_title: "📚 Проблема OOV", l2_lore_text: "OOV (Out-of-Vocabulary) — когда слово не встречается в словаре токенизатора. Word-level токенизация не знает, что делать с редкими словами. Subword токенизация решает эту проблему, разбивая редкие слова на известные части!",
+            ach2_name: "Ачивка: Эксперт токенизации", ach2_desc: "Понял различия между типами токенизации", ach2_reward: "+200 XP · +70 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если понял проблему OOV!",
+            l3_title: "🔢 Что такое эмбеддинги?", l3_sub: "Векторное представление слов", l3_xp: "+250 XP",
+            l3_p1: "Эмбеддинг — это вектор (список чисел), который представляет токен в многомерном пространстве. Слова с похожим значением имеют близкие векторы. Например, векторы 'кот' и 'кошка' будут ближе друг к другу, чем к вектору 'автомобиль'.",
+            l3_analogy_title: "Игровая аналогия", l3_analogy_text: "Представь карту мира, где города — это слова. Близкие по смыслу слова (Москва и Санкт-Петербург) находятся рядом. Далёкие по смыслу (Москва и ананас) — далеко друг от друга. Эмбеддинги — это координаты слов на этой карте!",
+            l3_code_title: "📝 Визуализация эмбеддингов",
+            ach3_name: "Ачивка: Мастер эмбеддингов", ach3_desc: "Визуализировал векторное пространство слов", ach3_reward: "+250 XP · +80 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел кластеры похожих слов!",
+            l4_title: "🤖 Современные эмбеддинги", l4_sub: "BERT, GPT и контекстуальные эмбеддинги", l4_xp: "+300 XP",
+            l4_p1: "Классические эмбеддинги (Word2Vec, GloVe) дают каждому слову один фиксированный вектор. Но слово 'bank' может означать 'банк' (финансовый) или 'берег' (реки)! Современные модели (BERT, GPT) создают контекстуальные эмбеддинги — вектор зависит от контекста.",
+            l4_code_title: "📝 Контекстуальные эмбеддинги с BERT",
+            l4_warn_title: "⚠️ Почему это важно?", l4_warn_text: "Контекстуальные эмбеддинги — это прорыв! BERT понимает, что 'bank' в разных предложениях имеет разные значения. Именно это позволяет GPT и другим моделям генерировать осмысленный текст!",
+            ach4_name: "Ачивка: BERT исследователь", ach4_desc: "Использовал контекстуальные эмбеддинги BERT", ach4_reward: "+300 XP · +100 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если увидел разницу в эмбеддингах 'bank'!",
+            l5_title: "БОСС-ФАЙТ: Поиск похожих текстов", l5_sub: "Семантический поиск на эмбеддингах", l5_xp: "+500 XP",
+            l5_meme: "Пришло время создать реальный проект! Мы построим систему семантического поиска, которая находит похожие тексты по смыслу, а не по ключевым словам. Это основа современных поисковых систем!",
+            l5_code_title: "📝 Семантический поиск с эмбеддингами",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Объясни, как работает семантический поиск<br>2. Покажи примеры запросов и результатов<br>3. Добавь визуализацию эмбеддингов (t-SNE или PCA)<br>4. Опиши, как добавить свой датасет<br>5. Укажи время поиска и точность",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: NLP Engineer", ach5_desc: "Создал систему семантического поиска и опубликовал на GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% студентов создают работающие NLP-проекты. Ты — элита!",
+            sq_title: " Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: " Квест «Аналогия слов»", sq1_text: "Используй Word2Vec эмбеддинги для решения аналогий: 'king - man + woman = ?'. Найди другие интересные аналогии!", sq1_reward: "💰 Награда: 100 AI-коинов",
+            sq2_title: "⚡ Квест «Визуализация эмбеддингов»", sq2_text: "Возьми 1000 слов из Wikipedia, получи их эмбеддинги и визуализируй в 2D с помощью t-SNE. Найди кластеры тем!", sq2_reward: "💰 Награда: 200 AI-коинов",
+            sq3_title: "🎨 Квест «Чат-бот с памятью»", sq3_text: "Создай чат-бота, который использует эмбеддинги для поиска похожих вопросов в базе знаний и даёт релевантные ответы. Это основа RAG (Retrieval-Augmented Generation)!", sq3_reward: " Награда: 400 AI-коинов + титул «RAG Developer»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял, зачем нужна токенизация", sum2: "✅ Освоил типы токенизации (word, subword, character)",
+            sum3: "✅ Понял концепцию эмбеддингов", sum4: "✅ Визуализировал векторное пространство слов",
+            sum5: "✅ Использовал контекстуальные эмбеддинги BERT", sum6: "🏆 Финальный босс — система семантического поиска на GitHub!",
+            sum_meme: "Поздравляю, NLP Engineer! Ты теперь понимаешь, как текст превращается в числа, которые понимают нейросети. Это фундамент для создания ChatGPT! В следующем уроке 4.3 мы изучим архитектуру Transformer и начнём создавать свою языковую модель! 🤖",
+            nav_back: "← Предыдущий квест", nav_back_title: "4.1 Transfer Learning",
+            nav_next: "Следующий квест →", nav_next_title: "4.3 Архитектура Transformer",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 4.2 • MODULE 4", title: "Tokenization and Embeddings",
+            subtitle: "Welcome to Level 4.2!  Today you'll learn how neural networks 'read' text. Before ChatGPT can answer a question, text needs to be split into tokens and converted to numbers — embeddings!",
+            duration: "⏱ 3 hours", level: "📙 Advanced", xp: "⭐ +1200 XP", loot: "💰 +500 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🤔 Why don't neural networks understand text?", l0_sub: "The text representation problem", l0_xp: "+80 XP",
+            l0_p1: "Neural networks work only with numbers. They can't directly process the string 'Hello, world!'. We need to convert text to numbers. But how? Just assign each word a number? That doesn't work — the network won't understand that 'cat' and 'cats' are similar!",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you're playing an RPG where every item has an ID. Sword = 1, Shield = 2, Potion = 3. But the ID doesn't tell you that sword and shield are weapons, while potion is food. We need a smarter representation!",
+            ach0_name: "Achievement: Problem Analyst", ach0_desc: "Understood why text needs to be converted to numbers", ach0_reward: "+80 XP · +30 💰 ·  Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the text representation problem!",
+            l1_title: "️ What is tokenization?", l1_sub: "Splitting text into parts", l1_xp: "+150 XP",
+            l1_p1: "Tokenization is the process of splitting text into smaller parts called tokens. A token can be a word, part of a word, or even a character. For example, 'ChatGPT' can be split into ['Chat', 'G', 'PT'] or ['Chat', 'GPT'] depending on the method.",
+            l1_code_title: "📝 Tokenization with HuggingFace",
+            l1_tip_title: " What is attention mask?", l1_tip_text: "Attention mask shows which tokens are real (1) and which are padding (0). Padding is added so all sequences in a batch have the same length.",
+            ach1_name: "Achievement: Tokenizer", ach1_desc: "Used HuggingFace tokenizer", ach1_reward: "+150 XP · +50  · 🔵 Rare", ach1_btn: " Get achievement", ach1_hint: "Click if you saw tokens and their IDs!",
+            l2_title: "🔤 Types of tokenization", l2_sub: "Word, Subword, Character", l2_xp: "+200 XP",
+            l2_p1: "There are three main types of tokenization: Word-level, Subword-level, and Character-level. Each has pros and cons. Modern models (GPT, BERT) use subword tokenization.",
+            l2_code_title: "📝 Comparing tokenization types",
+            l2_lore_title: "📚 OOV Problem", l2_lore_text: "OOV (Out-of-Vocabulary) — when a word isn't in the tokenizer's vocabulary. Word-level tokenization doesn't know what to do with rare words. Subword tokenization solves this by splitting rare words into known parts!",
+            ach2_name: "Achievement: Tokenization Expert", ach2_desc: "Understood differences between tokenization types", ach2_reward: "+200 XP · +70 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you understood the OOV problem!",
+            l3_title: "🔢 What are embeddings?", l3_sub: "Vector representation of words", l3_xp: "+250 XP",
+            l3_p1: "An embedding is a vector (list of numbers) that represents a token in multi-dimensional space. Words with similar meanings have close vectors. For example, vectors for 'cat' and 'kitten' will be closer to each other than to 'car'.",
+            l3_analogy_title: "Game analogy", l3_analogy_text: "Imagine a world map where cities are words. Similar words (Moscow and Saint Petersburg) are close. Dissimilar words (Moscow and pineapple) are far apart. Embeddings are coordinates of words on this map!",
+            l3_code_title: "📝 Embedding visualization",
+            ach3_name: "Achievement: Embedding Master", ach3_desc: "Visualized word vector space", ach3_reward: "+250 XP · +80  · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw clusters of similar words!",
+            l4_title: "🤖 Modern embeddings", l4_sub: "BERT, GPT and contextual embeddings", l4_xp: "+300 XP",
+            l4_p1: "Classic embeddings (Word2Vec, GloVe) give each word one fixed vector. But 'bank' can mean financial institution or river bank! Modern models (BERT, GPT) create contextual embeddings — the vector depends on context.",
+            l4_code_title: "📝 Contextual embeddings with BERT",
+            l4_warn_title: "⚠️ Why is this important?", l4_warn_text: "Contextual embeddings are a breakthrough! BERT understands that 'bank' in different sentences has different meanings. This is what allows GPT and other models to generate meaningful text!",
+            ach4_name: "Achievement: BERT Explorer", ach4_desc: "Used BERT contextual embeddings", ach4_reward: "+300 XP · +100 💰 · 🟣 Epic", ach4_btn: " Get achievement", ach4_hint: "Click if you saw the difference in 'bank' embeddings!",
+            l5_title: "BOSS FIGHT: Similar text search", l5_sub: "Semantic search with embeddings", l5_xp: "+500 XP",
+            l5_meme: "Time to create a real project! We'll build a semantic search system that finds similar texts by meaning, not keywords. This is the foundation of modern search engines!",
+            l5_code_title: "📝 Semantic search with embeddings",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Explain how semantic search works<br>2. Show example queries and results<br>3. Add embedding visualization (t-SNE or PCA)<br>4. Describe how to add your dataset<br>5. Specify search time and accuracy",
+            ach5_name: "LEGENDARY: NLP Engineer", ach5_desc: "Created semantic search system and published on GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendary", ach5_btn: " Get legendary achievement", ach5_hint: "Only 5% of students create working NLP projects. You're elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Word Analogies»", sq1_text: "Use Word2Vec embeddings to solve analogies: 'king - man + woman = ?'. Find other interesting analogies!", sq1_reward: "💰 Reward: 100 AI-coins",
+            sq2_title: " Quest «Embedding Visualization»", sq2_text: "Take 1000 words from Wikipedia, get their embeddings and visualize in 2D with t-SNE. Find topic clusters!", sq2_reward: "💰 Reward: 200 AI-coins",
+            sq3_title: "🎨 Quest «Chatbot with Memory»", sq3_text: "Create a chatbot that uses embeddings to search for similar questions in a knowledge base and gives relevant answers. This is the foundation of RAG!", sq3_reward: "💰 Reward: 400 AI-coins + title «RAG Developer»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood why tokenization is needed", sum2: "✅ Mastered tokenization types (word, subword, character)",
+            sum3: "✅ Understood embedding concept", sum4: "✅ Visualized word vector space",
+            sum5: "✅ Used BERT contextual embeddings", sum6: "🏆 Final boss — semantic search system on GitHub!",
+            sum_meme: "Congrats, NLP Engineer! You now understand how text becomes numbers that neural networks understand. This is the foundation for creating ChatGPT! In the next lesson 4.3, we'll study Transformer architecture and start creating our own language model! ",
+            nav_back: "← Previous quest", nav_back_title: "4.1 Transfer Learning",
+            nav_next: "Next quest →", nav_next_title: "4.3 Transformer Architecture",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: " MISIÓN 4.2 • MÓDULO 4", title: "Tokenización y Embeddings", subtitle: "¡Bienvenido al Nivel 4.2! 📝 Hoy aprenderás cómo las redes neuronales 'leen' texto.", duration: "⏱ 3 horas", level: "📙 Avanzado", xp: "⭐ +1200 XP", loot: " +500 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🤔 ¿Por qué las redes neuronales no entienden texto?", l0_sub: "El problema de representación de texto", l0_xp: "+80 XP", l0_p1: "Las redes neuronales solo trabajan con números. No pueden procesar directamente la cadena '¡Hola, mundo!'. Necesitamos convertir texto a números.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que juegas un RPG donde cada objeto tiene un ID. Espada = 1, Escudo = 2, Poción = 3. Pero el ID no dice que espada y escudo son armas.", ach0_name: "Logro: Analista de problemas", ach0_desc: "Entendió por qué el texto debe convertirse en números", ach0_reward: "+80 XP · +30 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste el problema!", l1_title: "✂️ ¿Qué es tokenización?", l1_sub: "Dividir texto en partes", l1_xp: "+150 XP", l1_p1: "Tokenización es el proceso de dividir texto en partes más pequeñas llamadas tokens. Un token puede ser una palabra, parte de palabra o carácter.", l1_code_title: "📝 Tokenización con HuggingFace", l1_tip_title: "💡 ¿Qué es attention mask?", l1_tip_text: "Attention mask muestra qué tokens son reales (1) y cuáles son padding (0).", ach1_name: "Logro: Tokenizador", ach1_desc: "Usó tokenizador HuggingFace", ach1_reward: "+150 XP · +50 💰 · 🔵 Raro", ach1_btn: " Obtener logro", ach1_hint: "¡Haz clic si viste tokens y sus IDs!", l2_title: "🔤 Tipos de tokenización", l2_sub: "Word, Subword, Character", l2_xp: "+200 XP", l2_p1: "Hay tres tipos principales: Word-level, Subword-level y Character-level. Modelos modernos (GPT, BERT) usan subword.", l2_code_title: " Comparando tipos de tokenización", l2_lore_title: "📚 Problema OOV", l2_lore_text: "OOV (Out-of-Vocabulary) — cuando una palabra no está en el vocabulario. Subword tokenization resuelve esto dividiendo palabras raras en partes conocidas.", ach2_name: "Logro: Experto en tokenización", ach2_desc: "Entendió diferencias entre tipos de tokenización", ach2_reward: "+200 XP · +70 💰 ·  Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si entendiste el problema OOV!", l3_title: "🔢 ¿Qué son embeddings?", l3_sub: "Representación vectorial de palabras", l3_xp: "+250 XP", l3_p1: "Un embedding es un vector que representa un token en espacio multidimensional. Palabras con significados similares tienen vectores cercanos.", l3_analogy_title: "Analogía de juego", l3_analogy_text: "Imagina un mapa mundial donde ciudades son palabras. Palabras similares (Moscú y San Petersburgo) están cerca. Embeddings son coordenadas de palabras.", ach3_name: "Logro: Maestro de embeddings", ach3_desc: "Visualizó espacio vectorial de palabras", ach3_reward: "+250 XP · +80 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si viste clústeres de palabras similares!", l4_title: "🤖 Embeddings modernos", l4_sub: "BERT, GPT y embeddings contextuales", l4_xp: "+300 XP", l4_p1: "Embeddings clásicos dan a cada palabra un vector fijo. Pero 'bank' puede ser banco financiero o orilla de río. Modelos modernos crean embeddings contextuales.", l4_code_title: " Embeddings contextuales con BERT", l4_warn_title: "⚠️ ¿Por qué es importante?", l4_warn_text: "¡Los embeddings contextuales son un avance! BERT entiende que 'bank' en diferentes oraciones tiene diferentes significados.", ach4_name: "Logro: Explorador BERT", ach4_desc: "Usó embeddings contextuales de BERT", ach4_reward: "+300 XP · +100 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si viste la diferencia en embeddings de 'bank'!", l5_title: "¡PELEA JEFE: Búsqueda de textos similares!", l5_sub: "Búsqueda semántica con embeddings", l5_xp: "+500 XP", l5_meme: "¡Tiempo de crear un proyecto real! Construiremos un sistema de búsqueda semántica que encuentra textos similares por significado.", l5_code_title: "📝 Búsqueda semántica con embeddings", l5_github_title: "🚀 Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Explica cómo funciona búsqueda semántica<br>2. Muestra ejemplos de consultas<br>3. Añade visualización de embeddings<br>4. Describe cómo añadir dataset<br>5. Especifica tiempo y precisión", ach5_name: "LEGENDARIO: Ingeniero NLP", ach5_desc: "Creó sistema de búsqueda semántica y publicó en GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo 5% crea proyectos NLP funcionales!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Analogías de palabras»", sq1_text: "Usa embeddings Word2Vec para resolver analogías: 'king - man + woman = ?'.", sq1_reward: "💰 Recompensa: 100 AI-monedas", sq2_title: "⚡ Misión «Visualización de embeddings»", sq2_text: "Toma 1000 palabras de Wikipedia y visualiza sus embeddings en 2D con t-SNE.", sq2_reward: "💰 Recompensa: 200 AI-monedas", sq3_title: "🎨 Misión «Chatbot con memoria»", sq3_text: "Crea chatbot que use embeddings para buscar preguntas similares. ¡Base de RAG!", sq3_reward: "💰 Recompensa: 400 AI-monedas + título «RAG Developer»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste por qué se necesita tokenización", sum2: "✅ Dominaste tipos de tokenización", sum3: "✅ Entendiste concepto de embeddings", sum4: "✅ Visualizaste espacio vectorial", sum5: "✅ Usaste embeddings contextuales BERT", sum6: "🏆 ¡Jefe final: búsqueda semántica en GitHub!", sum_meme: "¡Felicidades, Ingeniero NLP! En la próxima lección 4.3 estudiaremos arquitectura Transformer.", nav_back: "← Misión anterior", nav_back_title: "4.1 Transfer Learning", nav_next: "Siguiente misión →", nav_next_title: "4.3 Arquitectura Transformer", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 4.2 • MODUL 4", title: "Tokenisierung und Embeddings", subtitle: "Willkommen auf Level 4.2! 📝 Heute lernst du, wie neuronale Netze Text 'lesen'.", duration: "⏱ 3 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1200 XP", loot: "💰 +500 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🤔 Warum verstehen neuronale Netze keinen Text?", l0_sub: "Das Textrepräsentationsproblem", l0_xp: "+80 XP", l0_p1: "Neuronale Netze arbeiten nur mit Zahlen. Sie können 'Hallo, Welt!' nicht direkt verarbeiten. Wir müssen Text in Zahlen umwandeln.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir ein RPG vor, wo jeder Gegenstand eine ID hat. Schwert = 1, Schild = 2, Trank = 3. Aber die ID sagt nicht, dass Schwert und Schild Waffen sind.", ach0_name: "Erfolg: Problem-Analyst", ach0_desc: "Verstand, warum Text in Zahlen umgewandelt werden muss", ach0_reward: "+80 XP · +30 💰 ·  Gewöhnlich", ach0_btn: " Erfolg erhalten", ach0_hint: "Klicke, wenn du das Problem verstanden hast!", l1_title: "✂️ Was ist Tokenisierung?", l1_sub: "Text in Teile aufteilen", l1_xp: "+150 XP", l1_p1: "Tokenisierung ist der Prozess, Text in kleinere Teile (Tokens) aufzuteilen. Ein Token kann ein Wort, Wortteil oder Zeichen sein.", l1_code_title: "📝 Tokenisierung mit HuggingFace", l1_tip_title: "💡 Was ist Attention Mask?", l1_tip_text: "Attention Mask zeigt, welche Tokens echt (1) und welche Padding (0) sind.", ach1_name: "Erfolg: Tokenisierer", ach1_desc: "HuggingFace Tokenizer verwendet", ach1_reward: "+150 XP · +50 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du Tokens und IDs gesehen hast!", l2_title: " Tokenisierungstypen", l2_sub: "Word, Subword, Character", l2_xp: "+200 XP", l2_p1: "Es gibt drei Haupttypen: Word-level, Subword-level und Character-level. Moderne Modelle (GPT, BERT) verwenden Subword.", l2_code_title: "📝 Tokenisierungstypen vergleichen", l2_lore_title: "📚 OOV-Problem", l2_lore_text: "OOV (Out-of-Vocabulary) — wenn ein Wort nicht im Vokabular ist. Subword-Tokenisierung löst dies, indem sie seltene Wörter in bekannte Teile aufteilt.", ach2_name: "Erfolg: Tokenisierungs-Experte", ach2_desc: "Verstand Unterschiede zwischen Tokenisierungstypen", ach2_reward: "+200 XP · +70 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du OOV-Problem verstanden hast!", l3_title: "🔢 Was sind Embeddings?", l3_sub: "Vektorielle Darstellung von Wörtern", l3_xp: "+250 XP", l3_p1: "Ein Embedding ist ein Vektor, der einen Token im mehrdimensionalen Raum darstellt. Wörter mit ähnlicher Bedeutung haben nahe Vektoren.", l3_analogy_title: "Spiel-Analogie", l3_analogy_text: "Stell dir eine Weltkarte vor, wo Städte Wörter sind. Ähnliche Wörter (Moskau und Sankt Petersburg) sind nah. Embeddings sind Koordinaten von Wörtern.", ach3_name: "Erfolg: Embedding-Meister", ach3_desc: "Visualisierte Wortvektorraum", ach3_reward: "+250 XP · +80 💰 ·  Episch", ach3_btn: " Erfolg erhalten", ach3_hint: "Klicke, wenn du Cluster ähnlicher Wörter gesehen hast!", l4_title: "🤖 Moderne Embeddings", l4_sub: "BERT, GPT und kontextuelle Embeddings", l4_xp: "+300 XP", l4_p1: "Klassische Embeddings geben jedem Wort einen festen Vektor. Aber 'Bank' kann Finanzinstitut oder Flussufer bedeuten! Moderne Modelle erstellen kontextuelle Embeddings.", l4_code_title: "📝 Kontextuelle Embeddings mit BERT", l4_warn_title: "⚠️ Warum ist das wichtig?", l4_warn_text: "Kontextuelle Embeddings sind ein Durchbruch! BERT versteht, dass 'bank' in verschiedenen Sätzen unterschiedliche Bedeutungen hat.", ach4_name: "Erfolg: BERT-Explorer", ach4_desc: "BERT kontextuelle Embeddings verwendet", ach4_reward: "+300 XP · +100 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du Unterschied in 'bank'-Embeddings gesehen hast!", l5_title: "BOSSKAMPF: Ähnliche Textsuche", l5_sub: "Semantische Suche mit Embeddings", l5_xp: "+500 XP", l5_meme: "Zeit für ein echtes Projekt! Wir bauen ein semantisches Suchsystem, das ähnliche Texte nach Bedeutung findet.", l5_code_title: " Semantische Suche mit Embeddings", l5_github_title: "🚀 Projektveröffentlichungsanweisungen", l5_github_tip_title: " README.md Tipps", l5_github_tip_text: "1. Erkläre semantische Suche<br>2. Zeige Beispielanfragen<br>3. Füge Embedding-Visualisierung hinzu<br>4. Beschreibe Dataset-Hinzufügung<br>5. Gib Suchzeit und Genauigkeit an", ach5_name: "LEGENDÄR: NLP-Ingenieur", ach5_desc: "Semantisches Suchsystem erstellt und auf GitHub veröffentlicht", ach5_reward: "+500 XP · +200 💰 ·  Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% erstellen funktionierende NLP-Projekte!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: " SCHWER", sq1_title: "🧮 Quest «Wortanalogien»", sq1_text: "Verwende Word2Vec-Embeddings für Analogien: 'king - man + woman = ?'.", sq1_reward: "💰 Belohnung: 100 AI-Münzen", sq2_title: "⚡ Quest «Embedding-Visualisierung»", sq2_text: "Nimm 1000 Wikipedia-Wörter und visualisiere Embeddings in 2D mit t-SNE.", sq2_reward: " Belohnung: 200 AI-Münzen", sq3_title: "🎨 Quest «Chatbot mit Gedächtnis»", sq3_text: "Erstelle Chatbot, der Embeddings für ähnliche Fragensuche verwendet. RAG-Grundlage!", sq3_reward: "💰 Belohnung: 400 AI-Münzen + Titel «RAG Developer»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Verstanden, warum Tokenisierung nötig ist", sum2: "✅ Tokenisierungstypen gemeistert", sum3: "✅ Embedding-Konzept verstanden", sum4: "✅ Wortvektorraum visualisiert", sum5: "✅ BERT kontextuelle Embeddings verwendet", sum6: "🏆 Endboss: semantische Suche auf GitHub!", sum_meme: "Glückwunsch, NLP-Ingenieur! In Lektion 4.3 studieren wir Transformer-Architektur.", nav_back: "← Vorheriger Quest", nav_back_title: "4.1 Transfer Learning", nav_next: "Nächster Quest →", nav_next_title: "4.3 Transformer-Architektur", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 4.2 • 4-МОДУЛЬ", title: "Токенизация және эмбеддингтер", subtitle: "4.2 деңгейге қош келдің! 📝 Бүгін нейрондық желілердің мәтінді қалай 'оқитынын' білесің.", duration: " 3 сағат", level: " Озық", xp: "⭐ +1200 XP", loot: "💰 +500 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🤔 Неліктен нейрондық желілер мәтінді түсінбейді?", l0_sub: "Мәтіндіrepresentation мәселесі", l0_xp: "+80 XP", l0_p1: "Нейрондық желілер тек сандармен жұмыс істейді. Олар 'Сәлем, әлем!' жолын тікелей өңдей алмайды. Мәтінді сандарға айналдыру керек.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "RPG ойынында әр заттың ID бар деп елестет. Қылыш = 1, Қалқан = 2, Зельт = 3. Бірақ ID қылыш пен қалқанның қару екенін айтпайды.", ach0_name: "Жетістік: Мәселе талдаушысы", ach0_desc: "Мәтінді неге сандарға айналдыру керектігін түсінді", ach0_reward: "+80 XP · +30 💰 ·  Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Мәселені түсінсең — бас!", l1_title: "️ Токенизация деген не?", l1_sub: "Мәтінді бөліктерге бөлу", l1_xp: "+150 XP", l1_p1: "Токенизация — мәтінді токендер деп аталатын кіші бөліктерге бөлу процесі. Токен сөз, сөз бөлігі немесе таңба болуы мүмкін.", l1_code_title: "📝 HuggingFace-пен токенизация", l1_tip_title: "💡 Attention mask деген не?", l1_tip_text: "Attention mask нақты токендер (1) мен padding (0) көрсетеді.", ach1_name: "Жетістік: Токенизатор", ach1_desc: "HuggingFace токенизаторын қолданды", ach1_reward: "+150 XP · +50 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Токендер мен ID-лерді көрсең — бас!", l2_title: "🔤 Токенизация түрлері", l2_sub: "Word, Subword, Character", l2_xp: "+200 XP", l2_p1: "Үш негізгі түр бар: Word-level, Subword-level және Character-level. Заманауи модельдер (GPT, BERT) subword қолданады.", l2_code_title: "📝 Токенизация түрлерін салыстыру", l2_lore_title: "📚 OOV мәселесі", l2_lore_text: "OOV (Out-of-Vocabulary) — сөз токенизатор сөздігінде болмағанда. Subword токенизация сирек сөздерді белгілі бөліктерге бөлу арқылы бұл мәселені шешеді.", ach2_name: "Жетістік: Токенизация сарапшысы", ach2_desc: "Токенизация түрлері арасындағы айырмашылықтарды түсінді", ach2_reward: "+200 XP · +70 💰 ·  Сирек", ach2_btn: " Жетістікті алу", ach2_hint: "OOV мәселесін түсінсең — бас!", l3_title: " Эмбеддингтер деген не?", l3_sub: "Сөздердің векторлықrepresentationсы", l3_xp: "+250 XP", l3_p1: "Эмбеддинг — токенді көп өлшемді кеңістікте көрсететін вектор. Ұқсас мағыналы сөздер жақын векторларға ие.", l3_analogy_title: "Ойын аналогиясы", l3_analogy_text: "Қалалар сөздер болатын әлем картасын елестет. Ұқсас сөздер (Мәскеу және Санкт-Петербург) жақын. Эмбеддингтер — сөздердің координаталары.", ach3_name: "Жетістік: Эмбеддинг шебері", ach3_desc: "Сөз векторлық кеңістігін визуализациялады", ach3_reward: "+250 XP · +80 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Ұқсас сөздер кластерлерін көрсең — бас!", l4_title: "🤖 Заманауи эмбеддингтер", l4_sub: "BERT, GPT және контекстуалды эмбеддингтер", l4_xp: "+300 XP", l4_p1: "Классикалық эмбеддингтер әр сөзге бір тұрақты вектор береді. Бірақ 'bank' қаржы банкі немесе өзен жағасы болуы мүмкін! Заманауи модельдер контекстуалды эмбеддингтер жасайды.", l4_code_title: " BERT-пен контекстуалды эмбеддингтер", l4_warn_title: "⚠️ Бұл неге маңызды?", l4_warn_text: "Контекстуалды эмбеддингтер — серпіліс! BERT әртүрлі сөйлемдердегі 'bank' әртүрлі мағыналарды түсінеді.", ach4_name: "Жетістік: BERT зерттеушісі", ach4_desc: "BERT контекстуалды эмбеддингтерін қолданды", ach4_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "'bank' эмбеддингтеріндегі айырмашылықты көрсең — бас!", l5_title: "БОСС-ФАЙТ: Ұқсас мәтіндерді іздеу", l5_sub: "Эмбеддингтермен семантикалық іздеу", l5_xp: "+500 XP", l5_meme: "Нақты жоба жасау уақыты келді! Біз мағынасы бойынша ұқсас мәтіндерді табатын семантикалық іздеу жүйесін құрамыз.", l5_code_title: "📝 Эмбеддингтермен семантикалық іздеу", l5_github_title: "🚀 Жобаны жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. Семантикалық іздеуді түсіндір<br>2. Сұрау мысалдарын көрсет<br>3. Эмбеддинг визуализациясын қос<br>4. Деректер жиынтығын қосуды сипатта<br>5. Іздеу уақыты мен дәлдігін көрсет", ach5_name: "АҢЫЗДЫҚ: NLP инженері", ach5_desc: "Семантикалық іздеу жүйесін жасады және GitHub-та жариялады", ach5_reward: "+500 XP · +200 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% студенттер жұмыс істейтін NLP жобаларын жасайды!", sq_title: "📜 Қосалқы квесттер", sq_easy: " ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: " ҚИЫН", sq1_title: "🧮 Квест «Сөз аналогиялары»", sq1_text: "Word2Vec эмбеддингтерін аналогияларды шешу үшін қолдан: 'king - man + woman = ?'.", sq1_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq2_title: "⚡ Квест «Эмбеддинг визуализациясы»", sq2_text: "Wikipedia-дан 1000 сөз ал және эмбеддингтерді t-SNE-мен 2D-де визуализацияла.", sq2_reward: "💰 Сыйлық: 200 ЖИ-теңге", sq3_title: "🎨 Квест «Жады бар чат-бот»", sq3_text: "Эмбеддингтерді ұқсас сұрақтарды іздеу үшін қолданатын чат-бот жаса. RAG негізі!", sq3_reward: "💰 Сыйлық: 400 ЖИ-теңге + «RAG Developer» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Токенизация неге керектігін түсіндің", sum2: "✅ Токенизация түрлерін игердің", sum3: "✅ Эмбеддинг тұжырымдамасын түсіндің", sum4: "✅ Сөз векторлық кеңістігін визуализацияладың", sum5: "✅ BERT контекстуалды эмбеддингтерін қолдандың", sum6: " Финалды босс — семантикалық іздеу GitHub-та!", sum_meme: "Құттықтаймын, NLP инженері! Келесі 4.3 сабақта Transformer архитектурасын зерттейміз.", nav_back: "← Алдыңғы квест", nav_back_title: "4.1 Transfer Learning", nav_next: "Келесі квест →", nav_next_title: "4.3 Transformer архитектурасы", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
