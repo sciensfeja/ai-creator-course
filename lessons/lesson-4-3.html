@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 4.3: Анализ тональности — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(168, 85, 247, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(168, 85, 247, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #a855f7, #ec4899); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #a855f7, #ec4899); }
+        .level.boss::before { background: linear-gradient(90deg, #f59e0b, #ec4899); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #f59e0b, #ec4899); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); } 50% { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #ec4899; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1)); border: 2px dashed rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #d8b4fe; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(168, 85, 247, 0.08); border-color: #a855f7; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #a855f7; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(168, 85, 247, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #ec4899; background: rgba(236, 72, 153, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #ec4899; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(236, 72, 153, 0.08)); border: 2px solid rgba(168, 85, 247, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #a855f7; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(168, 85, 247, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(168, 85, 247, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-color: #ec4899; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(168, 85, 247, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 4.3 • МОДУЛЬ 4</span>
+        <h1 data-i18n="title">Анализ тональности</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 4.3! 🤬➡️😊 Сегодня ты создашь Telegram-бота, который автоматически анализирует комментарии и банит пользователей за токсичность. Настоящий AI-модератор!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📙 Продвинутый</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1300 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +550 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: What is Sentiment Analysis? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Что такое анализ тональности?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Sentiment Analysis в реальном мире</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1"><strong>Анализ тональности (Sentiment Analysis)</strong> — это задача NLP, где мы определяем эмоциональную окраску текста: позитивный 😊, негативный 😡 или нейтральный 😐. Эта технология используется везде: от анализа отзывов на Amazon до мониторинга настроений в Twitter и модерации комментариев.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🛡️</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">Представь, что ты модератор игрового чата. Тебе нужно за секунду решить: игрок шутит (позитив), жалуется на баг (нейтрально) или оскорбляет других (негатив → бан!). AI-модератор делает то же самое, но быстрее и без усталости.</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🎭</span>
+            <h3 data-i18n="ach0_name">Ачивка: Теоретик NLP</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял задачу анализа тональности и её применение</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+100 XP · +40 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson4_3_theorist" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял аналогию с модератором чата!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: Sentiment Analysis Approaches -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🔬 Подходы к анализу тональности</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">От словарей до нейросетей</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+150 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">Существует три основных подхода: <strong>1) Словарный</strong> — подсчёт "хороших" и "плохих" слов; <strong>2) Классический ML</strong> — обучение классификатора на признаках; <strong>3) Deep Learning</strong> — использование предобученных трансформеров (BERT, RoBERTa). Сегодня мы используем третий — самый мощный!</p>
+
+        <h3 data-i18n="l1_code_title">📝 Сравнение подходов</h3>
+        <pre><code># Approach 1: Dictionary-based (simple but limited)
+positive_words = {'good', 'great', 'excellent', 'amazing', 'love'}
+negative_words = {'bad', 'terrible', 'awful', 'hate', 'horrible'}
+
+def dictionary_sentiment(text):
+    """Simple sentiment analysis using word lists"""
+    words = set(text.lower().split())
+    pos_count = len(words & positive_words)
+    neg_count = len(words & negative_words)
+    
+    if pos_count > neg_count:
+        return "positive", pos_count - neg_count
+    elif neg_count > pos_count:
+        return "negative", neg_count - pos_count
+    return "neutral", 0
+
+# Test it
+print(dictionary_sentiment("This movie is good and great"))  # positive
+print(dictionary_sentiment("This is terrible and awful"))    # negative
+
+# Problem: doesn't understand context!
+print(dictionary_sentiment("Not good at all"))  # Still says positive! 😅</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l1_warn_title">⚠️ Проблема словарного подхода</strong>
+            <span data-i18n="l1_warn_text">Словарь не понимает контекст, иронию, отрицания ("not good" = плохо, но словарь видит "good" = хорошо). Поэтому современные решения используют нейросети!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach1_name">Ачивка: Исследователь подходов</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Изучил разные подходы к анализу тональности</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+150 XP · +50  · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_3_researcher" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если увидел проблему словарного подхода!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: HuggingFace Pipeline -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🤗 HuggingFace Pipeline</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Анализ тональности в 3 строки кода</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Библиотека <strong>HuggingFace Transformers</strong> предоставляет готовые pipeline'ы — функции, которые делают всю сложную работу за нас. Для анализа тональности достаточно 3 строк кода!</p>
+
+        <h3 data-i18n="l2_code_title">📝 Sentiment Analysis с HuggingFace</h3>
+        <pre><code>from transformers import pipeline
+
+# Load pre-trained sentiment analysis pipeline
+# This downloads a model trained on thousands of reviews
+sentiment_analyzer = pipeline("sentiment-analysis")
+
+# Test with different texts
+texts = [
+    "I absolutely love this product! Best purchase ever.",
+    "This is the worst experience I've ever had.",
+    "The movie was okay, nothing special.",
+    "Terrible service, would not recommend to anyone!",
+    "Amazing quality and fast shipping. 5 stars!"
+]
+
+print("=== Sentiment Analysis Results ===\n")
+for text in texts:
+    result = sentiment_analyzer(text)[0]
+    label = result['label']
+    score = result['score']
+    emoji = "😊" if label == "POSITIVE" else "" if label == "NEGATIVE" else ""
+    
+    print(f"{emoji} Text: {text}")
+    print(f"   Sentiment: {label} (confidence: {score:.2%})")
+    print()</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l2_tip_title">💡 Как это работает?</strong>
+            <span data-i18n="l2_tip_text">Pipeline автоматически загружает модель (обычно DistilBERT), токенизирует текст, пропускает через нейросеть и возвращает результат. Вся магия из урока 4.2 происходит "под капотом"!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🤗</span>
+            <h3 data-i18n="ach2_name">Ачивка: Пользователь HuggingFace</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Использовал pipeline для анализа тональности</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+200 XP · +70 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson4_3_hf_user" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если увидел confidence scores!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Toxicity Detection -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🚨 Детекция токсичности</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Распознавание оскорблений и угроз</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Обычный sentiment analysis определяет "позитив/негатив", но для модерации нам нужна <strong>детекция токсичности</strong> — распознавание оскорблений, угроз, ненависти. Для этого есть специальные модели, например <strong>Detoxify</strong>, обученные на миллионах помеченных комментариев.</p>
+
+        <h3 data-i18n="l3_code_title">📝 Детекция токсичности с Detoxify</h3>
+        <pre><code># Install first: pip install detoxify
+from detoxify import Detoxify
+
+# Load the multilingual toxicity model
+model = Detoxify('multilingual')  # Supports English, Russian, etc.
+
+# Test comments (some toxic, some not)
+comments = [
+    "Great video, thanks for sharing!",
+    "You're an idiot and your content is trash",
+    "I disagree with your opinion, but respect it",
+    "Go kill yourself, nobody likes you",
+    "This tutorial helped me a lot, thank you!",
+    "Stupid waste of time, worst video ever"
+]
+
+print("=== Toxicity Detection ===\n")
+for comment in comments:
+    results = model.predict(comment)
+    
+    # Check if any toxicity category is high
+    is_toxic = any(score > 0.5 for score in results.values())
+    
+    status = "🚨 TOXIC" if is_toxic else "✅ SAFE"
+    print(f"{status} | {comment}")
+    print(f"   Scores:")
+    for category, score in results.items():
+        bar = "█" * int(score * 20)
+        print(f"   {category:15s}: {score:.3f} {bar}")
+    print()</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l3_lore_title">📚 Категории токсичности</strong>
+            <span data-i18n="l3_lore_text">Detoxify определяет 6 типов токсичности: <strong>toxicity</strong> (общая), <strong>severe_toxicity</strong> (тяжёлая), <strong>obscene</strong> (нецензурная), <strong>identity_attack</strong> (against identity), <strong>insult</strong> (оскорбление), <strong>threat</strong> (угроза). Для бана обычно достаточно toxicity > 0.7!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🚨</span>
+            <h3 data-i18n="ach3_name">Ачивка: Детектор токсичности</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Использовал Detoxify для распознавания токсичных комментариев</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+250 XP · +80  · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_3_toxicity_detector" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если увидел категории токсичности!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Telegram Bot Basics -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🤖 Создание Telegram-бота</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">python-telegram-bot и async</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Теперь объединим AI с Telegram! Мы создадим бота, который будет анализировать каждое сообщение в чате и предупреждать/банить пользователей за токсичность. Для этого используем библиотеку <strong>python-telegram-bot</strong>.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Получение токена бота</h3>
+        <pre><code># Step 1: Create bot via @BotFather on Telegram
+# 1. Open Telegram, search for @BotFather
+# 2. Send /newbot command
+# 3. Choose name: "ToxicityModeratorBot"
+# 4. Choose username: "toxicity_mod_bot"
+# 5. Copy the TOKEN (looks like: 123456789:ABCdefGHI...)
+
+# Step 2: Install required libraries
+# pip install python-telegram-bot detoxify transformers torch
+
+# Step 3: Save token securely (NEVER commit to GitHub!)
+# Create .env file:
+# BOT_TOKEN=your_token_here
+# ALLOWED_CHAT_ID=your_chat_id_here
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+print(f"Bot token loaded: {BOT_TOKEN[:10]}...")  # Show only first 10 chars</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l4_warn_title">⚠️ Безопасность токена</strong>
+            <span data-i18n="l4_warn_text">НИКОГДА не публикуй токен бота в открытом доступе! Любой, кто его увидит, сможет управлять твоим ботом. Используй <code>.env</code> файл и добавь его в <code>.gitignore</code>.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🤖</span>
+            <h3 data-i18n="ach4_name">Ачивка: Создатель бота</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Создал Telegram-бота через BotFather</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+300 XP · +100 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson4_3_bot_creator" class="ach-btn" data-i18n="ach4_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если получил токен от BotFather!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Full Moderation Bot -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: AI-Модератор</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Полноценный бот для модерации чата</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+600 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🛡️🤖</span>
+            <span data-i18n="l5_meme">Пришло время создать настоящего AI-модератора! Бот будет анализировать каждое сообщение, предупреждать за лёгкую токсичность и банить за серьёзные нарушения. Как настоящий страж порядка в твоём чате!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title"> Полный код AI-модератора</h3>
+        <pre><code>import os
+import logging
+from dotenv import load_dotenv
+from telegram import Update
+from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from detoxify import Detoxify
+
+# Load environment variables
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+ALLOWED_CHAT_ID = int(os.getenv('ALLOWED_CHAT_ID', 0))
+
+# Setup logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# Initialize toxicity model (loads once at startup)
+logger.info("Loading toxicity model...")
+toxicity_model = Detoxify('multilingual')
+logger.info("Model loaded successfully!")
+
+# User warning counter
+user_warnings = {}
+MAX_WARNINGS = 3
+
+async def check_toxicity(text: str) -> dict:
+    """Analyze text for toxicity and return scores"""
+    try:
+        results = toxicity_model.predict(text)
+        return results
+    except Exception as e:
+        logger.error(f"Toxicity check failed: {e}")
+        return {}
+
+async def is_toxic(scores: dict, threshold: float = 0.7) -> bool:
+    """Check if any toxicity score exceeds threshold"""
+    return any(score > threshold for score in scores.values())
+
+async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle incoming messages and check for toxicity"""
+    # Only process messages in allowed chat
+    if update.effective_chat.id != ALLOWED_CHAT_ID:
+        return
+    
+    # Skip messages from bots
+    if update.message.from_user.is_bot:
+        return
+    
+    message_text = update.message.text
+    user_id = update.message.from_user.id
+    username = update.message.from_user.username or str(user_id)
+    
+    # Skip commands
+    if message_text.startswith('/'):
+        return
+    
+    logger.info(f"Checking message from @{username}: {message_text[:50]}...")
+    
+    # Analyze toxicity
+    scores = await check_toxicity(message_text)
+    
+    if not scores:
+        return
+    
+    # Check toxicity level
+    max_score = max(scores.values())
+    
+    if max_score > 0.9:
+        # Severe toxicity - immediate ban
+        await update.message.reply_text(
+            f" @{username} был забанен за серьёзное нарушение правил.\n"
+            f"Уровень токсичности: {max_score:.1%}"
+        )
+        await context.bot.ban_chat_member(
+            chat_id=update.effective_chat.id,
+            user_id=user_id
+        )
+        logger.warning(f"Banned @{username} (score: {max_score:.2f})")
+        
+    elif max_score > 0.7:
+        # High toxicity - warning
+        user_warnings[user_id] = user_warnings.get(user_id, 0) + 1
+        warnings = user_warnings[user_id]
+        
+        await update.message.reply_text(
+            f"️ @{username}, предупреждение {warnings}/{MAX_WARNINGS}!\n"
+            f"Твоё сообщение нарушает правила сообщества.\n"
+            f"Уровень токсичности: {max_score:.1%}\n"
+            f"При {MAX_WARNINGS} предупреждениях ты будешь забанен."
+        )
+        logger.warning(f"Warning #{warnings} for @{username}")
+        
+        # Ban if max warnings reached
+        if warnings >= MAX_WARNINGS:
+            await update.message.reply_text(
+                f"❌ @{username} забанен после {MAX_WARNINGS} предупреждений."
+            )
+            await context.bot.ban_chat_member(
+                chat_id=update.effective_chat.id,
+                user_id=user_id
+            )
+            user_warnings[user_id] = 0
+            logger.warning(f"Banned @{username} after {MAX_WARNINGS} warnings")
+    
+    elif max_score > 0.5:
+        # Mild toxicity - just log
+        logger.info(f"Mild toxicity from @{username}: {max_score:.2f}")
+
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /start command"""
+    await update.message.reply_text(
+        "🤖 AI-модератор активирован!\n\n"
+        "Я буду проверять все сообщения на токсичность.\n"
+        "Уровень токсичности > 70% = предупреждение\n"
+        "Уровень токсичности > 90% = бан\n"
+        "3 предупреждения = бан\n\n"
+        "Давайте поддерживать дружелюбную атмосферу! 😊"
+    )
+
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /stats command"""
+    total_warnings = sum(user_warnings.values())
+    await update.message.reply_text(
+        f"📊 Статистика модерации:\n"
+        f"Активных предупреждений: {total_warnings}\n"
+        f"Модель: Detoxify Multilingual\n"
+        f"Статус: ✅ Активен"
+    )
+
+def main():
+    """Start the bot"""
+    if not BOT_TOKEN:
+        logger.error("BOT_TOKEN not found in .env file!")
+        return
+    
+    logger.info("Starting AI Moderator Bot...")
+    
+    # Create application
+    application = Application.builder().token(BOT_TOKEN).build()
+    
+    # Register handlers
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("stats", stats_command))
+    application.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
+    )
+    
+    # Start polling
+    logger.info("Bot is running...")
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+if __name__ == '__main__':
+    main()</code></pre>
+
+        <h3 data-i18n="l5_github_title"> Инструкция по публикации на GitHub</h3>
+        <pre><code># 1. Create repository structure
+mkdir ai-moderator-bot
+cd ai-moderator-bot
+
+mkdir src
+touch src/bot.py
+touch src/.env.example
+touch requirements.txt
+touch README.md
+touch .gitignore
+
+# 2. requirements.txt
+python-telegram-bot==20.7
+detoxify==0.5.1
+transformers==4.35.0
+torch==2.1.0
+python-dotenv==1.0.0
+
+# 3. .gitignore (IMPORTANT!)
+.env
+__pycache__/
+*.pyc
+.venv/
+
+# 4. .env.example (template without real token)
+BOT_TOKEN=your_token_here
+ALLOWED_CHAT_ID=your_chat_id_here
+
+# 5. Run the bot
+python src/bot.py
+
+# 6. Commit and push
+git init
+git add .
+git commit -m "Add AI toxicity moderator bot"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/ai-moderator-bot.git
+git push -u origin main</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь скриншот работы бота в Telegram<br>
+                2. Опиши, как получить токен через @BotFather<br>
+                3. Объясни уровни токсичности и пороги<br>
+                4. Добавь примеры токсичных и безопасных сообщений<br>
+                5. Укажи, как развернуть бота на сервере (например, Railway или Render)
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(245, 158, 11, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: AI Moderator</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал работающего Telegram-бота модератора и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+600 XP · +250 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson4_3_ai_moderator" class="ach-btn" style="background: linear-gradient(135deg, #a855f7, #f59e0b);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 3% студентов создают работающих ботов с AI. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Мультиязычность»</h3>
+            <p data-i18n="sq1_text">Протестируй Detoxify на токсичных комментариях на 3 разных языках (русский, английский, испанский). Сравни точность распознавания.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title"> Квест «Кастомные команды»</h3>
+            <p data-i18n="sq2_text">Добавь в бота команды: /ban (ручной бан), /unban, /settings (настройка порогов токсичности), /help. Сохрани настройки в JSON-файл.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 200 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Логирование и аналитика»</h3>
+            <p data-i18n="sq3_text">Добавь логирование всех решений бота в базу данных (SQLite). Создай команду /report, которая показывает статистику: сколько сообщений проверено, сколько забанено, графики активности.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 400 AI-коинов + титул «Bot Architect»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял задачу анализа тональности</li>
+            <li data-i18n="sum2">✅ Изучил подходы: от словарей до нейросетей</li>
+            <li data-i18n="sum3">✅ Использовал HuggingFace pipeline</li>
+            <li data-i18n="sum4">✅ Применил Detoxify для детекции токсичности</li>
+            <li data-i18n="sum5">✅ Создал Telegram-бота с python-telegram-bot</li>
+            <li data-i18n="sum6">🏆 Финальный босс — AI-модератор опубликован на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🎓</span>
+            <span data-i18n="sum_meme">Поздравляю, AI Moderator! Ты создал реального бота, который использует NLP для решения практической задачи. Это именно то, что делают инженеры в Meta, OpenAI и других компаниях! В следующем уроке 4.4 мы изучим архитектуру Transformer и начнём создавать свой ChatGPT! </span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-4-2.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">4.2 Токенизация и эмбеддинги</span>
+        </a>
+        <a href="lesson-4-4.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">4.4 Архитектура Transformer</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 4.3 • МОДУЛЬ 4", title: "Анализ тональности",
+            subtitle: "Добро пожаловать на Уровень 4.3! 🤬➡️😊 Сегодня ты создашь Telegram-бота, который автоматически анализирует комментарии и банит пользователей за токсичность. Настоящий AI-модератор!",
+            duration: "⏱ 3 часа", level: " Продвинутый", xp: "⭐ +1300 XP", loot: "💰 +550 AI-коинов", ach: " 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🎭 Что такое анализ тональности?", l0_sub: "Sentiment Analysis в реальном мире", l0_xp: "+100 XP",
+            l0_p1: "Анализ тональности (Sentiment Analysis) — это задача NLP, где мы определяем эмоциональную окраску текста: позитивный 😊, негативный 😡 или нейтральный 😐. Эта технология используется везде: от анализа отзывов на Amazon до мониторинга настроений в Twitter и модерации комментариев.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "Представь, что ты модератор игрового чата. Тебе нужно за секунду решить: игрок шутит (позитив), жалуется на баг (нейтрально) или оскорбляет других (негатив → бан!). AI-модератор делает то же самое, но быстрее и без усталости.",
+            ach0_name: "Ачивка: Теоретик NLP", ach0_desc: "Понял задачу анализа тональности и её применение", ach0_reward: "+100 XP · +40 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял аналогию с модератором чата!",
+            l1_title: "🔬 Подходы к анализу тональности", l1_sub: "От словарей до нейросетей", l1_xp: "+150 XP",
+            l1_p1: "Существует три основных подхода: 1) Словарный — подсчёт 'хороших' и 'плохих' слов; 2) Классический ML — обучение классификатора на признаках; 3) Deep Learning — использование предобученных трансформеров (BERT, RoBERTa). Сегодня мы используем третий — самый мощный!",
+            l1_code_title: "📝 Сравнение подходов",
+            l1_warn_title: "⚠️ Проблема словарного подхода", l1_warn_text: "Словарь не понимает контекст, иронию, отрицания ('not good' = плохо, но словарь видит 'good' = хорошо). Поэтому современные решения используют нейросети!",
+            ach1_name: "Ачивка: Исследователь подходов", ach1_desc: "Изучил разные подходы к анализу тональности", ach1_reward: "+150 XP · +50 💰 · 🔵 Редкая", ach1_btn: " Получить ачивку", ach1_hint: "Нажми, если увидел проблему словарного подхода!",
+            l2_title: "🤗 HuggingFace Pipeline", l2_sub: "Анализ тональности в 3 строки кода", l2_xp: "+200 XP",
+            l2_p1: "Библиотека HuggingFace Transformers предоставляет готовые pipeline'ы — функции, которые делают всю сложную работу за нас. Для анализа тональности достаточно 3 строк кода!",
+            l2_code_title: "📝 Sentiment Analysis с HuggingFace",
+            l2_tip_title: " Как это работает?", l2_tip_text: "Pipeline автоматически загружает модель (обычно DistilBERT), токенизирует текст, пропускает через нейросеть и возвращает результат. Вся магия из урока 4.2 происходит 'под капотом'!",
+            ach2_name: "Ачивка: Пользователь HuggingFace", ach2_desc: "Использовал pipeline для анализа тональности", ach2_reward: "+200 XP · +70 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если увидел confidence scores!",
+            l3_title: " Детекция токсичности", l3_sub: "Распознавание оскорблений и угроз", l3_xp: "+250 XP",
+            l3_p1: "Обычный sentiment analysis определяет 'позитив/негатив', но для модерации нам нужна детекция токсичности — распознавание оскорблений, угроз, ненависти. Для этого есть специальные модели, например Detoxify, обученные на миллионах помеченных комментариев.",
+            l3_code_title: "📝 Детекция токсичности с Detoxify",
+            l3_lore_title: "📚 Категории токсичности", l3_lore_text: "Detoxify определяет 6 типов токсичности: toxicity (общая), severe_toxicity (тяжёлая), obscene (нецензурная), identity_attack (против идентичности), insult (оскорбление), threat (угроза). Для бана обычно достаточно toxicity > 0.7!",
+            ach3_name: "Ачивка: Детектор токсичности", ach3_desc: "Использовал Detoxify для распознавания токсичных комментариев", ach3_reward: "+250 XP · +80 💰 ·  Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если увидел категории токсичности!",
+            l4_title: "🤖 Создание Telegram-бота", l4_sub: "python-telegram-bot и async", l4_xp: "+300 XP",
+            l4_p1: "Теперь объединим AI с Telegram! Мы создадим бота, который будет анализировать каждое сообщение в чате и предупреждать/банить пользователей за токсичность. Для этого используем библиотеку python-telegram-bot.",
+            l4_code_title: "📝 Получение токена бота",
+            l4_warn_title: "⚠️ Безопасность токена", l4_warn_text: "НИКОГДА не публикуй токен бота в открытом доступе! Любой, кто его увидит, сможет управлять твоим ботом. Используй .env файл и добавь его в .gitignore.",
+            ach4_name: "Ачивка: Создатель бота", ach4_desc: "Создал Telegram-бота через BotFather", ach4_reward: "+300 XP · +100 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если получил токен от BotFather!",
+            l5_title: "БОСС-ФАЙТ: AI-Модератор", l5_sub: "Полноценный бот для модерации чата", l5_xp: "+600 XP",
+            l5_meme: "Пришло время создать настоящего AI-модератора! Бот будет анализировать каждое сообщение, предупреждать за лёгкую токсичность и банить за серьёзные нарушения. Как настоящий страж порядка в твоём чате!",
+            l5_code_title: "📝 Полный код AI-модератора",
+            l5_github_title: "🚀 Инструкция по публикации на GitHub",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь скриншот работы бота в Telegram<br>2. Опиши, как получить токен через @BotFather<br>3. Объясни уровни токсичности и пороги<br>4. Добавь примеры токсичных и безопасных сообщений<br>5. Укажи, как развернуть бота на сервере",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: AI Moderator", ach5_desc: "Создал работающего Telegram-бота модератора и опубликовал на GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 3% студентов создают работающих ботов с AI. Ты — элита!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Мультиязычность»", sq1_text: "Протестируй Detoxify на токсичных комментариях на 3 разных языках (русский, английский, испанский). Сравни точность распознавания.", sq1_reward: "💰 Награда: 100 AI-коинов",
+            sq2_title: "⚡ Квест «Кастомные команды»", sq2_text: "Добавь в бота команды: /ban (ручной бан), /unban, /settings (настройка порогов токсичности), /help. Сохрани настройки в JSON-файл.", sq2_reward: " Награда: 200 AI-коинов",
+            sq3_title: "🎨 Квест «Логирование и аналитика»", sq3_text: "Добавь логирование всех решений бота в базу данных (SQLite). Создай команду /report, которая показывает статистику: сколько сообщений проверено, сколько забанено, графики активности.", sq3_reward: "💰 Награда: 400 AI-коинов + титул «Bot Architect»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял задачу анализа тональности", sum2: "✅ Изучил подходы: от словарей до нейросетей",
+            sum3: "✅ Использовал HuggingFace pipeline", sum4: "✅ Применил Detoxify для детекции токсичности",
+            sum5: "✅ Создал Telegram-бота с python-telegram-bot", sum6: " Финальный босс — AI-модератор опубликован на GitHub!",
+            sum_meme: "Поздравляю, AI Moderator! Ты создал реального бота, который использует NLP для решения практической задачи. Это именно то, что делают инженеры в Meta, OpenAI и других компаниях! В следующем уроке 4.4 мы изучим архитектуру Transformer и начнём создавать свой ChatGPT! 🚀",
+            nav_back: "← Предыдущий квест", nav_back_title: "4.2 Токенизация и эмбеддинги",
+            nav_next: "Следующий квест →", nav_next_title: "4.4 Архитектура Transformer",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: " QUEST 4.3 • MODULE 4", title: "Sentiment Analysis",
+            subtitle: "Welcome to Level 4.3! 🤬️😊 Today you'll create a Telegram bot that automatically analyzes comments and bans users for toxicity. A real AI moderator!",
+            duration: " 3 hours", level: "📙 Advanced", xp: "⭐ +1300 XP", loot: "💰 +550 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🎭 What is sentiment analysis?", l0_sub: "Sentiment Analysis in the real world", l0_xp: "+100 XP",
+            l0_p1: "Sentiment Analysis is an NLP task where we determine the emotional tone of text: positive 😊, negative , or neutral 😐. This technology is used everywhere: from Amazon review analysis to Twitter mood monitoring and comment moderation.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "Imagine you're a game chat moderator. You need to decide in a second: is the player joking (positive), complaining about a bug (neutral), or insulting others (negative → ban!). AI moderator does the same, but faster and without fatigue.",
+            ach0_name: "Achievement: NLP Theorist", ach0_desc: "Understood sentiment analysis task and its application", ach0_reward: "+100 XP · +40 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the chat moderator analogy!",
+            l1_title: "🔬 Sentiment analysis approaches", l1_sub: "From dictionaries to neural networks", l1_xp: "+150 XP",
+            l1_p1: "There are three main approaches: 1) Dictionary-based — counting 'good' and 'bad' words; 2) Classical ML — training a classifier on features; 3) Deep Learning — using pre-trained transformers (BERT, RoBERTa). Today we use the third — the most powerful!",
+            l1_code_title: "📝 Comparing approaches",
+            l1_warn_title: "️ Dictionary approach problem", l1_warn_text: "Dictionary doesn't understand context, irony, negations ('not good' = bad, but dictionary sees 'good' = good). That's why modern solutions use neural networks!",
+            ach1_name: "Achievement: Approach Researcher", ach1_desc: "Studied different sentiment analysis approaches", ach1_reward: "+150 XP · +50 💰 ·  Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you saw the dictionary approach problem!",
+            l2_title: "🤗 HuggingFace Pipeline", l2_sub: "Sentiment analysis in 3 lines of code", l2_xp: "+200 XP",
+            l2_p1: "HuggingFace Transformers library provides ready-made pipelines — functions that do all the complex work for us. For sentiment analysis, 3 lines of code are enough!",
+            l2_code_title: "📝 Sentiment Analysis with HuggingFace",
+            l2_tip_title: " How does it work?", l2_tip_text: "Pipeline automatically loads a model (usually DistilBERT), tokenizes text, passes it through neural network and returns result. All the magic from lesson 4.2 happens 'under the hood'!",
+            ach2_name: "Achievement: HuggingFace User", ach2_desc: "Used pipeline for sentiment analysis", ach2_reward: "+200 XP · +70 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you saw confidence scores!",
+            l3_title: "🚨 Toxicity detection", l3_sub: "Recognizing insults and threats", l3_xp: "+250 XP",
+            l3_p1: "Regular sentiment analysis determines 'positive/negative', but for moderation we need toxicity detection — recognizing insults, threats, hate. There are special models for this, like Detoxify, trained on millions of labeled comments.",
+            l3_code_title: "📝 Toxicity detection with Detoxify",
+            l3_lore_title: "📚 Toxicity categories", l3_lore_text: "Detoxify detects 6 types of toxicity: toxicity (general), severe_toxicity, obscene, identity_attack, insult, threat. For banning, usually toxicity > 0.7 is enough!",
+            ach3_name: "Achievement: Toxicity Detector", ach3_desc: "Used Detoxify to recognize toxic comments", ach3_reward: "+250 XP · +80 💰 ·  Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you saw toxicity categories!",
+            l4_title: "🤖 Creating Telegram bot", l4_sub: "python-telegram-bot and async", l4_xp: "+300 XP",
+            l4_p1: "Now let's combine AI with Telegram! We'll create a bot that analyzes every message in chat and warns/bans users for toxicity. We'll use python-telegram-bot library.",
+            l4_code_title: " Getting bot token",
+            l4_warn_title: "⚠️ Token security", l4_warn_text: "NEVER publish bot token in public! Anyone who sees it can control your bot. Use .env file and add it to .gitignore.",
+            ach4_name: "Achievement: Bot Creator", ach4_desc: "Created Telegram bot via BotFather", ach4_reward: "+300 XP · +100 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you got token from BotFather!",
+            l5_title: "BOSS FIGHT: AI Moderator", l5_sub: "Full-featured chat moderation bot", l5_xp: "+600 XP",
+            l5_meme: "Time to create a real AI moderator! The bot will analyze every message, warn for mild toxicity and ban for serious violations. Like a real guard in your chat!",
+            l5_code_title: "📝 Full AI moderator code",
+            l5_github_title: "🚀 GitHub publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add screenshot of bot working in Telegram<br>2. Describe how to get token via @BotFather<br>3. Explain toxicity levels and thresholds<br>4. Add examples of toxic and safe messages<br>5. Specify how to deploy bot on server",
+            ach5_name: "LEGENDARY: AI Moderator", ach5_desc: "Created working Telegram moderator bot and published on GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 3% of students create working bots with AI. You're elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Multilingual»", sq1_text: "Test Detoxify on toxic comments in 3 different languages (Russian, English, Spanish). Compare recognition accuracy.", sq1_reward: "💰 Reward: 100 AI-coins",
+            sq2_title: " Quest «Custom commands»", sq2_text: "Add commands to bot: /ban (manual ban), /unban, /settings (toxicity thresholds), /help. Save settings to JSON file.", sq2_reward: "💰 Reward: 200 AI-coins",
+            sq3_title: " Quest «Logging and analytics»", sq3_text: "Add logging of all bot decisions to database (SQLite). Create /report command showing statistics: how many messages checked, how many banned, activity graphs.", sq3_reward: "💰 Reward: 400 AI-coins + title «Bot Architect»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood sentiment analysis task", sum2: "✅ Studied approaches: from dictionaries to neural networks",
+            sum3: "✅ Used HuggingFace pipeline", sum4: "✅ Applied Detoxify for toxicity detection",
+            sum5: "✅ Created Telegram bot with python-telegram-bot", sum6: "🏆 Final boss — AI moderator published on GitHub!",
+            sum_meme: "Congrats, AI Moderator! You created a real bot that uses NLP to solve a practical task. This is exactly what engineers at Meta, OpenAI and other companies do! In the next lesson 4.4, we'll study Transformer architecture and start creating our own ChatGPT! ",
+            nav_back: "← Previous quest", nav_back_title: "4.2 Tokenization and Embeddings",
+            nav_next: "Next quest →", nav_next_title: "4.4 Transformer Architecture",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 4.3 • MÓDULO 4", title: "Análisis de Sentimiento", subtitle: "¡Bienvenido al Nivel 4.3! 🤬➡️😊 Hoy crearás un bot de Telegram que analiza comentarios y banea usuarios por toxicidad.", duration: "⏱ 3 horas", level: "📙 Avanzado", xp: "⭐ +1300 XP", loot: "💰 +550 AI-monedas", ach: " 6 logros", progress_title: " Progreso", progress_counter: "Nivel 0 / 6", l0_title: " ¿Qué es análisis de sentimiento?", l0_sub: "Sentiment Analysis en el mundo real", l0_xp: "+100 XP", l0_p1: "Análisis de sentimiento es una tarea NLP donde determinamos el tono emocional del texto: positivo 😊, negativo 😡 o neutral 😐.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "Imagina que eres moderador de chat de juego. Debes decidir en un segundo: ¿el jugador bromea, se queja o insulta? El moderador AI hace lo mismo, pero más rápido.", ach0_name: "Logro: Teórico NLP", ach0_desc: "Entendió análisis de sentimiento y su aplicación", ach0_reward: "+100 XP · +40 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste la analogía!", l1_title: "🔬 Enfoques de análisis", l1_sub: "De diccionarios a redes neuronales", l1_xp: "+150 XP", l1_p1: "Tres enfoques principales: 1) Basado en diccionario; 2) ML clásico; 3) Deep Learning con transformers (BERT). ¡Hoy usamos el tercero!", l1_code_title: "📝 Comparando enfoques", l1_warn_title: "⚠️ Problema del enfoque de diccionario", l1_warn_text: "¡El diccionario no entiende contexto, ironía, negaciones! Por eso las soluciones modernas usan redes neuronales.", ach1_name: "Logro: Investigador de enfoques", ach1_desc: "Estudió diferentes enfoques de análisis de sentimiento", ach1_reward: "+150 XP · +50  · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si viste el problema del diccionario!", l2_title: "🤗 HuggingFace Pipeline", l2_sub: "Análisis en 3 líneas de código", l2_xp: "+200 XP", l2_p1: "La biblioteca HuggingFace Transformers proporciona pipelines listos — funciones que hacen todo el trabajo complejo por nosotros.", l2_code_title: "📝 Análisis con HuggingFace", l2_tip_title: "💡 ¿Cómo funciona?", l2_tip_text: "Pipeline carga automáticamente un modelo (usualmente DistilBERT), tokeniza el texto, lo pasa por la red neuronal y devuelve el resultado.", ach2_name: "Logro: Usuario HuggingFace", ach2_desc: "Usó pipeline para análisis de sentimiento", ach2_reward: "+200 XP · +70  · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si viste confidence scores!", l3_title: "🚨 Detección de toxicidad", l3_sub: "Reconociendo insultos y amenazas", l3_xp: "+250 XP", l3_p1: "Para moderación necesitamos detección de toxicidad — reconocer insultos, amenazas, odio. Hay modelos especiales como Detoxify, entrenados en millones de comentarios etiquetados.", l3_code_title: "📝 Detección con Detoxify", l3_lore_title: "📚 Categorías de toxicidad", l3_lore_text: "Detoxify detecta 6 tipos: toxicity, severe_toxicity, obscene, identity_attack, insult, threat. ¡Para banear, usualmente toxicity > 0.7 es suficiente!", ach3_name: "Logro: Detector de toxicidad", ach3_desc: "Usó Detoxify para reconocer comentarios tóxicos", ach3_reward: "+250 XP · +80 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si viste categorías de toxicidad!", l4_title: " Creando bot de Telegram", l4_sub: "python-telegram-bot y async", l4_xp: "+300 XP", l4_p1: "¡Ahora combinemos AI con Telegram! Crearemos un bot que analiza cada mensaje en el chat y advierte/banea usuarios por toxicidad.", l4_code_title: "📝 Obteniendo token del bot", l4_warn_title: "⚠️ Seguridad del token", l4_warn_text: "¡NUNCA publiques el token del bot! Cualquiera que lo vea puede controlar tu bot. Usa archivo .env y añádelo a .gitignore.", ach4_name: "Logro: Creador de bot", ach4_desc: "Creó bot de Telegram vía BotFather", ach4_reward: "+300 XP · +100 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si obtuviste token de BotFather!", l5_title: "¡PELEA JEFE: AI Moderador!", l5_sub: "Bot completo de moderación de chat", l5_xp: "+600 XP", l5_meme: "¡Tiempo de crear un verdadero moderador AI! El bot analizará cada mensaje, advertirá por toxicidad leve y baneará por violaciones graves.", l5_code_title: "📝 Código completo del moderador AI", l5_github_title: "🚀 Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade captura del bot en Telegram<br>2. Describe cómo obtener token vía @BotFather<br>3. Explica niveles de toxicidad<br>4. Añade ejemplos de mensajes<br>5. Especifica cómo desplegar en servidor", ach5_name: "LEGENDARIO: AI Moderador", ach5_desc: "Creó bot moderador de Telegram y publicó en GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo 3% crea bots funcionales con AI!", sq_title: " Misiones secundarias", sq_easy: " FÁCIL", sq_medium: " MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Multilingüe»", sq1_text: "Prueba Detoxify en comentarios tóxicos en 3 idiomas. Compara precisión.", sq1_reward: "💰 Recompensa: 100 AI-monedas", sq2_title: "⚡ Misión «Comandos personalizados»", sq2_text: "Añade comandos: /ban, /unban, /settings, /help. Guarda en JSON.", sq2_reward: "💰 Recompensa: 200 AI-monedas", sq3_title: "🎨 Misión «Logs y analítica»", sq3_text: "Añade logging a SQLite. Crea /report con estadísticas.", sq3_reward: "💰 Recompensa: 400 AI-monedas + título «Bot Architect»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste análisis de sentimiento", sum2: "✅ Estudiaste enfoques", sum3: "✅ Usaste HuggingFace pipeline", sum4: "✅ Aplicaste Detoxify", sum5: "✅ Creaste bot de Telegram", sum6: " ¡Jefe final: moderador AI en GitHub!", sum_meme: "¡Felicidades, AI Moderador! En la próxima lección 4.4 estudiaremos arquitectura Transformer.", nav_back: "← Misión anterior", nav_back_title: "4.2 Tokenización y Embeddings", nav_next: "Siguiente misión →", nav_next_title: "4.4 Arquitectura Transformer", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 4.3 • MODUL 4", title: "Stimmungsanalyse", subtitle: "Willkommen auf Level 4.3! 🤬️😊 Heute erstellst du einen Telegram-Bot, der Kommentare analysiert und Benutzer für Toxizität bannt.", duration: " 3 Stunden", level: "📙 Fortgeschritten", xp: "⭐ +1300 XP", loot: "💰 +550 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🎭 Was ist Stimmungsanalyse?", l0_sub: "Sentiment Analysis in der realen Welt", l0_xp: "+100 XP", l0_p1: "Stimmungsanalyse ist eine NLP-Aufgabe, bei der wir den emotionalen Ton des Textes bestimmen: positiv 😊, negativ 😡 oder neutral 😐.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "Stell dir vor, du bist Chat-Moderator. Du musst in einer Sekunde entscheiden: scherzt der Spieler, beschwert er sich oder beleidigt er? AI-Moderator macht dasselbe, aber schneller.", ach0_name: "Erfolg: NLP-Theoretiker", ach0_desc: "Verstand Stimmungsanalyse und ihre Anwendung", ach0_reward: "+100 XP · +40 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Analogie verstanden hast!", l1_title: "🔬 Ansätze zur Stimmungsanalyse", l1_sub: "Von Wörterbüchern zu neuronalen Netzen", l1_xp: "+150 XP", l1_p1: "Drei Hauptansätze: 1) Wörterbuch-basiert; 2) Klassisches ML; 3) Deep Learning mit Transformern (BERT). Heute verwenden wir den dritten!", l1_code_title: "📝 Ansätze vergleichen", l1_warn_title: "⚠️ Problem des Wörterbuch-Ansatzes", l1_warn_text: "Wörterbuch versteht keinen Kontext, Ironie, Verneinungen! Deshalb verwenden moderne Lösungen neuronale Netze!", ach1_name: "Erfolg: Ansatz-Forscher", ach1_desc: "Studiierte verschiedene Stimmungsanalyse-Ansätze", ach1_reward: "+150 XP · +50 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du das Wörterbuch-Problem sahst!", l2_title: "🤗 HuggingFace Pipeline", l2_sub: "Analyse in 3 Codezeilen", l2_xp: "+200 XP", l2_p1: "HuggingFace Transformers bietet fertige Pipelines — Funktionen, die die ganze komplexe Arbeit für uns erledigen.", l2_code_title: "📝 Analyse mit HuggingFace", l2_tip_title: "💡 Wie funktioniert das?", l2_tip_text: "Pipeline lädt automatisch ein Modell (meist DistilBERT), tokenisiert Text, führt durch neuronales Netz und gibt Ergebnis zurück.", ach2_name: "Erfolg: HuggingFace-Nutzer", ach2_desc: "Verwendete Pipeline für Stimmungsanalyse", ach2_reward: "+200 XP · +70 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du Confidence Scores sahst!", l3_title: "🚨 Toxizitätserkennung", l3_sub: "Beleidigungen und Bedrohungen erkennen", l3_xp: "+250 XP", l3_p1: "Für Moderation brauchen wir Toxizitätserkennung — Beleidigungen, Bedrohungen, Hass erkennen. Es gibt spezielle Modelle wie Detoxify.", l3_code_title: "📝 Toxizitätserkennung mit Detoxify", l3_lore_title: "📚 Toxizitätskategorien", l3_lore_text: "Detoxify erkennt 6 Typen: toxicity, severe_toxicity, obscene, identity_attack, insult, threat. Für Bann reicht meist toxicity > 0.7!", ach3_name: "Erfolg: Toxizitäts-Detektor", ach3_desc: "Verwendete Detoxify zur Erkennung toxischer Kommentare", ach3_reward: "+250 XP · +80 💰 ·  Episch", ach3_btn: " Erfolg erhalten", ach3_hint: "Klicke, wenn du Toxizitätskategorien sahst!", l4_title: "🤖 Telegram-Bot erstellen", l4_sub: "python-telegram-bot und async", l4_xp: "+300 XP", l4_p1: "Jetzt kombinieren wir AI mit Telegram! Wir erstellen einen Bot, der jede Nachricht im Chat analysiert und Benutzer warnt/bannt.", l4_code_title: "📝 Bot-Token erhalten", l4_warn_title: "️ Token-Sicherheit", l4_warn_text: "Veröffentliche NIEMALS den Bot-Token! Jeder, der ihn sieht, kann deinen Bot kontrollieren. Verwende .env-Datei und füge sie zu .gitignore hinzu.", ach4_name: "Erfolg: Bot-Ersteller", ach4_desc: "Erstellte Telegram-Bot über BotFather", ach4_reward: "+300 XP · +100 💰 · 🟣 Episch", ach4_btn: " Erfolg erhalten", ach4_hint: "Klicke, wenn du Token von BotFather erhalten hast!", l5_title: "BOSSKAMPF: AI-Moderator", l5_sub: "Vollständiger Chat-Moderations-Bot", l5_xp: "+600 XP", l5_meme: "Zeit, einen echten AI-Moderator zu erstellen! Der Bot analysiert jede Nachricht, warnt bei milder Toxizität und bannt bei schweren Verstößen.", l5_code_title: "📝 Vollständiger AI-Moderator-Code", l5_github_title: "🚀 GitHub-Veröffentlichungsanweisungen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Füge Screenshot des Bots in Telegram hinzu<br>2. Beschreibe Token-Erhalt über @BotFather<br>3. Erkläre Toxizitätsstufen<br>4. Füge Nachrichtenbeispiele hinzu<br>5. Beschreibe Server-Deployment", ach5_name: "LEGENDÄR: AI-Moderator", ach5_desc: "Erstellte funktionierenden Telegram-Moderator-Bot und veröffentlichte auf GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 3% erstellen funktionierende AI-Bots!", sq_title: " Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Mehrsprachig»", sq1_text: "Teste Detoxify auf toxischen Kommentaren in 3 Sprachen.", sq1_reward: "💰 Belohnung: 100 AI-Münzen", sq2_title: "⚡ Quest «Benutzerdefinierte Befehle»", sq2_text: "Füge Befehle hinzu: /ban, /unban, /settings, /help. Speichere in JSON.", sq2_reward: "💰 Belohnung: 200 AI-Münzen", sq3_title: "🎨 Quest «Logging und Analytik»", sq3_text: "Füge Logging zu SQLite hinzu. Erstelle /report mit Statistiken.", sq3_reward: "💰 Belohnung: 400 AI-Münzen + Titel «Bot Architect»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Stimmungsanalyse verstanden", sum2: "✅ Ansätze studiert", sum3: "✅ HuggingFace Pipeline verwendet", sum4: "✅ Detoxify angewendet", sum5: "✅ Telegram-Bot erstellt", sum6: "🏆 Endboss: AI-Moderator auf GitHub!", sum_meme: "Glückwunsch, AI-Moderator! In Lektion 4.4 studieren wir Transformer-Architektur.", nav_back: "← Vorheriger Quest", nav_back_title: "4.2 Tokenisierung und Embeddings", nav_next: "Nächster Quest →", nav_next_title: "4.4 Transformer-Architektur", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 4.3 • 4-МОДУЛЬ", title: "Көңіл-күй талдауы", subtitle: "4.3 деңгейге қош келдің! 🤬➡️😊 Бүгін Telegram-бот жасайсың, ол пікірлерді талдап, уыттылық үшін пайдаланушыларды бандайды.", duration: "⏱ 3 сағат", level: "📙 Озық", xp: "⭐ +1300 XP", loot: "💰 +550 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: " Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🎭 Көңіл-күй талдауы деген не?", l0_sub: "Sentiment Analysis шынайы өмірде", l0_xp: "+100 XP", l0_p1: "Көңіл-күй талдауы — мәтіннің эмоционалды реңкін анықтайтын NLP тапсырмасы: позитивті 😊, негативті 😡 немесе бейтарап 😐.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "Ойын чатының модераторы екеніңді елестет. Бір секундта шешу керек: ойыншы әзілдесе ме, шағымдана ма әлде балағаттай ма? AI-модератор дәл солай жасайды, бірақ жылдамырақ.", ach0_name: "Жетістік: NLP теоретигі", ach0_desc: "Көңіл-күй талдауы тапсырмасын және оның қолданылуын түсінді", ach0_reward: "+100 XP · +40 💰 ·  Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Модератор аналогиясын түсінсең — бас!", l1_title: "🔬 Көңіл-күй талдауы тәсілдері", l1_sub: "Сөздіктерден нейрондық желілерге дейін", l1_xp: "+150 XP", l1_p1: "Үш негізгі тәсіл: 1) Сөздікке негізделген; 2) Классикалық ML; 3) Transformer-лермен Deep Learning (BERT). Бүгін үшіншісін қолданамыз!", l1_code_title: "📝 Тәсілдерді салыстыру", l1_warn_title: "⚠️ Сөздік тәсілінің мәселесі", l1_warn_text: "Сөздік контексті, иронияны, болымсыздықты түсінбейді! Сондықтан заманауи шешімдер нейрондық желілерді қолданады!", ach1_name: "Жетістік: Тәсіл зерттеушісі", ach1_desc: "Көңіл-күй талдауының әртүрлі тәсілдерін зерттеді", ach1_reward: "+150 XP · +50 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Сөздік мәселесін көрсең — бас!", l2_title: "🤗 HuggingFace Pipeline", l2_sub: "3 код жолында талдау", l2_xp: "+200 XP", l2_p1: "HuggingFace Transformers кітапханасы дайын pipeline'дар ұсынады — барлық күрделі жұмысты біз үшін жасайтын функциялар.", l2_code_title: "📝 HuggingFace-пен талдау", l2_tip_title: "💡 Бұл қалай жұмыс істейді?", l2_tip_text: "Pipeline автоматты түрде модельді (әдетте DistilBERT) жүктейді, мәтінді токенизациялайды, нейрондық желіден өткізеді және нәтиже қайтарады.", ach2_name: "Жетістік: HuggingFace пайдаланушысы", ach2_desc: "Көңіл-күй талдауы үшін pipeline қолданды", ach2_reward: "+200 XP · +70 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Confidence score-лерді көрсең — бас!", l3_title: " Уыттылықты анықтау", l3_sub: "Балағаттар мен қауіптерді тану", l3_xp: "+250 XP", l3_p1: "Модерация үшін бізге уыттылықты анықтау керек — балағаттарды, қауіптерді, жеккөрушілікті тану. Detoxify сияқты арнайы модельдер бар.", l3_code_title: "📝 Detoxify-мен уыттылықты анықтау", l3_lore_title: "📚 Уыттылық санаттары", l3_lore_text: "Detoxify 6 типті анықтайды: toxicity, severe_toxicity, obscene, identity_attack, insult, threat. Бандау үшін әдетте toxicity > 0.7 жеткілікті!", ach3_name: "Жетістік: Уыттылық детекторы", ach3_desc: "Уытты пікірлерді тану үшін Detoxify қолданды", ach3_reward: "+250 XP · +80  · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Уыттылық санаттарын көрсең — бас!", l4_title: "🤖 Telegram-бот жасау", l4_sub: "python-telegram-bot және async", l4_xp: "+300 XP", l4_p1: "Енді AI-ды Telegram-мен біріктірейік! Чаттағы әр хабарламаны талдайтын және пайдаланушыларды ескертетін/бандайтын бот жасаймыз.", l4_code_title: "📝 Бот токенін алу", l4_warn_title: "️ Токен қауіпсіздігі", l4_warn_text: "Бот токенін ешқашан ашық жариялама! Оны көрген кез келген адам ботыңды басқара алады. .env файлын қолдан және .gitignore-ға қос.", ach4_name: "Жетістік: Бот жасаушы", ach4_desc: "BotFather арқылы Telegram-бот жасады", ach4_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "BotFather-дан токен алсаң — бас!", l5_title: "БОСС-ФАЙТ: AI-Модератор", l5_sub: "Толық чат модерациясы боты", l5_xp: "+600 XP", l5_meme: "Нағыз AI-модератор жасау уақыты келді! Бот әр хабарламаны талдап, жеңіл уыттылық үшін ескертеді және ауыр бұзушылықтар үшін бандайды.", l5_code_title: "📝 Толық AI-модератор коды", l5_github_title: " GitHub-та жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. Telegram-дағы бот скриншотын қос<br>2. @BotFather арқылы токен алуды сипатта<br>3. Уыттылық деңгейлерін түсіндір<br>4. Хабарлама мысалдарын қос<br>5. Серверге орнатуды сипатта", ach5_name: "АҢЫЗДЫҚ: AI Модератор", ach5_desc: "Жұмыс істейтін Telegram модератор ботын жасады және GitHub-та жариялады", ach5_reward: "+600 XP · +250 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 3% студенттер AI-мен жұмыс боттарын жасайды!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: " ОРТАША", sq_hard: " ҚИЫН", sq1_title: "🧮 Квест «Көптілділік»", sq1_text: "Detoxify-ды 3 түрлі тілдегі уытты пікірлерде сына. Дәлдікті салыстыр.", sq1_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq2_title: "⚡ Квест «Тапсырыс командалары»", sq2_text: "Ботқа командалар қос: /ban, /unban, /settings, /help. JSON-да сақта.", sq2_reward: "💰 Сыйлық: 200 ЖИ-теңге", sq3_title: "🎨 Квест «Логирование және аналитика»", sq3_text: "Барлық бот шешімдерін SQLite-ге логта. /report командасын жаса.", sq3_reward: "💰 Сыйлық: 400 ЖИ-теңге + «Bot Architect» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Көңіл-күй талдауы тапсырмасын түсіндің", sum2: "✅ Тәсілдерді зерттедің", sum3: "✅ HuggingFace pipeline қолдандың", sum4: "✅ Detoxify қолдандың", sum5: "✅ Telegram-бот жасадың", sum6: "🏆 Финалды босс — AI-модератор GitHub-та!", sum_meme: "Құттықтаймын, AI Модератор! Келесі 4.4 сабақта Transformer архитектурасын зерттейміз.", nav_back: "← Алдыңғы квест", nav_back_title: "4.2 Токенизация және эмбеддингтер", nav_next: "Келесі квест →", nav_next_title: "4.4 Transformer архитектурасы", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
