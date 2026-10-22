@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 5.1: Трансформеры и Attention — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(59, 130, 246, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(59, 130, 246, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #3b82f6, #a855f7); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #3b82f6, #a855f7); }
+        .level.boss::before { background: linear-gradient(90deg, #ec4899, #a855f7); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ec4899, #a855f7); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 4px 25px rgba(236, 72, 153, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #a855f7; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1)); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #c4b5fd; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(59, 130, 246, 0.08); border-color: #3b82f6; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #3b82f6; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(59, 130, 246, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #a855f7; background: rgba(168, 85, 247, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #a855f7; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08)); border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #3b82f6; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(59, 130, 246, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2)); border-color: #a855f7; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(59, 130, 246, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 5.1 • МОДУЛЬ 5</span>
+        <h1 data-i18n="title">Трансформеры и Attention</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать в Модуль 5! 🧠 Сегодня ты разберёшь архитектуру, на которой построены ChatGPT, BERT и Claude. Узнаешь, как работает механизм внимания — сердце всех больших языковых моделей!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📕 Экспертный</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1500 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +600 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: Why Transformers? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Почему RNN больше не нужны?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Проблема длинных зависимостей</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">До 2017 года для работы с текстом использовали <strong>RNN (рекуррентные нейросети)</strong> и <strong>LSTM</strong>. Они читали текст слово за словом, запоминая контекст. Но у них была проблема: чем длиннее текст, тем хуже они помнили начало. Как человек, который читает книгу и забывает первую главу к концу!</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">📖</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">RNN — это как ученик, который читает текст слева направо и пытается запомнить всё по порядку. Если текст длинный, он забывает начало. Transformer — это как гений, который может одновременно смотреть на все слова и понимать связи между любыми из них, независимо от расстояния!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">📚</span>
+            <h3 data-i18n="ach0_name">Ачивка: Историк нейросетей</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял ограничения RNN и зачем нужны трансформеры</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+100 XP · +40 💰 ·  Обычная</div>
+            <a href="achievements.html?unlock=lesson5_1_historian" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял проблему длинных зависимостей!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: What is Attention? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">👁️ Что такое Attention?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Механизм внимания</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1"><strong>Attention (внимание)</strong> — это механизм, который позволяет модели "смотреть" на разные части входного текста с разной интенсивностью. Когда ты читаешь предложение "Кот сидит на коврике, потому что он тёплый", слово "он" относится к "коврику", а не к "коту". Attention помогает модели понять это!</p>
+
+        <h3 data-i18n="l1_code_title">📝 Интуиция Attention на примере</h3>
+        <pre><code># Imagine you're translating: "The animal didn't cross the street because it was too tired"
+# What does "it" refer to? "animal" or "street"?
+
+# Attention mechanism looks at all words and assigns weights
+sentence = ["The", "animal", "didn't", "cross", "the", "street", "because", "it", "was", "too", "tired"]
+
+# When processing "it", attention focuses on relevant words
+attention_weights = {
+    "The": 0.02,
+    "animal": 0.35,      # High attention - "it" refers to animal
+    "didn't": 0.05,
+    "cross": 0.08,
+    "the": 0.02,
+    "street": 0.15,
+    "because": 0.10,
+    "it": 0.00,          # Can't attend to itself
+    "was": 0.05,
+    "too": 0.08,
+    "tired": 0.10        # "tired" confirms it's about animal
+}
+
+print("Attention weights when processing 'it':")
+for word, weight in sorted(attention_weights.items(), key=lambda x: -x[1]):
+    bar = "█" * int(weight * 50)
+    print(f"  {word:10s}: {weight:.2f} {bar}")
+
+print("\nThe model correctly understands 'it' = 'animal'!")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Ключевая идея</strong>
+            <span data-i18n="l1_tip_text">Attention позволяет модели динамически фокусироваться на разных частях входа при обработке каждого токена. Это как иметь суперспособность читать все слова одновременно и понимать связи между ними!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">️</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер внимания</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Понял интуицию механизма Attention</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+200 XP · +60 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_1_attention_master" class="ach-btn" data-i18n="ach1_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если понял, как работает внимание!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Q, K, V -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🔑 Query, Key, Value</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Математика Self-Attention</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Self-Attention работает через три вектора для каждого токена: <strong>Query (запрос)</strong> — что я ищу? <strong>Key (ключ)</strong> — что я могу предложить? <strong>Value (значение)</strong> — какая у меня информация? Attention score = similarity(Query, Key), и мы взвешиваем Values по этим scores.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">️</div>
+            <div class="game-text">
+                <strong data-i18n="l2_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l2_analogy_text">Представь библиотеку: Query — это твой запрос ("хочу книгу о драконах"), Key — это метки на книгах ("фэнтези", "драконы", "магия"), Value — это содержимое книг. Attention находит книги с ключами, похожими на твой запрос, и возвращает их содержимое, взвешенное по релевантности!</span>
+            </div>
+        </div>
+
+        <h3 data-i18n="l2_code_title">📝 Реализация Self-Attention</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SelfAttention(nn.Module):
+    """Self-Attention mechanism implementation"""
+    
+    def __init__(self, embed_size, num_heads=1):
+        super().__init__()
+        self.embed_size = embed_size
+        self.num_heads = num_heads
+        
+        # Linear transformations for Q, K, V
+        self.query = nn.Linear(embed_size, embed_size)
+        self.key = nn.Linear(embed_size, embed_size)
+        self.value = nn.Linear(embed_size, embed_size)
+    
+    def forward(self, x):
+        # x shape: (batch_size, seq_length, embed_size)
+        batch_size, seq_length, embed_size = x.shape
+        
+        # Compute Q, K, V
+        Q = self.query(x)  # (batch, seq, embed)
+        K = self.key(x)    # (batch, seq, embed)
+        V = self.value(x)  # (batch, seq, embed)
+        
+        # Calculate attention scores
+        # scores shape: (batch, seq, seq)
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / (embed_size ** 0.5)
+        
+        # Apply softmax to get attention weights
+        attention_weights = F.softmax(scores, dim=-1)
+        
+        # Weighted sum of values
+        # output shape: (batch, seq, embed)
+        output = torch.matmul(attention_weights, V)
+        
+        return output, attention_weights
+
+# Test the attention mechanism
+embed_size = 64
+seq_length = 10
+batch_size = 2
+
+attention = SelfAttention(embed_size)
+x = torch.randn(batch_size, seq_length, embed_size)
+
+output, weights = attention(x)
+print(f"Input shape: {x.shape}")
+print(f"Output shape: {output.shape}")
+print(f"Attention weights shape: {weights.shape}")
+print(f"\nAttention weights for first token (first 5 values):")
+print(weights[0, 0, :5])</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l2_lore_title">📚 Почему делим на sqrt(d)?</strong>
+            <span data-i18n="l2_lore_text">Масштабирование на d_k (размерность ключа) предотвращает слишком большие значения dot product, которые могли бы привести к очень маленьким градиентам после softmax (проблема vanishing gradients).</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔑</span>
+            <h3 data-i18n="ach2_name">Ачивка: Математик QKV</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Реализовал Self-Attention с Query, Key, Value</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+250 XP · +80 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_1_qkv_math" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если понял роль Q, K и V!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Multi-Head Attention -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🎯 Multi-Head Attention</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Несколько голов внимания</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Вместо одного Attention, Transformer использует <strong>Multi-Head Attention</strong> — несколько "голов" внимания параллельно. Каждая голова учится фокусироваться на разных аспектах: одна на синтаксисе, другая на семантике, третья на позициях слов. Потом результаты объединяются!</p>
+
+        <h3 data-i18n="l3_code_title">📝 Multi-Head Attention в PyTorch</h3>
+        <pre><code>import torch
+import torch.nn as nn
+
+class MultiHeadAttention(nn.Module):
+    """Multi-Head Attention mechanism"""
+    
+    def __init__(self, embed_size, num_heads):
+        super().__init__()
+        self.embed_size = embed_size
+        self.num_heads = num_heads
+        self.head_dim = embed_size // num_heads
+        
+        assert self.head_dim * num_heads == embed_size, "embed_size must be divisible by num_heads"
+        
+        # Linear layers for Q, K, V
+        self.qkv = nn.Linear(embed_size, embed_size * 3)
+        self.fc_out = nn.Linear(embed_size, embed_size)
+    
+    def forward(self, x):
+        batch_size, seq_length, embed_size = x.shape
+        
+        # Compute Q, K, V and split into heads
+        qkv = self.qkv(x).reshape(batch_size, seq_length, 3, self.num_heads, self.head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)  # (3, batch, heads, seq, head_dim)
+        Q, K, V = qkv[0], qkv[1], qkv[2]
+        
+        # Scaled dot-product attention
+        energy = torch.matmul(Q, K.transpose(-2, -1)) / (self.head_dim ** 0.5)
+        attention = torch.softmax(energy, dim=-1)
+        
+        # Apply attention to values
+        out = torch.matmul(attention, V)
+        
+        # Concatenate heads
+        out = out.reshape(batch_size, seq_length, embed_size)
+        out = self.fc_out(out)
+        
+        return out
+
+# Test Multi-Head Attention
+embed_size = 256
+num_heads = 8
+mha = MultiHeadAttention(embed_size, num_heads)
+
+x = torch.randn(2, 10, embed_size)  # batch=2, seq=10
+output = mha(x)
+
+print(f"Input shape: {x.shape}")
+print(f"Output shape: {output.shape}")
+print(f"Number of attention heads: {num_heads}")
+print(f"Dimension per head: {embed_size // num_heads}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l3_tip_title">💡 Почему несколько голов?</strong>
+            <span data-i18n="l3_tip_text">Разные головы могут учиться разным типам зависимостей: одна голова следит за грамматикой, другая — за смыслом, третья — за позицией слов. Это как иметь команду экспертов, каждый из которых смотрит на текст под своим углом!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon"></span>
+            <h3 data-i18n="ach3_name">Ачивка: Архитектор Multi-Head</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Реализовал Multi-Head Attention</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+300 XP · +100 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_1_multihead" class="ach-btn" data-i18n="ach3_btn"> Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если понял, зачем нужно несколько голов!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Full Transformer -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🏗️ Архитектура Transformer</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Encoder-Decoder структура</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+350 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Полный Transformer состоит из <strong>Encoder</strong> (кодирует вход) и <strong>Decoder</strong> (генерирует выход). Каждый содержит слои Multi-Head Attention, Feed-Forward сети, Layer Normalization и residual connections. GPT использует только Decoder, BERT — только Encoder, а T5 — оба!</p>
+
+        <h3 data-i18n="l4_code_title"> Transformer Encoder Layer</h3>
+        <pre><code>import torch
+import torch.nn as nn
+
+class TransformerEncoderLayer(nn.Module):
+    """Single Transformer Encoder Layer"""
+    
+    def __init__(self, embed_size, num_heads, ff_dim, dropout=0.1):
+        super().__init__()
+        self.attention = nn.MultiheadAttention(embed_size, num_heads, dropout=dropout)
+        self.norm1 = nn.LayerNorm(embed_size)
+        self.norm2 = nn.LayerNorm(embed_size)
+        
+        # Feed-Forward Network
+        self.ff = nn.Sequential(
+            nn.Linear(embed_size, ff_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(ff_dim, embed_size),
+            nn.Dropout(dropout)
+        )
+        
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x):
+        # Self-Attention with residual connection
+        attn_output, _ = self.attention(x, x, x)
+        x = self.norm1(x + self.dropout(attn_output))
+        
+        # Feed-Forward with residual connection
+        ff_output = self.ff(x)
+        x = self.norm2(x + self.dropout(ff_output))
+        
+        return x
+
+class TransformerEncoder(nn.Module):
+    """Full Transformer Encoder with multiple layers"""
+    
+    def __init__(self, vocab_size, embed_size, num_layers, num_heads, ff_dim, max_seq_length, dropout=0.1):
+        super().__init__()
+        self.embed_size = embed_size
+        
+        # Token and Position Embeddings
+        self.token_embedding = nn.Embedding(vocab_size, embed_size)
+        self.pos_embedding = nn.Embedding(max_seq_length, embed_size)
+        
+        # Stack of encoder layers
+        self.layers = nn.ModuleList([
+            TransformerEncoderLayer(embed_size, num_heads, ff_dim, dropout)
+            for _ in range(num_layers)
+        ])
+        
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x):
+        # x shape: (batch_size, seq_length)
+        batch_size, seq_length = x.shape
+        positions = torch.arange(seq_length, device=x.device).unsqueeze(0)
+        
+        # Add token and position embeddings
+        x = self.token_embedding(x) + self.pos_embedding(positions)
+        x = self.dropout(x)
+        
+        # Pass through encoder layers
+        for layer in self.layers:
+            x = layer(x)
+        
+        return x
+
+# Create a small Transformer
+vocab_size = 10000
+embed_size = 256
+num_layers = 6
+num_heads = 8
+ff_dim = 1024
+max_seq_length = 512
+
+transformer = TransformerEncoder(vocab_size, embed_size, num_layers, num_heads, ff_dim, max_seq_length)
+
+# Test with dummy input
+x = torch.randint(0, vocab_size, (2, 20))  # batch=2, seq=20
+output = transformer(x)
+
+print(f"Input shape: {x.shape}")
+print(f"Output shape: {output.shape}")
+print(f"Total parameters: {sum(p.numel() for p in transformer.parameters()):,}")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🏗️</span>
+            <span data-i18n="l4_meme">Transformer из оригинальной статьи "Attention Is All You Need" (2017) имел 6 encoder и 6 decoder слоёв, 8 голов внимания, и 65 миллионов параметров. GPT-3 имеет 175 миллиардов параметров — в 2700 раз больше!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏗️</span>
+            <h3 data-i18n="ach4_name">Ачивка: Инженер Transformer</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Построил полный Transformer Encoder</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+350 XP · +120 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_1_transformer_engineer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если собрал работающий Transformer!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Mini GPT -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Мини-GPT</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Создаём свою языковую модель</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+700 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🤖</span>
+            <span data-i18n="l5_meme">Пришло время создать свою собственную мини-версию GPT! Мы построим Decoder-only Transformer и обучим его генерировать текст. Это будет маленький, но настоящий языковой модель!</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Мини-GPT: Decoder-only Transformer</h3>
+        <pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class CausalSelfAttention(nn.Module):
+    """Self-Attention with causal mask (can't see future tokens)"""
+    
+    def __init__(self, embed_size, num_heads):
+        super().__init__()
+        self.num_heads = num_heads
+        self.head_dim = embed_size // num_heads
+        
+        self.qkv = nn.Linear(embed_size, embed_size * 3)
+        self.proj = nn.Linear(embed_size, embed_size)
+        
+        # Causal mask (lower triangular)
+        self.register_buffer('mask', torch.tril(torch.ones(1024, 1024)).view(1, 1, 1024, 1024))
+    
+    def forward(self, x):
+        B, T, C = x.shape
+        
+        # Compute Q, K, V
+        qkv = self.qkv(x).reshape(B, T, 3, self.num_heads, self.head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        
+        # Attention scores
+        att = (q @ k.transpose(-2, -1)) * (1.0 / (k.size(-1) ** 0.5))
+        
+        # Apply causal mask
+        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float('-inf'))
+        att = F.softmax(att, dim=-1)
+        
+        # Apply attention to values
+        y = att @ v
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        
+        return self.proj(y)
+
+class MiniGPTBlock(nn.Module):
+    """Single GPT block (Decoder layer)"""
+    
+    def __init__(self, embed_size, num_heads):
+        super().__init__()
+        self.ln1 = nn.LayerNorm(embed_size)
+        self.attn = CausalSelfAttention(embed_size, num_heads)
+        self.ln2 = nn.LayerNorm(embed_size)
+        self.ff = nn.Sequential(
+            nn.Linear(embed_size, 4 * embed_size),
+            nn.GELU(),
+            nn.Linear(4 * embed_size, embed_size)
+        )
+    
+    def forward(self, x):
+        x = x + self.attn(self.ln1(x))
+        x = x + self.ff(self.ln2(x))
+        return x
+
+class MiniGPT(nn.Module):
+    """Mini GPT language model"""
+    
+    def __init__(self, vocab_size, embed_size, num_layers, num_heads, max_seq_length):
+        super().__init__()
+        self.token_embed = nn.Embedding(vocab_size, embed_size)
+        self.pos_embed = nn.Embedding(max_seq_length, embed_size)
+        self.blocks = nn.Sequential(*[MiniGPTBlock(embed_size, num_heads) for _ in range(num_layers)])
+        self.ln_f = nn.LayerNorm(embed_size)
+        self.head = nn.Linear(embed_size, vocab_size, bias=False)
+    
+    def forward(self, idx, targets=None):
+        B, T = idx.shape
+        pos = torch.arange(T, device=idx.device).unsqueeze(0)
+        
+        x = self.token_embed(idx) + self.pos_embed(pos)
+        x = self.blocks(x)
+        x = self.ln_f(x)
+        logits = self.head(x)
+        
+        loss = None
+        if targets is not None:
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+        
+        return logits, loss
+
+# Create mini GPT
+vocab_size = 1000  # Small vocabulary for demo
+embed_size = 128
+num_layers = 4
+num_heads = 4
+max_seq_length = 64
+
+model = MiniGPT(vocab_size, embed_size, num_layers, num_heads, max_seq_length)
+
+print("=== Mini GPT Architecture ===")
+print(f"Vocabulary size: {vocab_size}")
+print(f"Embedding size: {embed_size}")
+print(f"Number of layers: {num_layers}")
+print(f"Number of attention heads: {num_heads}")
+print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
+
+# Test forward pass
+idx = torch.randint(0, vocab_size, (2, 32))  # batch=2, seq=32
+logits, loss = model(idx)
+print(f"\nInput shape: {idx.shape}")
+print(f"Logits shape: {logits.shape}")
+print(f"Loss: {loss.item():.4f}")
+
+# Generate text
+def generate(model, idx, max_new_tokens, temperature=1.0):
+    model.eval()
+    for _ in range(max_new_tokens):
+        idx_cond = idx[:, -max_seq_length:]
+        logits, _ = model(idx_cond)
+        logits = logits[:, -1, :] / temperature
+        probs = F.softmax(logits, dim=-1)
+        idx_next = torch.multinomial(probs, num_samples=1)
+        idx = torch.cat([idx, idx_next], dim=1)
+    return idx
+
+print("\n=== Text Generation Demo ===")
+start_tokens = torch.randint(0, vocab_size, (1, 10))
+generated = generate(model, start_tokens, max_new_tokens=20)
+print(f"Generated token IDs: {generated[0].tolist()}")
+print("Note: With random weights, output is random. After training, it would generate meaningful text!")</code></pre>
+
+        <h3 data-i18n="l5_github_title">🚀 Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir mini-gpt-transformer
+cd mini-gpt-transformer
+
+mkdir src data notebooks
+touch src/model.py
+touch src/train.py
+touch src/generate.py
+touch requirements.txt
+touch README.md
+
+# 2. requirements.txt
+torch==2.1.0
+numpy==1.24.0
+matplotlib==3.7.0
+
+# 3. Train on a small dataset (e.g., Shakespeare text)
+python src/train.py --dataset shakespeare.txt --epochs 100
+
+# 4. Generate text
+python src/generate.py --prompt "To be or not" --length 100
+
+# 5. Commit and push
+git init
+git add .
+git commit -m "Add Mini GPT with Transformer architecture"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/mini-gpt-transformer.git
+git push -u origin main
+
+# 6. Add training curves and generated text samples to README!</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Объясни архитектуру Mini GPT (диаграмма)<br>
+                2. Покажи примеры сгенерированного текста до и после обучения<br>
+                3. Добавь графики loss во время обучения<br>
+                4. Опиши, как изменить размер модели (параметры)<br>
+                5. Сравни с оригинальным GPT-2/GPT-3
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: Создатель GPT</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Построил мини-GPT с нуля и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+700 XP · +300 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson5_1_gpt_creator" class="ach-btn" style="background: linear-gradient(135deg, #3b82f6, #ec4899);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 2% студентов создают работающие трансформеры. Ты — элита AI!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title"> Квест «Визуализация Attention»</h3>
+            <p data-i18n="sq1_text">Возьми предобученный BERT и визуализируй attention weights для предложения. Покажи, на какие слова смотрит модель при обработке каждого токена.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 150 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Обучение на Shakespeare»</h3>
+            <p data-i18n="sq2_text">Обучи Mini GPT на текстах Шекспира (dataset доступен в torchtext). Сгенерируй новый текст в стиле Шекспира и сравни с оригиналом.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 300 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Flash Attention»</h3>
+            <p data-i18n="sq3_text">Реализуй оптимизированную версию Attention (Flash Attention), которая использует меньше памяти. Сравни скорость и потребление памяти с обычной реализацией на длинных последовательностях.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 500 AI-коинов + титул «Attention Optimizer»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял ограничения RNN и преимущества Transformer</li>
+            <li data-i18n="sum2">✅ Освоил механизм Attention (Q, K, V)</li>
+            <li data-i18n="sum3">✅ Реализовал Multi-Head Attention</li>
+            <li data-i18n="sum4">✅ Построил полный Transformer Encoder</li>
+            <li data-i18n="sum5">✅ Создал Mini GPT (Decoder-only Transformer)</li>
+            <li data-i18n="sum6">🏆 Финальный босс — мини-GPT опубликован на GitHub!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, Создатель GPT! Ты теперь понимаешь архитектуру, на которой построены все современные LLM. Это знание делает тебя настоящим AI-инженером! В следующем уроке 5.2 мы изучим, как дообучать большие модели (LoRA, Fine-tuning) и создадим своего собственного ChatGPT! 🤖</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-4-3.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">4.3 Анализ тональности</span>
+        </a>
+        <a href="lesson-5-2.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">5.2 Fine-tuning LLM</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 5.1 • МОДУЛЬ 5", title: "Трансформеры и Attention",
+            subtitle: "Добро пожаловать в Модуль 5!  Сегодня ты разберёшь архитектуру, на которой построены ChatGPT, BERT и Claude. Узнаешь, как работает механизм внимания — сердце всех больших языковых моделей!",
+            duration: "⏱ 3 часа", level: "📕 Экспертный", xp: "⭐ +1500 XP", loot: "💰 +600 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: " Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "📚 Почему RNN больше не нужны?", l0_sub: "Проблема длинных зависимостей", l0_xp: "+100 XP",
+            l0_p1: "До 2017 года для работы с текстом использовали RNN (рекуррентные нейросети) и LSTM. Они читали текст слово за словом, запоминая контекст. Но у них была проблема: чем длиннее текст, тем хуже они помнили начало. Как человек, который читает книгу и забывает первую главу к концу!",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "RNN — это как ученик, который читает текст слева направо и пытается запомнить всё по порядку. Если текст длинный, он забывает начало. Transformer — это как гений, который может одновременно смотреть на все слова и понимать связи между любыми из них, независимо от расстояния!",
+            ach0_name: "Ачивка: Историк нейросетей", ach0_desc: "Понял ограничения RNN и зачем нужны трансформеры", ach0_reward: "+100 XP · +40 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял проблему длинных зависимостей!",
+            l1_title: "👁️ Что такое Attention?", l1_sub: "Механизм внимания", l1_xp: "+200 XP",
+            l1_p1: "Attention (внимание) — это механизм, который позволяет модели 'смотреть' на разные части входного текста с разной интенсивностью. Когда ты читаешь предложение 'Кот сидит на коврике, потому что он тёплый', слово 'он' относится к 'коврику', а не к 'коту'. Attention помогает модели понять это!",
+            l1_code_title: "📝 Интуиция Attention на примере",
+            l1_tip_title: "💡 Ключевая идея", l1_tip_text: "Attention позволяет модели динамически фокусироваться на разных частях входа при обработке каждого токена. Это как иметь суперспособность читать все слова одновременно и понимать связи между ними!",
+            ach1_name: "Ачивка: Мастер внимания", ach1_desc: "Понял интуицию механизма Attention", ach1_reward: "+200 XP · +60 💰 · 🔵 Редкая", ach1_btn: " Получить ачивку", ach1_hint: "Нажми, если понял, как работает внимание!",
+            l2_title: "🔑 Query, Key, Value", l2_sub: "Математика Self-Attention", l2_xp: "+250 XP",
+            l2_p1: "Self-Attention работает через три вектора для каждого токена: Query (запрос) — что я ищу? Key (ключ) — что я могу предложить? Value (значение) — какая у меня информация? Attention score = similarity(Query, Key), и мы взвешиваем Values по этим scores.",
+            l2_analogy_title: "Игровая аналогия", l2_analogy_text: "Представь библиотеку: Query — это твой запрос ('хочу книгу о драконах'), Key — это метки на книгах ('фэнтези', 'драконы', 'магия'), Value — это содержимое книг. Attention находит книги с ключами, похожими на твой запрос, и возвращает их содержимое, взвешенное по релевантности!",
+            l2_code_title: "📝 Реализация Self-Attention",
+            l2_lore_title: "📚 Почему делим на sqrt(d)?", l2_lore_text: "Масштабирование на √d_k (размерность ключа) предотвращает слишком большие значения dot product, которые могли бы привести к очень маленьким градиентам после softmax (проблема vanishing gradients).",
+            ach2_name: "Ачивка: Математик QKV", ach2_desc: "Реализовал Self-Attention с Query, Key, Value", ach2_reward: "+250 XP · +80 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если понял роль Q, K и V!",
+            l3_title: "🎯 Multi-Head Attention", l3_sub: "Несколько голов внимания", l3_xp: "+300 XP",
+            l3_p1: "Вместо одного Attention, Transformer использует Multi-Head Attention — несколько 'голов' внимания параллельно. Каждая голова учится фокусироваться на разных аспектах: одна на синтаксисе, другая на семантике, третья на позициях слов. Потом результаты объединяются!",
+            l3_code_title: "📝 Multi-Head Attention в PyTorch",
+            l3_tip_title: "💡 Почему несколько голов?", l3_tip_text: "Разные головы могут учиться разным типам зависимостей: одна голова следит за грамматикой, другая — за смыслом, третья — за позицией слов. Это как иметь команду экспертов, каждый из которых смотрит на текст под своим углом!",
+            ach3_name: "Ачивка: Архитектор Multi-Head", ach3_desc: "Реализовал Multi-Head Attention", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если понял, зачем нужно несколько голов!",
+            l4_title: "️ Архитектура Transformer", l4_sub: "Encoder-Decoder структура", l4_xp: "+350 XP",
+            l4_p1: "Полный Transformer состоит из Encoder (кодирует вход) и Decoder (генерирует выход). Каждый содержит слои Multi-Head Attention, Feed-Forward сети, Layer Normalization и residual connections. GPT использует только Decoder, BERT — только Encoder, а T5 — оба!",
+            l4_code_title: " Transformer Encoder Layer",
+            l4_meme: "Transformer из оригинальной статьи 'Attention Is All You Need' (2017) имел 6 encoder и 6 decoder слоёв, 8 голов внимания, и 65 миллионов параметров. GPT-3 имеет 175 миллиардов параметров — в 2700 раз больше!",
+            ach4_name: "Ачивка: Инженер Transformer", ach4_desc: "Построил полный Transformer Encoder", ach4_reward: "+350 XP · +120 💰 · 🟣 Эпическая", ach4_btn: " Получить ачивку", ach4_hint: "Нажми, если собрал работающий Transformer!",
+            l5_title: "БОСС-ФАЙТ: Мини-GPT", l5_sub: "Создаём свою языковую модель", l5_xp: "+700 XP",
+            l5_meme: "Пришло время создать свою собственную мини-версию GPT! Мы построим Decoder-only Transformer и обучим его генерировать текст. Это будет маленький, но настоящий языковой модель!",
+            l5_code_title: "📝 Мини-GPT: Decoder-only Transformer",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Объясни архитектуру Mini GPT (диаграмма)<br>2. Покажи примеры сгенерированного текста до и после обучения<br>3. Добавь графики loss во время обучения<br>4. Опиши, как изменить размер модели (параметры)<br>5. Сравни с оригинальным GPT-2/GPT-3",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: Создатель GPT", ach5_desc: "Построил мини-GPT с нуля и опубликовал на GitHub", ach5_reward: "+700 XP · +300 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 2% студентов создают работающие трансформеры. Ты — элита AI!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Визуализация Attention»", sq1_text: "Возьми предобученный BERT и визуализируй attention weights для предложения. Покажи, на какие слова смотрит модель при обработке каждого токена.", sq1_reward: "💰 Награда: 150 AI-коинов",
+            sq2_title: "⚡ Квест «Обучение на Shakespeare»", sq2_text: "Обучи Mini GPT на текстах Шекспира (dataset доступен в torchtext). Сгенерируй новый текст в стиле Шекспира и сравни с оригиналом.", sq2_reward: "💰 Награда: 300 AI-коинов",
+            sq3_title: "🎨 Квест «Flash Attention»", sq3_text: "Реализуй оптимизированную версию Attention (Flash Attention), которая использует меньше памяти. Сравни скорость и потребление памяти с обычной реализацией на длинных последовательностях.", sq3_reward: "💰 Награда: 500 AI-коинов + титул «Attention Optimizer»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял ограничения RNN и преимущества Transformer", sum2: "✅ Освоил механизм Attention (Q, K, V)",
+            sum3: "✅ Реализовал Multi-Head Attention", sum4: "✅ Построил полный Transformer Encoder",
+            sum5: "✅ Создал Mini GPT (Decoder-only Transformer)", sum6: " Финальный босс — мини-GPT опубликован на GitHub!",
+            sum_meme: "Поздравляю, Создатель GPT! Ты теперь понимаешь архитектуру, на которой построены все современные LLM. Это знание делает тебя настоящим AI-инженером! В следующем уроке 5.2 мы изучим, как дообучать большие модели (LoRA, Fine-tuning) и создадим своего собственного ChatGPT! 🤖",
+            nav_back: "← Предыдущий квест", nav_back_title: "4.3 Анализ тональности",
+            nav_next: "Следующий квест →", nav_next_title: "5.2 Fine-tuning LLM",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 5.1 • MODULE 5", title: "Transformers and Attention",
+            subtitle: "Welcome to Module 5!  Today you'll explore the architecture behind ChatGPT, BERT, and Claude. Learn how the attention mechanism works — the heart of all large language models!",
+            duration: "⏱ 3 hours", level: "📕 Expert", xp: "⭐ +1500 XP", loot: "💰 +600 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "📚 Why are RNNs obsolete?", l0_sub: "The long dependency problem", l0_xp: "+100 XP",
+            l0_p1: "Before 2017, RNNs (recurrent neural networks) and LSTMs were used for text processing. They read text word by word, remembering context. But they had a problem: the longer the text, the worse they remembered the beginning. Like a person who reads a book and forgets the first chapter by the end!",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "RNN is like a student who reads text left to right and tries to memorize everything in order. If the text is long, they forget the beginning. Transformer is like a genius who can simultaneously look at all words and understand connections between any of them, regardless of distance!",
+            ach0_name: "Achievement: Neural Network Historian", ach0_desc: "Understood RNN limitations and why transformers are needed", ach0_reward: "+100 XP · +40 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the long dependency problem!",
+            l1_title: "👁️ What is Attention?", l1_sub: "Attention mechanism", l1_xp: "+200 XP",
+            l1_p1: "Attention is a mechanism that allows the model to 'look' at different parts of the input text with varying intensity. When you read 'The cat sat on the mat because it was warm', the word 'it' refers to 'mat', not 'cat'. Attention helps the model understand this!",
+            l1_code_title: "📝 Attention intuition example",
+            l1_tip_title: "💡 Key idea", l1_tip_text: "Attention allows the model to dynamically focus on different parts of the input when processing each token. It's like having a superpower to read all words simultaneously and understand connections between them!",
+            ach1_name: "Achievement: Attention Master", ach1_desc: "Understood Attention mechanism intuition", ach1_reward: "+200 XP · +60 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you understood how attention works!",
+            l2_title: "🔑 Query, Key, Value", l2_sub: "Self-Attention mathematics", l2_xp: "+250 XP",
+            l2_p1: "Self-Attention works through three vectors for each token: Query — what am I looking for? Key — what can I offer? Value — what information do I have? Attention score = similarity(Query, Key), and we weight Values by these scores.",
+            l2_analogy_title: "Game analogy", l2_analogy_text: "Imagine a library: Query is your request ('want a book about dragons'), Key is book labels ('fantasy', 'dragons', 'magic'), Value is book content. Attention finds books with keys similar to your query and returns their content, weighted by relevance!",
+            l2_code_title: "📝 Self-Attention implementation",
+            l2_lore_title: "📚 Why divide by sqrt(d)?", l2_lore_text: "Scaling by d_k (key dimensionality) prevents too large dot product values, which could lead to very small gradients after softmax (vanishing gradients problem).",
+            ach2_name: "Achievement: QKV Mathematician", ach2_desc: "Implemented Self-Attention with Query, Key, Value", ach2_reward: "+250 XP · +80 💰 ·  Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you understood the role of Q, K, and V!",
+            l3_title: "🎯 Multi-Head Attention", l3_sub: "Multiple attention heads", l3_xp: "+300 XP",
+            l3_p1: "Instead of one Attention, Transformer uses Multi-Head Attention — multiple 'heads' of attention in parallel. Each head learns to focus on different aspects: one on syntax, another on semantics, third on word positions. Then results are combined!",
+            l3_code_title: "📝 Multi-Head Attention in PyTorch",
+            l3_tip_title: "💡 Why multiple heads?", l3_tip_text: "Different heads can learn different types of dependencies: one head tracks grammar, another — meaning, third — word positions. It's like having a team of experts, each looking at text from their own angle!",
+            ach3_name: "Achievement: Multi-Head Architect", ach3_desc: "Implemented Multi-Head Attention", ach3_reward: "+300 XP · +100  · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you understood why multiple heads are needed!",
+            l4_title: "🏗️ Transformer Architecture", l4_sub: "Encoder-Decoder structure", l4_xp: "+350 XP",
+            l4_p1: "Full Transformer consists of Encoder (encodes input) and Decoder (generates output). Each contains Multi-Head Attention layers, Feed-Forward networks, Layer Normalization, and residual connections. GPT uses only Decoder, BERT — only Encoder, and T5 — both!",
+            l4_code_title: "📝 Transformer Encoder Layer",
+            l4_meme: "The Transformer from the original 'Attention Is All You Need' paper (2017) had 6 encoder and 6 decoder layers, 8 attention heads, and 65 million parameters. GPT-3 has 175 billion parameters — 2700 times more!",
+            ach4_name: "Achievement: Transformer Engineer", ach4_desc: "Built full Transformer Encoder", ach4_reward: "+350 XP · +120  · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you assembled a working Transformer!",
+            l5_title: "BOSS FIGHT: Mini GPT", l5_sub: "Creating our own language model", l5_xp: "+700 XP",
+            l5_meme: "Time to create your own mini version of GPT! We'll build a Decoder-only Transformer and train it to generate text. It will be small, but a real language model!",
+            l5_code_title: "📝 Mini GPT: Decoder-only Transformer",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Explain Mini GPT architecture (diagram)<br>2. Show generated text examples before and after training<br>3. Add loss curves during training<br>4. Describe how to change model size (parameters)<br>5. Compare with original GPT-2/GPT-3",
+            ach5_name: "LEGENDARY: GPT Creator", ach5_desc: "Built mini GPT from scratch and published on GitHub", ach5_reward: "+700 XP · +300 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 2% of students create working transformers. You're AI elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: " HARD",
+            sq1_title: " Quest «Attention Visualization»", sq1_text: "Take pre-trained BERT and visualize attention weights for a sentence. Show which words the model looks at when processing each token.", sq1_reward: "💰 Reward: 150 AI-coins",
+            sq2_title: "⚡ Quest «Training on Shakespeare»", sq2_text: "Train Mini GPT on Shakespeare texts (dataset available in torchtext). Generate new text in Shakespeare's style and compare with original.", sq2_reward: "💰 Reward: 300 AI-coins",
+            sq3_title: "🎨 Quest «Flash Attention»", sq3_text: "Implement optimized Attention version (Flash Attention) that uses less memory. Compare speed and memory consumption with regular implementation on long sequences.", sq3_reward: "💰 Reward: 500 AI-coins + title «Attention Optimizer»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood RNN limitations and Transformer advantages", sum2: "✅ Mastered Attention mechanism (Q, K, V)",
+            sum3: "✅ Implemented Multi-Head Attention", sum4: "✅ Built full Transformer Encoder",
+            sum5: "✅ Created Mini GPT (Decoder-only Transformer)", sum6: " Final boss — mini GPT published on GitHub!",
+            sum_meme: "Congrats, GPT Creator! You now understand the architecture behind all modern LLMs. This knowledge makes you a real AI engineer! In the next lesson 5.2, we'll learn how to fine-tune large models (LoRA, Fine-tuning) and create our own ChatGPT! 🤖",
+            nav_back: "← Previous quest", nav_back_title: "4.3 Sentiment Analysis",
+            nav_next: "Next quest →", nav_next_title: "5.2 Fine-tuning LLM",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 5.1 • MÓDULO 5", title: "Transformers y Atención", subtitle: "¡Bienvenido al Módulo 5! 🧠 Hoy explorarás la arquitectura detrás de ChatGPT, BERT y Claude.", duration: " 3 horas", level: "📕 Experto", xp: "⭐ +1500 XP", loot: "💰 +600 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "📚 ¿Por qué las RNN son obsoletas?", l0_sub: "El problema de dependencias largas", l0_xp: "+100 XP", l0_p1: "Antes de 2017, se usaban RNN y LSTM para procesamiento de texto. Leían texto palabra por palabra, recordando contexto. Pero tenían un problema: cuanto más largo el texto, peor recordaban el inicio.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "RNN es como un estudiante que lee texto de izquierda a derecha. Si el texto es largo, olvida el inicio. ¡Transformer es como un genio que puede ver todas las palabras simultáneamente!", ach0_name: "Logro: Historiador de redes neuronales", ach0_desc: "Entendió limitaciones de RNN y por qué se necesitan transformers", ach0_reward: "+100 XP · +40 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste el problema de dependencias largas!", l1_title: "👁️ ¿Qué es Atención?", l1_sub: "Mecanismo de atención", l1_xp: "+200 XP", l1_p1: "Atención es un mecanismo que permite al modelo 'mirar' diferentes partes del texto de entrada con varying intensidad. ¡Ayuda al modelo a entender referencias!", l1_code_title: "📝 Ejemplo de intuición de Atención", l1_tip_title: "💡 Idea clave", l1_tip_text: "¡La Atención permite al modelo enfocarse dinámicamente en diferentes partes de la entrada al procesar cada token!", ach1_name: "Logro: Maestro de Atención", ach1_desc: "Entendió la intuición del mecanismo de Atención", ach1_reward: "+200 XP · +60 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si entendiste cómo funciona la atención!", l2_title: " Query, Key, Value", l2_sub: "Matemáticas de Self-Attention", l2_xp: "+250 XP", l2_p1: "Self-Attention funciona con tres vectores para cada token: Query (qué busco), Key (qué ofrezco), Value (qué información tengo). Attention score = similitud(Query, Key).", l2_analogy_title: "Analogía de juego", l2_analogy_text: "Imagina una biblioteca: Query es tu solicitud, Key son etiquetas de libros, Value es contenido. ¡La Atención encuentra libros relevantes!", l2_code_title: "📝 Implementación de Self-Attention", l2_lore_title: "📚 ¿Por qué dividir por sqrt(d)?", l2_lore_text: "Escalar por √d_k previene valores de producto punto demasiado grandes, que podrían llevar a gradientes muy pequeños después de softmax.", ach2_name: "Logro: Matemático QKV", ach2_desc: "Implementó Self-Attention con Query, Key, Value", ach2_reward: "+250 XP · +80 💰 ·  Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si entendiste el rol de Q, K y V!", l3_title: "🎯 Multi-Head Attention", l3_sub: "Múltiples cabezas de atención", l3_xp: "+300 XP", l3_p1: "En lugar de una Atención, Transformer usa Multi-Head Attention — múltiples 'cabezas' en paralelo. ¡Cada cabeza aprende a enfocarse en diferentes aspectos!", l3_code_title: "📝 Multi-Head Attention en PyTorch", l3_tip_title: "💡 ¿Por qué múltiples cabezas?", l3_tip_text: "¡Diferentes cabezas pueden aprender diferentes tipos de dependencias: gramática, significado, posiciones de palabras!", ach3_name: "Logro: Arquitecto Multi-Head", ach3_desc: "Implementó Multi-Head Attention", ach3_reward: "+300 XP · +100 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si entendiste por qué se necesitan múltiples cabezas!", l4_title: "🏗️ Arquitectura Transformer", l4_sub: "Estructura Encoder-Decoder", l4_xp: "+350 XP", l4_p1: "Transformer completo consiste en Encoder (codifica entrada) y Decoder (genera salida). ¡GPT usa solo Decoder, BERT — solo Encoder, T5 — ambos!", l4_code_title: " Capa de Transformer Encoder", l4_meme: "¡El Transformer original (2017) tenía 65 millones de parámetros. GPT-3 tiene 175 mil millones — 2700 veces más!", ach4_name: "Logro: Ingeniero Transformer", ach4_desc: "Construyó Transformer Encoder completo", ach4_reward: "+350 XP · +120  · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si ensamblaste un Transformer funcional!", l5_title: "¡PELEA JEFE: Mini GPT!", l5_sub: "Creando nuestro propio modelo de lenguaje", l5_xp: "+700 XP", l5_meme: "¡Tiempo de crear tu propia versión mini de GPT! Construiremos un Transformer Decoder-only y lo entrenaremos para generar texto.", l5_code_title: "📝 Mini GPT: Transformer Decoder-only", l5_github_title: " Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Explica arquitectura Mini GPT<br>2. Muestra texto generado antes y después<br>3. Añade curvas de loss<br>4. Describe cómo cambiar tamaño<br>5. Compara con GPT-2/GPT-3", ach5_name: "LEGENDARIO: Creador de GPT", ach5_desc: "Construyó mini GPT desde cero y publicó en GitHub", ach5_reward: "+700 XP · +300 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo 2% crea transformers funcionales!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Visualización de Atención»", sq1_text: "Toma BERT pre-entrenado y visualiza attention weights.", sq1_reward: "💰 Recompensa: 150 AI-monedas", sq2_title: "⚡ Misión «Entrenamiento en Shakespeare»", sq2_text: "Entrena Mini GPT en textos de Shakespeare.", sq2_reward: "💰 Recompensa: 300 AI-monedas", sq3_title: "🎨 Misión «Flash Attention»", sq3_text: "Implementa Attention optimizada (Flash Attention).", sq3_reward: "💰 Recompensa: 500 AI-monedas + título «Attention Optimizer»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste limitaciones de RNN", sum2: "✅ Dominaste mecanismo de Atención", sum3: "✅ Implementaste Multi-Head Attention", sum4: "✅ Construiste Transformer Encoder", sum5: "✅ Creaste Mini GPT", sum6: "🏆 ¡Jefe final: mini GPT en GitHub!", sum_meme: "¡Felicidades, Creador de GPT! En la próxima lección 5.2 aprenderemos fine-tuning de modelos grandes.", nav_back: "← Misión anterior", nav_back_title: "4.3 Análisis de Sentimiento", nav_next: "Siguiente misión →", nav_next_title: "5.2 Fine-tuning LLM", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: " QUEST 5.1 • MODUL 5", title: "Transformer und Attention", subtitle: "Willkommen in Modul 5!  Heute erforschst du die Architektur hinter ChatGPT, BERT und Claude.", duration: "⏱ 3 Stunden", level: " Experte", xp: "⭐ +1500 XP", loot: "💰 +600 AI-Münzen", ach: " 6 Erfolge", progress_title: " Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "📚 Warum sind RNNs veraltet?", l0_sub: "Das Problem langer Abhängigkeiten", l0_xp: "+100 XP", l0_p1: "Vor 2017 wurden RNNs und LSTMs für Textverarbeitung verwendet. Sie lasen Text Wort für Wort. Aber sie hatten ein Problem: je länger der Text, desto schlechter erinnerten sie sich an den Anfang.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "RNN ist wie ein Schüler, der Text von links nach rechts liest. Transformer ist wie ein Genie, das alle Wörter gleichzeitig sehen kann!", ach0_name: "Erfolg: Neuronalnetz-Historiker", ach0_desc: "Verstand RNN-Limitationen und warum Transformer benötigt werden", ach0_reward: "+100 XP · +40 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du das Problem langer Abhängigkeiten verstanden hast!", l1_title: "👁️ Was ist Attention?", l1_sub: "Attention-Mechanismus", l1_xp: "+200 XP", l1_p1: "Attention ist ein Mechanismus, der es dem Modell ermöglicht, auf verschiedene Teile des Eingabetextes mit unterschiedlicher Intensität zu 'schauen'.", l1_code_title: "📝 Attention-Intuition Beispiel", l1_tip_title: "💡 Schlüsselidee", l1_tip_text: "Attention ermöglicht dem Modell, sich dynamisch auf verschiedene Teile der Eingabe zu fokussieren!", ach1_name: "Erfolg: Attention-Meister", ach1_desc: "Verstand Attention-Mechanismus Intuition", ach1_reward: "+200 XP · +60 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du verstanden hast, wie Attention funktioniert!", l2_title: "🔑 Query, Key, Value", l2_sub: "Self-Attention Mathematik", l2_xp: "+250 XP", l2_p1: "Self-Attention arbeitet mit drei Vektoren für jeden Token: Query (was suche ich?), Key (was biete ich an?), Value (welche Information habe ich?).", l2_analogy_title: "Spiel-Analogie", l2_analogy_text: "Stell dir eine Bibliothek vor: Query ist deine Anfrage, Key sind Buchlabel, Value ist Buchinhalt. Attention findet relevante Bücher!", l2_code_title: "📝 Self-Attention Implementierung", l2_lore_title: "📚 Warum durch sqrt(d) teilen?", l2_lore_text: "Skalierung mit √d_k verhindert zu große Dot-Product-Werte, die zu sehr kleinen Gradienten nach Softmax führen könnten.", ach2_name: "Erfolg: QKV-Mathematiker", ach2_desc: "Implementierte Self-Attention mit Query, Key, Value", ach2_reward: "+250 XP · +80 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du die Rolle von Q, K und V verstanden hast!", l3_title: "🎯 Multi-Head Attention", l3_sub: "Mehrere Attention-Köpfe", l3_xp: "+300 XP", l3_p1: "Statt einer Attention verwendet Transformer Multi-Head Attention — mehrere 'Köpfe' parallel. Jeder Kopf lernt, sich auf verschiedene Aspekte zu fokussieren!", l3_code_title: "📝 Multi-Head Attention in PyTorch", l3_tip_title: "💡 Warum mehrere Köpfe?", l3_tip_text: "Verschiedene Köpfe können verschiedene Abhängigkeitstypen lernen: Grammatik, Bedeutung, Wortpositionen!", ach3_name: "Erfolg: Multi-Head Architekt", ach3_desc: "Implementierte Multi-Head Attention", ach3_reward: "+300 XP · +100 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du verstanden hast, warum mehrere Köpfe benötigt werden!", l4_title: "🏗️ Transformer-Architektur", l4_sub: "Encoder-Decoder Struktur", l4_xp: "+350 XP", l4_p1: "Vollständiger Transformer besteht aus Encoder (kodiert Eingabe) und Decoder (generiert Ausgabe). GPT verwendet nur Decoder, BERT — nur Encoder, T5 — beide!", l4_code_title: "📝 Transformer Encoder Layer", l4_meme: "Der originale Transformer (2017) hatte 65 Millionen Parameter. GPT-3 hat 175 Milliarden — 2700 mal mehr!", ach4_name: "Erfolg: Transformer-Ingenieur", ach4_desc: "Baute vollständigen Transformer Encoder", ach4_reward: "+350 XP · +120 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du einen funktionierenden Transformer zusammengesetzt hast!", l5_title: "BOSSKAMPF: Mini GPT", l5_sub: "Unser eigenes Sprachmodell erstellen", l5_xp: "+700 XP", l5_meme: "Zeit, deine eigene Mini-Version von GPT zu erstellen! Wir bauen einen Decoder-only Transformer und trainieren ihn zur Textgenerierung.", l5_code_title: "📝 Mini GPT: Decoder-only Transformer", l5_github_title: "🚀 Projektveröffentlichungsanweisungen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Erkläre Mini GPT Architektur<br>2. Zeige generierten Text vor/nach Training<br>3. Füge Loss-Kurven hinzu<br>4. Beschreibe Modellgrößenänderung<br>5. Vergleiche mit GPT-2/GPT-3", ach5_name: "LEGENDÄR: GPT-Erschaffer", ach5_desc: "Baute Mini GPT von Grund auf und veröffentlichte auf GitHub", ach5_reward: "+700 XP · +300 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 2% erstellen funktionierende Transformer!", sq_title: "📜 Nebenquests", sq_easy: " LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Attention-Visualisierung»", sq1_text: "Nimm vortrainiertes BERT und visualisiere Attention Weights.", sq1_reward: "💰 Belohnung: 150 AI-Münzen", sq2_title: "⚡ Quest «Training auf Shakespeare»", sq2_text: "Trainiere Mini GPT auf Shakespeare-Texten.", sq2_reward: "💰 Belohnung: 300 AI-Münzen", sq3_title: "🎨 Quest «Flash Attention»", sq3_text: "Implementiere optimierte Attention (Flash Attention).", sq3_reward: "💰 Belohnung: 500 AI-Münzen + Titel «Attention Optimizer»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ RNN-Limitationen verstanden", sum2: "✅ Attention-Mechanismus gemeistert", sum3: "✅ Multi-Head Attention implementiert", sum4: "✅ Transformer Encoder gebaut", sum5: "✅ Mini GPT erstellt", sum6: "🏆 Endboss: Mini GPT auf GitHub!", sum_meme: "Glückwunsch, GPT-Erschaffer! In Lektion 5.2 lernen wir Fine-tuning großer Modelle.", nav_back: "← Vorheriger Quest", nav_back_title: "4.3 Stimmungsanalyse", nav_next: "Nächster Quest →", nav_next_title: "5.2 Fine-tuning LLM", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 5.1 • 5-МОДУЛЬ", title: "Трансформерлер және Attention", subtitle: "5-модульге қош келдің! 🧠 Бүгін ChatGPT, BERT және Claude негізіндегі архитектураны зерттейсің.", duration: " 3 сағат", level: " Сарапшы", xp: "⭐ +1500 XP", loot: "💰 +600 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "📚 RNN неге ескірді?", l0_sub: "Ұзақ тәуелділіктер мәселесі", l0_xp: "+100 XP", l0_p1: "2017 жылға дейін мәтінді өңдеу үшін RNN және LSTM қолданылды. Олар мәтінді сөзбе-сөз оқыды. Бірақ мәселе бар еді: мәтін неғұрлым ұзын болса, басын соғұрлым нашар есте сақтады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "RNN — солдан оңға оқитын оқушы сияқты. Transformer — барлық сөздерді бір мезгілде көре алатын данышпан сияқты!", ach0_name: "Жетістік: Нейрондық желі тарихшысы", ach0_desc: "RNN шектеулерін және трансформерлердің неге керектігін түсінді", ach0_reward: "+100 XP · +40 💰 ·  Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Ұзақ тәуелділіктер мәселесін түсінсең — бас!", l1_title: "👁️ Attention деген не?", l1_sub: "Назар аудару механизмі", l1_xp: "+200 XP", l1_p1: "Attention — модельге кіріс мәтінінің әртүрлі бөліктеріне әртүрлі қарқындылықпен 'қарауға' мүмкіндік беретін механизм.", l1_code_title: "📝 Attention интуициясы мысалы", l1_tip_title: "💡 Негізгі идея", l1_tip_text: "Attention модельге әр токенді өңдеу кезінде кірістің әртүрлі бөліктеріне динамикалық түрде назар аударуға мүмкіндік береді!", ach1_name: "Жетістік: Attention шебері", ach1_desc: "Attention механизмінің интуициясын түсінді", ach1_reward: "+200 XP · +60  · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Attention қалай жұмыс істейтінін түсінсең — бас!", l2_title: "🔑 Query, Key, Value", l2_sub: "Self-Attention математикасы", l2_xp: "+250 XP", l2_p1: "Self-Attention әр токен үшін үш вектор арқылы жұмыс істейді: Query (не іздеймін?), Key (не ұсына аламын?), Value (қандай ақпаратым бар?).", l2_analogy_title: "Ойын аналогиясы", l2_analogy_text: "Кітапхананы елестет: Query — сұрауың, Key — кітап белгілері, Value — кітап мазмұны. Attention қажетті кітаптарды табады!", l2_code_title: "📝 Self-Attention іске асыру", l2_lore_title: "📚 Неліктен sqrt(d)-ге бөлеміз?", l2_lore_text: "√d_k-ге масштабтау тым үлкен dot product мәндерін болдырмайды.", ach2_name: "Жетістік: QKV математигі", ach2_desc: "Query, Key, Value-мен Self-Attention іске асырды", ach2_reward: "+250 XP · +80  · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Q, K және V рөлін түсінсең — бас!", l3_title: "🎯 Multi-Head Attention", l3_sub: "Бірнеше назар бастары", l3_xp: "+300 XP", l3_p1: "Transformer бір Attention орнына Multi-Head Attention қолданады — параллель бірнеше 'бас'. Әр бас әртүрлі аспектілерге назар аударуды үйренеді!", l3_code_title: "📝 PyTorch-та Multi-Head Attention", l3_tip_title: "💡 Неліктен бірнеше бас?", l3_tip_text: "Әртүрлі бастар әртүрлі тәуелділік түрлерін үйрене алады: грамматика, мағына, сөз позициялары!", ach3_name: "Жетістік: Multi-Head сәулетшісі", ach3_desc: "Multi-Head Attention іске асырды", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Бірнеше бас неге керектігін түсінсең — бас!", l4_title: "🏗️ Transformer архитектурасы", l4_sub: "Encoder-Decoder құрылымы", l4_xp: "+350 XP", l4_p1: "Толық Transformer Encoder (кірісті кодтайды) және Decoder (шығыс жасайды) тұрады. GPT тек Decoder, BERT — тек Encoder, T5 — екеуін де қолданады!", l4_code_title: "📝 Transformer Encoder қабаты", l4_meme: "Түпнұсқа Transformer (2017) 65 миллион параметрге ие болды. GPT-3 — 175 миллиард — 2700 есе көп!", ach4_name: "Жетістік: Transformer инженері", ach4_desc: "Толық Transformer Encoder құрды", ach4_reward: "+350 XP · +120 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Жұмыс істейтін Transformer жинасаң — бас!", l5_title: "БОСС-ФАЙТ: Mini GPT", l5_sub: "Өз тіл моделімізді жасау", l5_xp: "+700 XP", l5_meme: "GPT-ның өз мини-нұсқаңды жасау уақыты келді! Decoder-only Transformer жасап, оны мәтін жасауға оқытамыз.", l5_code_title: "📝 Mini GPT: Decoder-only Transformer", l5_github_title: "🚀 Жобаны жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. Mini GPT архитектурасын түсіндір<br>2. Оқытуға дейін/кейін мәтін мысалдарын көрсет<br>3. Loss қисықтарын қос<br>4. Модель өлшемін өзгертуді сипатта<br>5. GPT-2/GPT-3-пен салыстыр", ach5_name: "АҢЫЗДЫҚ: GPT жасаушы", ach5_desc: "Mini GPT-ны нөлден құрды және GitHub-та жариялады", ach5_reward: "+700 XP · +300 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 2% студенттер жұмыс істейтін трансформерлер жасайды!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Attention визуализациясы»", sq1_text: "Алдын ала оқытылған BERT ал және attention weights визуализацияла.", sq1_reward: "💰 Сыйлық: 150 ЖИ-теңге", sq2_title: "⚡ Квест «Shakespeare-те оқыту»", sq2_text: "Mini GPT-ны Shakespeare мәтіндерінде оқыт.", sq2_reward: "💰 Сыйлық: 300 ЖИ-теңге", sq3_title: "🎨 Квест «Flash Attention»", sq3_text: "Оңтайландырылған Attention нұсқасын (Flash Attention) іске асыр.", sq3_reward: "💰 Сыйлық: 500 ЖИ-теңге + «Attention Optimizer» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ RNN шектеулерін түсіндің", sum2: "✅ Attention механизмін игердің", sum3: "✅ Multi-Head Attention іске асырдың", sum4: "✅ Transformer Encoder құрдың", sum5: "✅ Mini GPT жасадың", sum6: "🏆 Финалды босс — mini GPT GitHub-та!", sum_meme: "Құттықтаймын, GPT жасаушы! Келесі 5.2 сабақта үлкен модельдерді fine-tuning жасауды үйренеміз.", nav_back: "← Алдыңғы квест", nav_back_title: "4.3 Көңіл-күй талдауы", nav_next: "Келесі квест →", nav_next_title: "5.2 Fine-tuning LLM", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
