@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 5.3: Работа с API — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(59, 130, 246, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(59, 130, 246, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #3b82f6, #a855f7); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #3b82f6, #a855f7); }
+        .level.boss::before { background: linear-gradient(90deg, #ec4899, #a855f7); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ec4899, #a855f7); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 4px 25px rgba(236, 72, 153, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #a855f7; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1)); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #c4b5fd; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(59, 130, 246, 0.08); border-color: #3b82f6; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #3b82f6; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(59, 130, 246, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #a855f7; background: rgba(168, 85, 247, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #a855f7; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08)); border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #3b82f6; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(59, 130, 246, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2)); border-color: #a855f7; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(59, 130, 246, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 5.3 • МОДУЛЬ 5</span>
+        <h1 data-i18n="title">Работа с API</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 5.3! 🔌 Сегодня ты научишься подключаться к разным языковым моделям: OpenAI, YandexGPT и локальным моделям через Ollama. Ты станешь настоящим API-интегратором!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 3 часа</span>
+            <span class="meta-tag" data-i18n="level">📘 Средний</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1100 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +450 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: What is API? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Что такое API?</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Как программы общаются друг с другом</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1"><strong>API (Application Programming Interface)</strong> — это набор правил, по которым одна программа может общаться с другой. Когда ты используешь ChatGPT в браузере, твой браузер отправляет запрос на сервер OpenAI через API и получает ответ.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🍽️</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">API — это как официант в ресторане. Ты (клиент) не идешь на кухню готовить сам. Ты говоришь официанту (API) что хочешь, он передает заказ повару (серверу), и приносит тебе готовое блюдо (ответ). Ты не знаешь, как именно повар готовил — тебе важен только результат!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔌</span>
+            <h3 data-i18n="ach0_name">Ачивка: Исследователь API</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял, что такое API и как оно работает</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+100 XP · +40 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson5_3_api_explorer" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял аналогию с официантом!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: OpenAI API -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🤖 OpenAI API</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Подключение к GPT-4 и ChatGPT</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1">OpenAI предоставляет API для доступа к моделям GPT-4, GPT-3.5 и другим. Чтобы использовать API, нужно зарегистрироваться на platform.openai.com, получить API-ключ и установить библиотеку <code>openai</code>.</p>
+
+        <h3 data-i18n="l1_code_title">📝 Первый запрос к OpenAI</h3>
+        <pre><code>import os
+from openai import OpenAI
+
+# Initialize client with API key from environment variable
+# NEVER hardcode your API key in the source code!
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Send a chat completion request
+response = client.chat.completions.create(
+    model="gpt-4o-mini",  # Cost-effective model
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Explain what a neural network is in one sentence."}
+    ],
+    temperature=0.7,  # Controls randomness (0 = deterministic, 1 = creative)
+    max_tokens=100    # Maximum length of response
+)
+
+# Extract and print the response
+answer = response.choices[0].message.content
+print(f"OpenAI Response: {answer}")
+
+# Check token usage
+usage = response.usage
+print(f"Tokens used: {usage.prompt_tokens} input, {usage.completion_tokens} output")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l1_warn_title">⚠️ Безопасность API-ключей</strong>
+            <span data-i18n="l1_warn_text">НИКОГДА не публикуй API-ключи в коде или на GitHub! Используй переменные окружения (<code>.env</code> файл) и добавь <code>.env</code> в <code>.gitignore</code>. Если ключ утечет — его нужно немедленно отозвать в настройках OpenAI.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🤖</span>
+            <h3 data-i18n="ach1_name">Ачивка: Мастер OpenAI</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Сделал первый запрос к OpenAI API</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+200 XP · +60 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_3_openai_master" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если получил ответ от GPT!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: YandexGPT API -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">🇷🇺 YandexGPT API</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Российская языковая модель</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">YandexGPT — это российская языковая модель от Яндекса. Она хорошо работает с русским языком и доступна через Yandex Cloud. API использует формат, похожий на OpenAI, но с некоторыми отличиями в аутентификации.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Запрос к YandexGPT</h3>
+        <pre><code>import os
+import requests
+
+# YandexGPT API configuration
+FOLDER_ID = os.getenv('YANDEX_FOLDER_ID')
+IAM_TOKEN = os.getenv('YANDEX_IAM_TOKEN')
+
+# API endpoint for YandexGPT
+url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+
+# Request headers with authentication
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {IAM_TOKEN}",
+    "x-folder-id": FOLDER_ID
+}
+
+# Request body
+payload = {
+    "modelUri": f"gpt://{FOLDER_ID}/yandexgpt/latest",
+    "completionOptions": {
+        "stream": False,
+        "temperature": 0.6,
+        "maxTokens": "100"
+    },
+    "messages": [
+        {
+            "role": "system",
+            "text": "Ты полезный ассистент."
+        },
+        {
+            "role": "user",
+            "text": "Объясни, что такое нейронная сеть, одним предложением."
+        }
+    ]
+}
+
+# Send request
+response = requests.post(url, headers=headers, json=payload)
+result = response.json()
+
+# Extract answer
+answer = result['result']['alternatives'][0]['message']['text']
+print(f"YandexGPT Response: {answer}")
+
+# Check token usage
+usage = result['result']['usage']
+print(f"Tokens: {usage['inputTextTokens']} input, {usage['completionTokens']} output")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l2_tip_title">💡 Зачем нужен YandexGPT?</strong>
+            <span data-i18n="l2_tip_text">YandexGPT лучше понимает русский язык и культурный контекст. Он также соответствует российскому законодательству о хранении данных, что важно для корпоративных проектов в России.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🇷🇺</span>
+            <h3 data-i18n="ach2_name">Ачивка: Яндекс-интегратор</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Подключился к YandexGPT API</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+200 XP · +60 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_3_yandex_integrator" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если получил ответ от YandexGPT!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Ollama Local Models -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🏠 Ollama: Локальные модели</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">Запуск LLM на своем компьютере</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Ollama позволяет запускать большие языковые модели <strong>локально</strong> на твоем компьютере. Это бесплатно, приватно (данные не уходят в облако) и работает без интернета! Популярные модели: Llama 3, Mistral, Phi-3.</p>
+
+        <h3 data-i18n="l3_code_title">📝 Установка и использование Ollama</h3>
+        <pre><code># Step 1: Install Ollama from https://ollama.com
+# Step 2: Download a model (run in terminal)
+# ollama pull llama3.2:1b  # Small model for testing
+# ollama pull mistral       # More capable model
+
+# Step 3: Use Ollama API in Python
+import requests
+
+# Ollama runs a local server on port 11434
+url = "http://localhost:11434/api/generate"
+
+payload = {
+    "model": "llama3.2:1b",  # Use downloaded model
+    "prompt": "Explain what a neural network is in one sentence.",
+    "stream": False,
+    "options": {
+        "temperature": 0.7,
+        "num_predict": 100
+    }
+}
+
+# Send request to local Ollama server
+response = requests.post(url, json=payload)
+result = response.json()
+
+# Extract response
+answer = result['response']
+print(f"Ollama Response: {answer}")
+
+# Check token stats
+print(f"Tokens: {result.get('prompt_eval_count', 0)} input, {result.get('eval_count', 0)} output")
+print(f"Time: {result.get('total_duration', 0) / 1e9:.2f} seconds")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l3_lore_title">📚 Почему локальные модели важны?</strong>
+            <span data-i18n="l3_lore_text">1) <strong>Приватность</strong>: данные не покидают твой компьютер<br>2) <strong>Бесплатно</strong>: нет платы за токены<br>3) <strong>Без интернета</strong>: работает офлайн<br>4) <strong>Кастомизация</strong>: можно дообучить под свои задачи<br>Минус: требует мощный GPU для больших моделей.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🏠</span>
+            <h3 data-i18n="ach3_name">Ачивка: Локальный гуру</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Запустил локальную модель через Ollama</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_3_local_guru" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если получил ответ от локальной модели!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Universal Interface -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">🔀 Универсальный интерфейс</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Абстракция над разными API</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Каждый API имеет свой формат запросов. Чтобы не писать разный код для каждого провайдера, создадим <strong>универсальный интерфейс</strong> — один класс, который может работать с OpenAI, YandexGPT и Ollama через единый API.</p>
+
+        <h3 data-i18n="l4_code_title">📝 Класс LLMRouter</h3>
+        <pre><code>from abc import ABC, abstractmethod
+import os
+import requests
+from openai import OpenAI
+
+class BaseLLM(ABC):
+    """Abstract base class for all LLM providers"""
+    
+    @abstractmethod
+    def chat(self, messages: list, **kwargs) -> str:
+        """Send chat messages and return response"""
+        pass
+
+class OpenAILLM(BaseLLM):
+    """OpenAI API implementation"""
+    
+    def __init__(self, model="gpt-4o-mini"):
+        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        self.model = model
+    
+    def chat(self, messages, **kwargs):
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            **kwargs
+        )
+        return response.choices[0].message.content
+
+class YandexLLM(BaseLLM):
+    """YandexGPT API implementation"""
+    
+    def __init__(self, folder_id=None, iam_token=None):
+        self.folder_id = folder_id or os.getenv('YANDEX_FOLDER_ID')
+        self.iam_token = iam_token or os.getenv('YANDEX_IAM_TOKEN')
+        self.url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    
+    def chat(self, messages, **kwargs):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.iam_token}",
+            "x-folder-id": self.folder_id
+        }
+        
+        payload = {
+            "modelUri": f"gpt://{self.folder_id}/yandexgpt/latest",
+            "completionOptions": {"stream": False, "temperature": 0.6, "maxTokens": "500"},
+            "messages": [{"role": m["role"], "text": m["content"]} for m in messages]
+        }
+        
+        response = requests.post(self.url, headers=headers, json=payload)
+        return response.json()['result']['alternatives'][0]['message']['text']
+
+class OllamaLLM(BaseLLM):
+    """Ollama local model implementation"""
+    
+    def __init__(self, model="llama3.2:1b"):
+        self.model = model
+        self.url = "http://localhost:11434/api/chat"
+    
+    def chat(self, messages, **kwargs):
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "stream": False
+        }
+        
+        response = requests.post(self.url, json=payload)
+        return response.json()['message']['content']
+
+# Usage example
+def get_llm(provider="openai"):
+    """Factory function to create LLM instance"""
+    providers = {
+        "openai": OpenAILLM,
+        "yandex": YandexLLM,
+        "ollama": OllamaLLM
+    }
+    return providers[provider]()
+
+# Test all providers
+messages = [{"role": "user", "content": "What is 2+2?"}]
+
+for provider in ["openai", "yandex", "ollama"]:
+    try:
+        llm = get_llm(provider)
+        answer = llm.chat(messages)
+        print(f"{provider}: {answer}")
+    except Exception as e:
+        print(f"{provider}: Error - {e}")</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l4_tip_title">💡 Паттерн "Стратегия"</strong>
+            <span data-i18n="l4_tip_text">Этот код использует паттерн проектирования "Стратегия" (Strategy Pattern). Все провайдеры реализуют один интерфейс <code>BaseLLM</code>, поэтому код, использующий LLM, не зависит от конкретного провайдера. Можно легко переключаться между ними!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔀</span>
+            <h3 data-i18n="ach4_name">Ачивка: Архитектор абстракций</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Создал универсальный интерфейс для разных API</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+250 XP · +80 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_3_architect" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если понял паттерн Стратегия!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - Multi-Provider Chat App -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: Мульти-провайдер чат</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Приложение с выбором модели</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+500 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">💬</span>
+            <span data-i18n="l5_meme">Пришло время создать полноценное чат-приложение, где пользователь может выбирать между OpenAI, YandexGPT и локальной моделью! Это реальный проект, который можно показать в портфолио.</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 Полный код чат-приложения</h3>
+        <pre><code>import os
+import sys
+from datetime import datetime
+
+# Import our universal LLM classes (from Level 4)
+from llm_providers import OpenAILLM, YandexLLM, OllamaLLM
+
+class ChatApp:
+    """Multi-provider chat application"""
+    
+    def __init__(self):
+        self.providers = {
+            "1": ("OpenAI GPT-4o-mini", OpenAILLM()),
+            "2": ("YandexGPT", YandexLLM()),
+            "3": ("Ollama Llama 3.2", OllamaLLM("llama3.2:1b"))
+        }
+        self.current_provider = None
+        self.history = []
+    
+    def select_provider(self):
+        """Let user choose LLM provider"""
+        print("\n=== Select AI Provider ===")
+        for key, (name, _) in self.providers.items():
+            print(f"{key}. {name}")
+        
+        choice = input("\nEnter choice (1-3): ")
+        if choice in self.providers:
+            self.current_provider = self.providers[choice][1]
+            print(f"✓ Selected: {self.providers[choice][0]}")
+        else:
+            print("Invalid choice. Using OpenAI by default.")
+            self.current_provider = self.providers["1"][1]
+    
+    def chat(self, user_message):
+        """Send message and get response"""
+        if not self.current_provider:
+            self.select_provider()
+        
+        # Add user message to history
+        self.history.append({"role": "user", "content": user_message})
+        
+        try:
+            # Get response from selected provider
+            response = self.current_provider.chat(self.history)
+            
+            # Add assistant response to history
+            self.history.append({"role": "assistant", "content": response})
+            
+            return response
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    def save_conversation(self, filename="chat_log.txt"):
+        """Save conversation history to file"""
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(f"Chat Log - {datetime.now()}\n")
+            f.write("=" * 50 + "\n\n")
+            
+            for msg in self.history:
+                role = msg["role"].upper()
+                content = msg["content"]
+                f.write(f"[{role}]: {content}\n\n")
+        
+        print(f"✓ Conversation saved to {filename}")
+    
+    def run(self):
+        """Main chat loop"""
+        print("🤖 Welcome to Multi-Provider Chat!")
+        print("Type 'quit' to exit, 'provider' to change AI, 'save' to save chat\n")
+        
+        self.select_provider()
+        
+        while True:
+            user_input = input("\nYou: ").strip()
+            
+            if user_input.lower() == 'quit':
+                print("Goodbye! 👋")
+                break
+            elif user_input.lower() == 'provider':
+                self.select_provider()
+                continue
+            elif user_input.lower() == 'save':
+                self.save_conversation()
+                continue
+            elif not user_input:
+                continue
+            
+            print("\nAI is thinking...")
+            response = self.chat(user_input)
+            print(f"\nAssistant: {response}")
+
+# Run the application
+if __name__ == "__main__":
+    app = ChatApp()
+    app.run()</code></pre>
+
+        <h3 data-i18n="l5_github_title">🚀 Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir multi-provider-chat
+cd multi-provider-chat
+
+mkdir src
+touch src/llm_providers.py
+touch src/chat_app.py
+touch src/.env.example
+touch requirements.txt
+touch README.md
+touch .gitignore
+
+# 2. requirements.txt
+openai>=1.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# 3. .gitignore
+.env
+__pycache__/
+*.pyc
+chat_log.txt
+.venv/
+
+# 4. .env.example
+OPENAI_API_KEY=sk-your-key-here
+YANDEX_FOLDER_ID=your-folder-id
+YANDEX_IAM_TOKEN=your-iam-token
+
+# 5. Install Ollama (optional, for local models)
+# Download from https://ollama.com
+# Run: ollama pull llama3.2:1b
+
+# 6. Run the app
+python src/chat_app.py
+
+# 7. Commit and push
+git init
+git add .
+git commit -m "Add multi-provider chat application"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/multi-provider-chat.git
+git push -u origin main</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь скриншот работы приложения в терминале<br>
+                2. Опиши, как получить API-ключи для каждого провайдера<br>
+                3. Объясни преимущества локальных моделей (Ollama)<br>
+                4. Добавь диаграмму архитектуры (какие классы за что отвечают)<br>
+                5. Укажи, как добавить нового провайдера (например, Anthropic)
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: API Master Pro</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал мульти-провайдерное чат-приложение и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+500 XP · +200 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson5_3_api_master" class="ach-btn" style="background: linear-gradient(135deg, #3b82f6, #ec4899);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 5% студентов создают мульти-провайдерные приложения. Ты — элита!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Сравнение моделей»</h3>
+            <p data-i18n="sq1_text">Задай один и тот же вопрос всем трем провайдерам (OpenAI, YandexGPT, Ollama). Сравни ответы по качеству, скорости и стилю. Запиши результаты в таблицу.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 100 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Добавь Anthropic»</h3>
+            <p data-i18n="sq2_text">Добавь четвертого провайдера — Anthropic Claude API — в свой LLMRouter. Изучи документацию anthropic.com и реализуй класс ClaudeLLM.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 200 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Веб-интерфейс»</h3>
+            <p data-i18n="sq3_text">Создай веб-интерфейс для своего чат-приложения используя Gradio или Streamlit. Добавь выбор модели, историю сообщений и экспорт чата. Разверни на HuggingFace Spaces.</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 400 AI-коинов + титул «Full-Stack AI Developer»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял, что такое API и как оно работает</li>
+            <li data-i18n="sum2">✅ Подключился к OpenAI API</li>
+            <li data-i18n="sum3">✅ Интегрировал YandexGPT API</li>
+            <li data-i18n="sum4">✅ Запустил локальную модель через Ollama</li>
+            <li data-i18n="sum5">✅ Создал универсальный интерфейс для разных API</li>
+            <li data-i18n="sum6">🏆 Финальный босс — мульти-провайдерное чат-приложение!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, API Master Pro! Теперь ты можешь работать с любыми языковыми моделями — облачными и локальными. Это критически важный навык для современного AI-инженера! В следующем уроке 5.4 мы научимся дообучать (fine-tune) эти модели под конкретные задачи. 🎯</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-5-2.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">5.2 Prompt Engineering</span>
+        </a>
+        <a href="lesson-5-4.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">5.4 Fine-tuning LLM</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 5.3 • МОДУЛЬ 5", title: "Работа с API",
+            subtitle: "Добро пожаловать на Уровень 5.3! 🔌 Сегодня ты научишься подключаться к разным языковым моделям: OpenAI, YandexGPT и локальным моделям через Ollama. Ты станешь настоящим API-интегратором!",
+            duration: "⏱ 3 часа", level: "📘 Средний", xp: "⭐ +1100 XP", loot: "💰 +450 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🔌 Что такое API?", l0_sub: "Как программы общаются друг с другом", l0_xp: "+100 XP",
+            l0_p1: "API (Application Programming Interface) — это набор правил, по которым одна программа может общаться с другой. Когда ты используешь ChatGPT в браузере, твой браузер отправляет запрос на сервер OpenAI через API и получает ответ.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "API — это как официант в ресторане. Ты (клиент) не идешь на кухню готовить сам. Ты говоришь официанту (API) что хочешь, он передает заказ повару (серверу), и приносит тебе готовое блюдо (ответ). Ты не знаешь, как именно повар готовил — тебе важен только результат!",
+            ach0_name: "Ачивка: Исследователь API", ach0_desc: "Понял, что такое API и как оно работает", ach0_reward: "+100 XP · +40 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял аналогию с официантом!",
+            l1_title: "🤖 OpenAI API", l1_sub: "Подключение к GPT-4 и ChatGPT", l1_xp: "+200 XP",
+            l1_p1: "OpenAI предоставляет API для доступа к моделям GPT-4, GPT-3.5 и другим. Чтобы использовать API, нужно зарегистрироваться на platform.openai.com, получить API-ключ и установить библиотеку openai.",
+            l1_code_title: "📝 Первый запрос к OpenAI",
+            l1_warn_title: "⚠️ Безопасность API-ключей", l1_warn_text: "НИКОГДА не публикуй API-ключи в коде или на GitHub! Используй переменные окружения (.env файл) и добавь .env в .gitignore. Если ключ утечет — его нужно немедленно отозвать в настройках OpenAI.",
+            ach1_name: "Ачивка: Мастер OpenAI", ach1_desc: "Сделал первый запрос к OpenAI API", ach1_reward: "+200 XP · +60 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если получил ответ от GPT!",
+            l2_title: "🇷🇺 YandexGPT API", l2_sub: "Российская языковая модель", l2_xp: "+200 XP",
+            l2_p1: "YandexGPT — это российская языковая модель от Яндекса. Она хорошо работает с русским языком и доступна через Yandex Cloud. API использует формат, похожий на OpenAI, но с некоторыми отличиями в аутентификации.",
+            l2_code_title: "📝 Запрос к YandexGPT",
+            l2_tip_title: "💡 Зачем нужен YandexGPT?", l2_tip_text: "YandexGPT лучше понимает русский язык и культурный контекст. Он также соответствует российскому законодательству о хранении данных, что важно для корпоративных проектов в России.",
+            ach2_name: "Ачивка: Яндекс-интегратор", ach2_desc: "Подключился к YandexGPT API", ach2_reward: "+200 XP · +60 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если получил ответ от YandexGPT!",
+            l3_title: "🏠 Ollama: Локальные модели", l3_sub: "Запуск LLM на своем компьютере", l3_xp: "+250 XP",
+            l3_p1: "Ollama позволяет запускать большие языковые модели локально на твоем компьютере. Это бесплатно, приватно (данные не уходят в облако) и работает без интернета! Популярные модели: Llama 3, Mistral, Phi-3.",
+            l3_code_title: "📝 Установка и использование Ollama",
+            l3_lore_title: "📚 Почему локальные модели важны?", l3_lore_text: "1) Приватность: данные не покидают твой компьютер<br>2) Бесплатно: нет платы за токены<br>3) Без интернета: работает офлайн<br>4) Кастомизация: можно дообучить под свои задачи<br>Минус: требует мощный GPU для больших моделей.",
+            ach3_name: "Ачивка: Локальный гуру", ach3_desc: "Запустил локальную модель через Ollama", ach3_reward: "+250 XP · +80 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если получил ответ от локальной модели!",
+            l4_title: "🔀 Универсальный интерфейс", l4_sub: "Абстракция над разными API", l4_xp: "+250 XP",
+            l4_p1: "Каждый API имеет свой формат запросов. Чтобы не писать разный код для каждого провайдера, создадим универсальный интерфейс — один класс, который может работать с OpenAI, YandexGPT и Ollama через единый API.",
+            l4_code_title: "📝 Класс LLMRouter",
+            l4_tip_title: "💡 Паттерн 'Стратегия'", l4_tip_text: "Этот код использует паттерн проектирования 'Стратегия' (Strategy Pattern). Все провайдеры реализуют один интерфейс BaseLLM, поэтому код, использующий LLM, не зависит от конкретного провайдера. Можно легко переключаться между ними!",
+            ach4_name: "Ачивка: Архитектор абстракций", ach4_desc: "Создал универсальный интерфейс для разных API", ach4_reward: "+250 XP · +80 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если понял паттерн Стратегия!",
+            l5_title: "БОСС-ФАЙТ: Мульти-провайдер чат", l5_sub: "Приложение с выбором модели", l5_xp: "+500 XP",
+            l5_meme: "Пришло время создать полноценное чат-приложение, где пользователь может выбирать между OpenAI, YandexGPT и локальной моделью! Это реальный проект, который можно показать в портфолио.",
+            l5_code_title: "📝 Полный код чат-приложения",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь скриншот работы приложения в терминале<br>2. Опиши, как получить API-ключи для каждого провайдера<br>3. Объясни преимущества локальных моделей (Ollama)<br>4. Добавь диаграмму архитектуры<br>5. Укажи, как добавить нового провайдера",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: API Master Pro", ach5_desc: "Создал мульти-провайдерное чат-приложение и опубликовал на GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 5% студентов создают мульти-провайдерные приложения. Ты — элита!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Сравнение моделей»", sq1_text: "Задай один и тот же вопрос всем трем провайдерам. Сравни ответы по качеству, скорости и стилю. Запиши результаты в таблицу.", sq1_reward: "💰 Награда: 100 AI-коинов",
+            sq2_title: "⚡ Квест «Добавь Anthropic»", sq2_text: "Добавь четвертого провайдера — Anthropic Claude API — в свой LLMRouter. Изучи документацию и реализуй класс ClaudeLLM.", sq2_reward: "💰 Награда: 200 AI-коинов",
+            sq3_title: "🎨 Квест «Веб-интерфейс»", sq3_text: "Создай веб-интерфейс для своего чат-приложения используя Gradio или Streamlit. Разверни на HuggingFace Spaces.", sq3_reward: "💰 Награда: 400 AI-коинов + титул «Full-Stack AI Developer»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял, что такое API и как оно работает", sum2: "✅ Подключился к OpenAI API",
+            sum3: "✅ Интегрировал YandexGPT API", sum4: "✅ Запустил локальную модель через Ollama",
+            sum5: "✅ Создал универсальный интерфейс для разных API", sum6: "🏆 Финальный босс — мульти-провайдерное чат-приложение!",
+            sum_meme: "Поздравляю, API Master Pro! Теперь ты можешь работать с любыми языковыми моделями — облачными и локальными. В следующем уроке 5.4 мы научимся дообучать (fine-tune) эти модели под конкретные задачи. 🎯",
+            nav_back: "← Предыдущий квест", nav_back_title: "5.2 Prompt Engineering",
+            nav_next: "Следующий квест →", nav_next_title: "5.4 Fine-tuning LLM",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 5.3 • MODULE 5", title: "Working with APIs",
+            subtitle: "Welcome to Level 5.3! 🔌 Today you'll learn to connect to different language models: OpenAI, YandexGPT, and local models via Ollama. You'll become a true API integrator!",
+            duration: "⏱ 3 hours", level: "📘 Intermediate", xp: "⭐ +1100 XP", loot: "💰 +450 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🔌 What is an API?", l0_sub: "How programs communicate", l0_xp: "+100 XP",
+            l0_p1: "API (Application Programming Interface) is a set of rules for how one program can communicate with another. When you use ChatGPT in a browser, your browser sends a request to OpenAI's server via API and gets a response.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "API is like a waiter in a restaurant. You (customer) don't go to the kitchen to cook yourself. You tell the waiter (API) what you want, they pass the order to the chef (server), and bring you the finished dish (response). You don't know how the chef cooked it — you only care about the result!",
+            ach0_name: "Achievement: API Explorer", ach0_desc: "Understood what API is and how it works", ach0_reward: "+100 XP · +40 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the waiter analogy!",
+            l1_title: "🤖 OpenAI API", l1_sub: "Connecting to GPT-4 and ChatGPT", l1_xp: "+200 XP",
+            l1_p1: "OpenAI provides API access to GPT-4, GPT-3.5 and other models. To use the API, you need to register at platform.openai.com, get an API key, and install the openai library.",
+            l1_code_title: "📝 First request to OpenAI",
+            l1_warn_title: "⚠️ API key security", l1_warn_text: "NEVER publish API keys in code or on GitHub! Use environment variables (.env file) and add .env to .gitignore. If a key leaks, revoke it immediately in OpenAI settings.",
+            ach1_name: "Achievement: OpenAI Master", ach1_desc: "Made first request to OpenAI API", ach1_reward: "+200 XP · +60 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you got a response from GPT!",
+            l2_title: "🇷🇺 YandexGPT API", l2_sub: "Russian language model", l2_xp: "+200 XP",
+            l2_p1: "YandexGPT is a Russian language model from Yandex. It works well with Russian language and is available through Yandex Cloud. The API uses a format similar to OpenAI but with some authentication differences.",
+            l2_code_title: "📝 Request to YandexGPT",
+            l2_tip_title: "💡 Why use YandexGPT?", l2_tip_text: "YandexGPT better understands Russian language and cultural context. It also complies with Russian data storage laws, important for corporate projects in Russia.",
+            ach2_name: "Achievement: Yandex Integrator", ach2_desc: "Connected to YandexGPT API", ach2_reward: "+200 XP · +60 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you got a response from YandexGPT!",
+            l3_title: "🏠 Ollama: Local Models", l3_sub: "Running LLMs on your computer", l3_xp: "+250 XP",
+            l3_p1: "Ollama allows running large language models locally on your computer. It's free, private (data doesn't leave your computer), and works without internet! Popular models: Llama 3, Mistral, Phi-3.",
+            l3_code_title: "📝 Installing and using Ollama",
+            l3_lore_title: "📚 Why are local models important?", l3_lore_text: "1) Privacy: data stays on your computer<br>2) Free: no token costs<br>3) Offline: works without internet<br>4) Customizable: can be fine-tuned for your tasks<br>Downside: requires powerful GPU for large models.",
+            ach3_name: "Achievement: Local Guru", ach3_desc: "Ran a local model via Ollama", ach3_reward: "+250 XP · +80 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you got a response from local model!",
+            l4_title: "🔀 Universal Interface", l4_sub: "Abstraction over different APIs", l4_xp: "+250 XP",
+            l4_p1: "Each API has its own request format. To avoid writing different code for each provider, we'll create a universal interface — one class that can work with OpenAI, YandexGPT, and Ollama through a unified API.",
+            l4_code_title: "📝 LLMRouter class",
+            l4_tip_title: "💡 Strategy Pattern", l4_tip_text: "This code uses the Strategy design pattern. All providers implement one BaseLLM interface, so code using LLM doesn't depend on specific provider. You can easily switch between them!",
+            ach4_name: "Achievement: Abstraction Architect", ach4_desc: "Created universal interface for different APIs", ach4_reward: "+250 XP · +80 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if you understood Strategy pattern!",
+            l5_title: "BOSS FIGHT: Multi-Provider Chat", l5_sub: "Application with model selection", l5_xp: "+500 XP",
+            l5_meme: "Time to create a full chat application where users can choose between OpenAI, YandexGPT, and local model! This is a real project for your portfolio.",
+            l5_code_title: "📝 Full chat application code",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add screenshot of app running in terminal<br>2. Describe how to get API keys for each provider<br>3. Explain local model advantages (Ollama)<br>4. Add architecture diagram<br>5. Specify how to add new provider",
+            ach5_name: "LEGENDARY: API Master Pro", ach5_desc: "Created multi-provider chat app and published on GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 5% create multi-provider apps. You're elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Model Comparison»", sq1_text: "Ask the same question to all three providers. Compare answers by quality, speed, and style. Record results in a table.", sq1_reward: "💰 Reward: 100 AI-coins",
+            sq2_title: "⚡ Quest «Add Anthropic»", sq2_text: "Add fourth provider — Anthropic Claude API — to your LLMRouter. Study documentation and implement ClaudeLLM class.", sq2_reward: "💰 Reward: 200 AI-coins",
+            sq3_title: "🎨 Quest «Web Interface»", sq3_text: "Create web interface for your chat app using Gradio or Streamlit. Deploy on HuggingFace Spaces.", sq3_reward: "💰 Reward: 400 AI-coins + title «Full-Stack AI Developer»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood what API is and how it works", sum2: "✅ Connected to OpenAI API",
+            sum3: "✅ Integrated YandexGPT API", sum4: "✅ Ran local model via Ollama",
+            sum5: "✅ Created universal interface for different APIs", sum6: "🏆 Final boss — multi-provider chat app!",
+            sum_meme: "Congrats, API Master Pro! Now you can work with any language models — cloud and local. In next lesson 5.4, we'll learn to fine-tune these models for specific tasks. 🎯",
+            nav_back: "← Previous quest", nav_back_title: "5.2 Prompt Engineering",
+            nav_next: "Next quest →", nav_next_title: "5.4 Fine-tuning LLM",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 5.3 • MÓDULO 5", title: "Trabajando con APIs", subtitle: "¡Bienvenido al Nivel 5.3! 🔌 Hoy aprenderás a conectarte a diferentes modelos de lenguaje.", duration: "⏱ 3 horas", level: "📘 Intermedio", xp: "⭐ +1100 XP", loot: "💰 +450 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🔌 ¿Qué es una API?", l0_sub: "Cómo se comunican los programas", l0_xp: "+100 XP", l0_p1: "API es un conjunto de reglas para cómo un programa puede comunicarse con otro.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "API es como un mesero en un restaurante. Tú (cliente) no vas a la cocina. Le dices al mesero (API) qué quieres, él pasa el orden al chef (servidor), y te trae el plato terminado (respuesta).", ach0_name: "Logro: Explorador de API", ach0_desc: "Entendió qué es API y cómo funciona", ach0_reward: "+100 XP · +40 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste la analogía del mesero!", l1_title: "🤖 OpenAI API", l1_sub: "Conectando a GPT-4 y ChatGPT", l1_xp: "+200 XP", l1_p1: "OpenAI proporciona acceso API a GPT-4, GPT-3.5 y otros modelos.", l1_code_title: "📝 Primera solicitud a OpenAI", l1_warn_title: "⚠️ Seguridad de claves API", l1_warn_text: "¡NUNCA publiques claves API en código o GitHub! Usa variables de entorno.", ach1_name: "Logro: Maestro OpenAI", ach1_desc: "Hizo primera solicitud a OpenAI API", ach1_reward: "+200 XP · +60 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si obtuviste respuesta de GPT!", l2_title: "🇷🇺 YandexGPT API", l2_sub: "Modelo de lenguaje ruso", l2_xp: "+200 XP", l2_p1: "YandexGPT es un modelo de lenguaje ruso de Yandex. Funciona bien con ruso y está disponible a través de Yandex Cloud.", l2_code_title: "📝 Solicitud a YandexGPT", l2_tip_title: "💡 ¿Por qué usar YandexGPT?", l2_tip_text: "YandexGPT entiende mejor el ruso y el contexto cultural.", ach2_name: "Logro: Integrador Yandex", ach2_desc: "Se conectó a YandexGPT API", ach2_reward: "+200 XP · +60 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si obtuviste respuesta de YandexGPT!", l3_title: "🏠 Ollama: Modelos locales", l3_sub: "Ejecutando LLMs en tu computadora", l3_xp: "+250 XP", l3_p1: "Ollama permite ejecutar grandes modelos de lenguaje localmente. ¡Es gratis, privado y funciona sin internet!", l3_code_title: "📝 Instalando y usando Ollama", l3_lore_title: "📚 ¿Por qué son importantes los modelos locales?", l3_lore_text: "1) Privacidad<br>2) Gratis<br>3) Sin internet<br>4) Personalizable", ach3_name: "Logro: Gurú local", ach3_desc: "Ejecutó modelo local vía Ollama", ach3_reward: "+250 XP · +80 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si obtuviste respuesta del modelo local!", l4_title: "🔀 Interfaz universal", l4_sub: "Abstracción sobre diferentes APIs", l4_xp: "+250 XP", l4_p1: "Cada API tiene su propio formato. Crearemos una interfaz universal que funcione con OpenAI, YandexGPT y Ollama.", l4_code_title: "📝 Clase LLMRouter", l4_tip_title: "💡 Patrón Estrategia", l4_tip_text: "Este código usa el patrón de diseño Estrategia. Todos los proveedores implementan una interfaz BaseLLM.", ach4_name: "Logro: Arquitecto de abstracciones", ach4_desc: "Creó interfaz universal para diferentes APIs", ach4_reward: "+250 XP · +80 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si entendiste el patrón Estrategia!", l5_title: "¡PELEA JEFE: Chat multi-proveedor!", l5_sub: "Aplicación con selección de modelo", l5_xp: "+500 XP", l5_meme: "¡Tiempo de crear una aplicación de chat completa donde los usuarios pueden elegir entre OpenAI, YandexGPT y modelo local!", l5_code_title: "📝 Código completo de aplicación de chat", l5_github_title: "🚀 Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade captura de pantalla<br>2. Describe cómo obtener claves API<br>3. Explica ventajas de modelos locales<br>4. Añade diagrama de arquitectura<br>5. Especifica cómo añadir nuevo proveedor", ach5_name: "LEGENDARIO: API Master Pro", ach5_desc: "Creó app de chat multi-proveedor y publicó en GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo 5% crea apps multi-proveedor!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Comparación de modelos»", sq1_text: "Haz la misma pregunta a los tres proveedores. Compara respuestas.", sq1_reward: "💰 Recompensa: 100 AI-monedas", sq2_title: "⚡ Misión «Añadir Anthropic»", sq2_text: "Añade cuarto proveedor — Anthropic Claude API — a tu LLMRouter.", sq2_reward: "💰 Recompensa: 200 AI-monedas", sq3_title: "🎨 Misión «Interfaz web»", sq3_text: "Crea interfaz web para tu app de chat usando Gradio o Streamlit.", sq3_reward: "💰 Recompensa: 400 AI-monedas + título «Full-Stack AI Developer»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste qué es API", sum2: "✅ Te conectaste a OpenAI API", sum3: "✅ Integraste YandexGPT API", sum4: "✅ Ejecutaste modelo local vía Ollama", sum5: "✅ Creaste interfaz universal", sum6: "🏆 ¡Jefe final: app de chat multi-proveedor!", sum_meme: "¡Felicidades! En la próxima lección 5.4 aprenderemos fine-tuning.", nav_back: "← Misión anterior", nav_back_title: "5.2 Ingeniería de Prompts", nav_next: "Siguiente misión →", nav_next_title: "5.4 Fine-tuning LLM", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 5.3 • MODUL 5", title: "API-Arbeit", subtitle: "Willkommen auf Level 5.3! 🔌 Heute lernst du, dich mit verschiedenen Sprachmodellen zu verbinden.", duration: "⏱ 3 Stunden", level: "📘 Mittel", xp: "⭐ +1100 XP", loot: "💰 +450 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🔌 Was ist eine API?", l0_sub: "Wie Programme kommunizieren", l0_xp: "+100 XP", l0_p1: "API ist ein Regelwerk, wie ein Programm mit einem anderen kommunizieren kann.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "API ist wie ein Kellner im Restaurant. Du (Kunde) gehst nicht in die Küche. Du sagst dem Kellner (API) was du willst, er gibt die Bestellung an den Koch (Server) weiter und bringt dir das fertige Gericht (Antwort).", ach0_name: "Erfolg: API-Explorer", ach0_desc: "Verstand was API ist und wie es funktioniert", ach0_reward: "+100 XP · +40 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Kellner-Analogie verstanden hast!", l1_title: "🤖 OpenAI API", l1_sub: "Verbindung zu GPT-4 und ChatGPT", l1_xp: "+200 XP", l1_p1: "OpenAI bietet API-Zugang zu GPT-4, GPT-3.5 und anderen Modellen.", l1_code_title: "📝 Erste Anfrage an OpenAI", l1_warn_title: "⚠️ API-Schlüssel Sicherheit", l1_warn_text: "Veröffentliche NIEMALS API-Schlüssel im Code oder auf GitHub! Verwende Umgebungsvariablen.", ach1_name: "Erfolg: OpenAI-Meister", ach1_desc: "Stellte erste Anfrage an OpenAI API", ach1_reward: "+200 XP · +60 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du Antwort von GPT erhalten hast!", l2_title: "🇷🇺 YandexGPT API", l2_sub: "Russisches Sprachmodell", l2_xp: "+200 XP", l2_p1: "YandexGPT ist ein russisches Sprachmodell von Yandex. Es funktioniert gut mit russischer Sprache.", l2_code_title: "📝 Anfrage an YandexGPT", l2_tip_title: "💡 Warum YandexGPT verwenden?", l2_tip_text: "YandexGPT versteht russische Sprache und kulturellen Kontext besser.", ach2_name: "Erfolg: Yandex-Integrator", ach2_desc: "Verband sich mit YandexGPT API", ach2_reward: "+200 XP · +60 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du Antwort von YandexGPT erhalten hast!", l3_title: "🏠 Ollama: Lokale Modelle", l3_sub: "LLMs auf deinem Computer ausführen", l3_xp: "+250 XP", l3_p1: "Ollama ermöglicht das lokale Ausführen großer Sprachmodelle. Es ist kostenlos, privat und funktioniert ohne Internet!", l3_code_title: "📝 Ollama installieren und verwenden", l3_lore_title: "📚 Warum sind lokale Modelle wichtig?", l3_lore_text: "1) Privatsphäre<br>2) Kostenlos<br>3) Ohne Internet<br>4) Anpassbar", ach3_name: "Erfolg: Lokaler Guru", ach3_desc: "Führte lokales Modell über Ollama aus", ach3_reward: "+250 XP · +80 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du Antwort vom lokalen Modell erhalten hast!", l4_title: "🔀 Universelle Schnittstelle", l4_sub: "Abstraktion über verschiedene APIs", l4_xp: "+250 XP", l4_p1: "Jede API hat ihr eigenes Format. Wir erstellen eine universelle Schnittstelle für OpenAI, YandexGPT und Ollama.", l4_code_title: "📝 LLMRouter-Klasse", l4_tip_title: "💡 Strategiemuster", l4_tip_text: "Dieser Code verwendet das Strategiemuster. Alle Anbieter implementieren eine BaseLLM-Schnittstelle.", ach4_name: "Erfolg: Abstraktions-Architekt", ach4_desc: "Erstellte universelle Schnittstelle für verschiedene APIs", ach4_reward: "+250 XP · +80 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn du Strategiemuster verstanden hast!", l5_title: "BOSSKAMPF: Multi-Provider-Chat", l5_sub: "Anwendung mit Modellauswahl", l5_xp: "+500 XP", l5_meme: "Zeit, eine vollständige Chat-Anwendung zu erstellen, bei der Benutzer zwischen OpenAI, YandexGPT und lokalem Modell wählen können!", l5_code_title: "📝 Vollständiger Chat-Anwendungscode", l5_github_title: "🚀 Veröffentlichungsanweisungen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Füge Screenshot hinzu<br>2. Beschreibe API-Schlüssel-Erhalt<br>3. Erkläre lokale Modellvorteile<br>4. Füge Architekturdiagramm hinzu<br>5. Gib an, wie man neuen Anbieter hinzufügt", ach5_name: "LEGENDÄR: API Master Pro", ach5_desc: "Erstellte Multi-Provider-Chat-App und veröffentlichte auf GitHub", ach5_reward: "+500 XP · +200 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 5% erstellen Multi-Provider-Apps!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Modellvergleich»", sq1_text: "Stelle allen drei Anbietern dieselbe Frage. Vergleiche Antworten.", sq1_reward: "💰 Belohnung: 100 AI-Münzen", sq2_title: "⚡ Quest «Anthropic hinzufügen»", sq2_text: "Füge vierten Anbieter — Anthropic Claude API — zu deinem LLMRouter hinzu.", sq2_reward: "💰 Belohnung: 200 AI-Münzen", sq3_title: "🎨 Quest «Web-Interface»", sq3_text: "Erstelle Web-Interface für deine Chat-App mit Gradio oder Streamlit.", sq3_reward: "💰 Belohnung: 400 AI-Münzen + Titel «Full-Stack AI Developer»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Verstand was API ist", sum2: "✅ Verbunden mit OpenAI API", sum3: "✅ YandexGPT API integriert", sum4: "✅ Lokales Modell über Ollama ausgeführt", sum5: "✅ Universelle Schnittstelle erstellt", sum6: "🏆 Endboss: Multi-Provider-Chat-App!", sum_meme: "Glückwunsch! In Lektion 5.4 lernen wir Fine-tuning.", nav_back: "← Vorheriger Quest", nav_back_title: "5.2 Prompt Engineering", nav_next: "Nächster Quest →", nav_next_title: "5.4 Fine-tuning LLM", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 5.3 • 5-МОДУЛЬ", title: "API-мен жұмыс істеу", subtitle: "5.3 деңгейге қош келдің! 🔌 Бүгін әртүрлі тіл модельдеріне қосылуды үйренесің.", duration: "⏱ 3 сағат", level: "📘 Орташа", xp: "⭐ +1100 XP", loot: "💰 +450 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🔌 API деген не?", l0_sub: "Бағдарламалар бір-бірімен қалай байланысады", l0_xp: "+100 XP", l0_p1: "API — бір бағдарламаның екіншісімен байланысу ережелерінің жиынтығы.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "API ресторан даяшысы сияқты. Сен (тұтынушы) асханаға бармайсың. Даяшыға (API) не қалайтыныңды айтасың, ол тапсырысты аспазға (сервер) береді және дайын тағамды (жауап) әкеледі.", ach0_name: "Жетістік: API зерттеушісі", ach0_desc: "API деген не және ол қалай жұмыс істейтінін түсінді", ach0_reward: "+100 XP · +40 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Даяшы аналогиясын түсінсең — бас!", l1_title: "🤖 OpenAI API", l1_sub: "GPT-4 және ChatGPT-ге қосылу", l1_xp: "+200 XP", l1_p1: "OpenAI GPT-4, GPT-3.5 және басқа модельдерге API қол жетімділігін ұсынады.", l1_code_title: "📝 OpenAI-ге бірінші сұраныс", l1_warn_title: "⚠️ API кілттерінің қауіпсіздігі", l1_warn_text: "API кілттерін кодта немесе GitHub-та ешқашан жариялама! Орта өзгермелілерді қолдан.", ach1_name: "Жетістік: OpenAI шебері", ach1_desc: "OpenAI API-ге бірінші сұраныс жасады", ach1_reward: "+200 XP · +60 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "GPT-дан жауап алсаң — бас!", l2_title: "🇷🇺 YandexGPT API", l2_sub: "Ресей тіл моделі", l2_xp: "+200 XP", l2_p1: "YandexGPT — Яндекс-тің ресей тіл моделі. Ол орыс тілімен жақсы жұмыс істейді.", l2_code_title: "📝 YandexGPT-ге сұраныс", l2_tip_title: "💡 YandexGPT-ні неге қолдану керек?", l2_tip_text: "YandexGPT орыс тілін және мәдени контексті жақсырақ түсінеді.", ach2_name: "Жетістік: Яндекс интеграторы", ach2_desc: "YandexGPT API-ге қосылды", ach2_reward: "+200 XP · +60 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "YandexGPT-ден жауап алсаң — бас!", l3_title: "🏠 Ollama: Жергілікті модельдер", l3_sub: "Компьютеріңде LLM іске қосу", l3_xp: "+250 XP", l3_p1: "Ollama үлкен тіл модельдерін жергілікті компьютерде іске қосуға мүмкіндік береді. Бұл тегін, құпиялы және интернетсіз жұмыс істейді!", l3_code_title: "📝 Ollama орнату және қолдану", l3_lore_title: "📚 Жергілікті модельдер неге маңызды?", l3_lore_text: "1) Құпиялылық<br>2) Тегін<br>3) Интернетсіз<br>4) Бапталатын", ach3_name: "Жетістік: Жергілікті гуру", ach3_desc: "Ollama арқылы жергілікті модельді іске қосты", ach3_reward: "+250 XP · +80 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Жергілікті модельден жауап алсаң — бас!", l4_title: "🔀 Әмбебап интерфейс", l4_sub: "Әртүрлі API үстіндегі абстракция", l4_xp: "+250 XP", l4_p1: "Әр API өз пішіміне ие. OpenAI, YandexGPT және Ollama-мен жұмыс істейтін әмбебап интерфейс жасаймыз.", l4_code_title: "📝 LLMRouter класы", l4_tip_title: "💡 Стратегия үлгісі", l4_tip_text: "Бұл код Стратегия дизайн үлгісін қолданады. Барлық провайдерлер бір BaseLLM интерфейсін іске асырады.", ach4_name: "Жетістік: Абстракция сәулетшісі", ach4_desc: "Әртүрлі API үшін әмбебап интерфейс жасады", ach4_reward: "+250 XP · +80 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Стратегия үлгісін түсінсең — бас!", l5_title: "БОСС-ФАЙТ: Көп провайдерлі чат", l5_sub: "Модель таңдауы бар қосымша", l5_xp: "+500 XP", l5_meme: "Пайдаланушылар OpenAI, YandexGPT және жергілікті модель арасында таңдай алатын толық чат қосымшасын жасау уақыты келді!", l5_code_title: "📝 Толық чат қосымшасы коды", l5_github_title: "🚀 Жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. Скриншот қос<br>2. API кілттерін алуды сипатта<br>3. Жергілікті модель артықшылықтарын түсіндір<br>4. Архитектура диаграммасын қос<br>5. Жаңа провайдерді қалай қосуға болатынын көрсет", ach5_name: "АҢЫЗДЫҚ: API Master Pro", ach5_desc: "Көп провайдерлі чат қосымшасын жасады және GitHub-та жариялады", ach5_reward: "+500 XP · +200 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 5% көп провайдерлі қосымшалар жасайды!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Модельдерді салыстыру»", sq1_text: "Үш провайдерге бірдей сұрақ қой. Жауаптарды салыстыр.", sq1_reward: "💰 Сыйлық: 100 ЖИ-теңге", sq2_title: "⚡ Квест «Anthropic қосу»", sq2_text: "LLMRouter-ге төртінші провайдер — Anthropic Claude API қос.", sq2_reward: "💰 Сыйлық: 200 ЖИ-теңге", sq3_title: "🎨 Квест «Веб интерфейс»", sq3_text: "Gradio немесе Streamlit көмегімен веб интерфейс жаса.", sq3_reward: "💰 Сыйлық: 400 ЖИ-теңге + «Full-Stack AI Developer» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ API деген не түсіндің", sum2: "✅ OpenAI API-ге қосылдың", sum3: "✅ YandexGPT API интеграцияладың", sum4: "✅ Ollama арқылы жергілікті модель іске қостың", sum5: "✅ Әмбебап интерфейс жасадың", sum6: "🏆 Финалды босс — көп провайдерлі чат қосымшасы!", sum_meme: "Құттықтаймын! Келесі 5.4 сабақта fine-tuning үйренеміз.", nav_back: "← Алдыңғы квест", nav_back_title: "5.2 Промпт инженериясы", nav_next: "Келесі квест →", nav_next_title: "5.4 Fine-tuning LLM", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
