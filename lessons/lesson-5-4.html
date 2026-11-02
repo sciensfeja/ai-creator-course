@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест 5.4: RAG — AI Creator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0a0e27; color: #e4e6eb; line-height: 1.7; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.15) 0%, transparent 50%); z-index: -1; }
+        header { position: sticky; top: 0; background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(59, 130, 246, 0.3); z-index: 100; padding: 1rem 2rem; }
+        .header-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .lang-switcher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .lang-btn { padding: 0.4rem 0.8rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #e4e6eb; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(59, 130, 246, 0.3); transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, #3b82f6, #a855f7); border-color: transparent; color: white; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .quest-header { text-align: center; padding: 3rem 1rem; margin-bottom: 2rem; }
+        .quest-badge { display: inline-block; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } }
+        .quest-header h1 { font-size: 2.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .quest-header .subtitle { color: #a0a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 1.5rem; }
+        .quest-meta { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .meta-tag { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .progress-container { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .progress-title { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-weight: bold; }
+        .progress-bar { height: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899); border-radius: 10px; width: 0%; transition: width 0.5s; position: relative; overflow: hidden; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .level { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .level::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #3b82f6, #a855f7); }
+        .level.boss::before { background: linear-gradient(90deg, #ec4899, #a855f7); height: 5px; }
+        .level-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .level-number { background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .level.boss .level-number { background: linear-gradient(135deg, #ec4899, #a855f7); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); animation: bossGlow 2s infinite; }
+        @keyframes bossGlow { 0%, 100% { box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 4px 25px rgba(236, 72, 153, 0.8); } }
+        .level-info h2 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; }
+        .level-info .level-subtitle { color: #a0a3b8; font-size: 0.95rem; }
+        .level-xp { margin-left: auto; background: rgba(255, 180, 0, 0.15); border: 1px solid rgba(255, 180, 0, 0.4); color: #ffb400; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        .level p { margin-bottom: 1rem; color: #c8cad8; }
+        .level h3 { color: #a855f7; margin: 1.5rem 0 0.8rem; font-size: 1.2rem; }
+        .level ul, .level ol { margin-left: 1.5rem; margin-bottom: 1rem; color: #c8cad8; }
+        .level li { margin-bottom: 0.5rem; }
+        .meme-box { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1)); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; text-align: center; font-style: italic; color: #c4b5fd; }
+        .meme-box .meme-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+        .info-box { padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid; }
+        .info-box.tip { background: rgba(0, 200, 100, 0.08); border-color: #00c864; }
+        .info-box.warning { background: rgba(255, 180, 0, 0.08); border-color: #ffb400; }
+        .info-box.lore { background: rgba(59, 130, 246, 0.08); border-color: #3b82f6; }
+        .info-box.github { background: rgba(36, 41, 46, 0.3); border-color: #3b82f6; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; }
+        pre { background: #0d1117; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; position: relative; }
+        pre::before { content: 'PYTHON'; position: absolute; top: 0; right: 0; background: rgba(59, 130, 246, 0.3); color: #a0a3b8; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 0 8px 0 8px; font-family: 'Segoe UI', sans-serif; }
+        code { color: #a855f7; background: rgba(168, 85, 247, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+        pre code { background: none; padding: 0; color: #e4e6eb; }
+        .game-analogy { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+        .game-analogy .game-icon { font-size: 2rem; flex-shrink: 0; }
+        .game-analogy .game-text strong { color: #a855f7; display: block; margin-bottom: 0.3rem; }
+        .achievement-unlock { background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08)); border: 2px solid rgba(59, 130, 246, 0.4); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; text-align: center; position: relative; overflow: hidden; transition: all 0.3s; }
+        .achievement-unlock::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent); animation: achievementShine 3s infinite; }
+        @keyframes achievementShine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
+        .achievement-unlock:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+        .achievement-unlock .ach-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .achievement-unlock h3 { color: #00c864; margin-bottom: 0.3rem; font-size: 1.3rem; }
+        .achievement-unlock .ach-desc { color: #c8cad8; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-reward { color: #ffb400; font-weight: bold; margin-bottom: 1rem; font-size: 0.95rem; }
+        .achievement-unlock .ach-btn { display: inline-block; padding: 0.8rem 2rem; background: linear-gradient(135deg, #3b82f6, #a855f7); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .achievement-unlock .ach-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6); }
+        .achievement-unlock .ach-hint { color: #a0a3b8; font-size: 0.85rem; margin-top: 0.8rem; font-style: italic; }
+        .side-quests { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .side-quests h2 { color: #3b82f6; margin-bottom: 1rem; text-align: center; }
+        .quest-card { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .quest-card.easy { border-left: 4px solid #00c864; }
+        .quest-card.medium { border-left: 4px solid #ffb400; }
+        .quest-card.hard { border-left: 4px solid #ff5050; }
+        .quest-difficulty { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quest-card.easy .quest-difficulty { background: rgba(0, 200, 100, 0.2); color: #00c864; }
+        .quest-card.medium .quest-difficulty { background: rgba(255, 180, 0, 0.2); color: #ffb400; }
+        .quest-card.hard .quest-difficulty { background: rgba(255, 80, 80, 0.2); color: #ff5050; }
+        .quest-card h3 { color: #fff; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .quest-card p { color: #c8cad8; margin-bottom: 0.5rem; }
+        .quest-reward { color: #ffb400; font-weight: bold; font-size: 0.9rem; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin: 3rem 0; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 200px; padding: 1rem 1.5rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #e4e6eb; text-decoration: none; transition: all 0.3s; text-align: center; }
+        .nav-btn:hover { background: rgba(59, 130, 246, 0.2); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
+        .nav-btn.next { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2)); border-color: #a855f7; }
+        .nav-btn-label { display: block; font-size: 0.85rem; color: #a0a3b8; margin-bottom: 0.3rem; }
+        .nav-btn-title { font-weight: bold; color: #fff; }
+        footer { background: rgba(10, 14, 39, 0.95); border-top: 1px solid rgba(59, 130, 246, 0.3); padding: 2rem; text-align: center; color: #a0a3b8; margin-top: 3rem; }
+        @media (max-width: 768px) { .quest-header h1 { font-size: 2rem; } .lesson-container { padding: 1rem; } .level { padding: 1.5rem; } .header-content { flex-direction: column; } .level-header { flex-direction: column; align-items: flex-start; } .level-xp { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <a href="../index.html" class="logo">🤖 AI Creator</a>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+            <button class="lang-btn" data-lang="kk">🇰🇿 KZ</button>
+        </div>
+    </div>
+</header>
+
+<div class="lesson-container">
+
+    <div class="quest-header">
+        <span class="quest-badge" data-i18n="badge">🎮 КВЕСТ 5.4 • МОДУЛЬ 5</span>
+        <h1 data-i18n="title">RAG: ИИ без галлюцинаций</h1>
+        <p class="subtitle" data-i18n="subtitle">Добро пожаловать на Уровень 5.4! 📚 Сегодня ты освоишь самый востребованный паттерн в индустрии — Retrieval-Augmented Generation. Научишь ИИ отвечать по твоим документам, не выдумывая факты!</p>
+        <div class="quest-meta">
+            <span class="meta-tag" data-i18n="duration">⏱ 4 часа</span>
+            <span class="meta-tag" data-i18n="level">📕 Экспертный</span>
+            <span class="meta-tag" data-i18n="xp">⭐ +1500 XP</span>
+            <span class="meta-tag" data-i18n="loot">💰 +600 AI-коинов</span>
+            <span class="meta-tag" data-i18n="ach">🏆 6 ачивок</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-title">
+            <span data-i18n="progress_title">📊 Прогресс квеста</span>
+            <span data-i18n="progress_counter">Уровень 0 / 6</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL 0: The Hallucination Problem -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">0</div>
+            <div class="level-info">
+                <h2 data-i18n="l0_title">Проблема галлюцинаций LLM</h2>
+                <div class="level-subtitle" data-i18n="l0_sub">Почему ИИ выдумывает факты?</div>
+            </div>
+            <div class="level-xp" data-i18n="l0_xp">+100 XP</div>
+        </div>
+
+        <p data-i18n="l0_p1">Большие языковые модели — это <strong>генераторы текста</strong>, а не базы знаний. Они предсказывают следующее слово на основе вероятностей. Когда модель не знает ответа, она всё равно генерирует текст — и часто выдумывает факты. Это называется <strong>галлюцинация</strong>.</p>
+
+        <div class="game-analogy">
+            <div class="game-icon">🎭</div>
+            <div class="game-text">
+                <strong data-i18n="l0_analogy_title">Игровая аналогия</strong>
+                <span data-i18n="l0_analogy_text">LLM — это как очень начитанный, но ленивый студент на экзамене. Он может красиво ответить на любой вопрос, но если не знает точного факта — начнёт выдумывать, чтобы звучать убедительно. RAG — это как дать ему шпаргалку с правильными фактами перед экзаменом!</span>
+            </div>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🎭</span>
+            <h3 data-i18n="ach0_name">Ачивка: Детектор галлюцинаций</h3>
+            <p class="ach-desc" data-i18n="ach0_desc">Понял проблему галлюцинаций LLM и зачем нужен RAG</p>
+            <div class="ach-reward" data-i18n="ach0_reward">+100 XP · +40 💰 · ⚪ Обычная</div>
+            <a href="achievements.html?unlock=lesson5_4_hallucination_detector" class="ach-btn" data-i18n="ach0_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach0_hint">Нажми, если понял аналогию со студентом!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: What is RAG? -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">1</div>
+            <div class="level-info">
+                <h2 data-i18n="l1_title">🔍 Что такое RAG?</h2>
+                <div class="level-subtitle" data-i18n="l1_sub">Retrieval-Augmented Generation</div>
+            </div>
+            <div class="level-xp" data-i18n="l1_xp">+200 XP</div>
+        </div>
+
+        <p data-i18n="l1_p1"><strong>RAG (Retrieval-Augmented Generation)</strong> — это паттерн, где перед генерацией ответа модель <strong>сначала ищет</strong> релевантную информацию в базе знаний, а потом использует её как контекст для ответа. Это как поиск в Google + ChatGPT в одном флаконе!</p>
+
+        <h3 data-i18n="l1_code_title">📝 Как работает RAG: схема</h3>
+        <pre><code># RAG Pipeline - Step by Step
+# 
+# 1. INDEXING PHASE (done once):
+#    Documents → Split into chunks → Create embeddings → Store in vector DB
+#
+# 2. QUERY PHASE (done for each question):
+#    User question → Create embedding → Search similar chunks → 
+#    Combine question + chunks → Send to LLM → Get grounded answer
+
+rag_pipeline = """
+┌─────────────┐
+│  Documents  │ (PDF, TXT, HTML)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│   Chunking  │ (split into 500-token pieces)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Embedding  │ (text → vector of 1536 numbers)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Vector DB   │ (FAISS, ChromaDB, Pinecone)
+└──────┬──────┘
+       │
+       ▼ (search)
+┌─────────────┐
+│   Top-K     │ (most similar chunks)
+│   Chunks    │
+└──────┬──────┘
+       │
+       ▼ (as context)
+┌─────────────┐
+│     LLM     │ (GPT-4, Claude, etc.)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│   Answer    │ (grounded in facts)
+└─────────────┘
+"""
+print(rag_pipeline)</code></pre>
+
+        <div class="info-box tip">
+            <strong data-i18n="l1_tip_title">💡 Ключевое преимущество</strong>
+            <span data-i18n="l1_tip_text">RAG позволяет обновлять знания ИИ без переобучения модели! Просто добавь новые документы в базу — и модель сразу сможет отвечать по ним. Это дешевле и быстрее, чем fine-tuning.</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🔍</span>
+            <h3 data-i18n="ach1_name">Ачивка: Архитектор RAG</h3>
+            <p class="ach-desc" data-i18n="ach1_desc">Понял архитектуру RAG-пайплайна</p>
+            <div class="ach-reward" data-i18n="ach1_reward">+200 XP · +60 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_4_rag_architect" class="ach-btn" data-i18n="ach1_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach1_hint">Нажми, если понял схему пайплайна!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: Chunking & Embeddings -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">2</div>
+            <div class="level-info">
+                <h2 data-i18n="l2_title">✂️ Чанкинг и эмбеддинги</h2>
+                <div class="level-subtitle" data-i18n="l2_sub">Подготовка документов</div>
+            </div>
+            <div class="level-xp" data-i18n="l2_xp">+250 XP</div>
+        </div>
+
+        <p data-i18n="l2_p1">Прежде чем искать по документам, их нужно разбить на <strong>чанки</strong> (кусочки) и превратить в <strong>эмбеддинги</strong> (векторы). Размер чанка критичен: слишком маленький — потеря контекста, слишком большой — шум в поиске.</p>
+
+        <h3 data-i18n="l2_code_title">📝 Чанкинг и создание эмбеддингов</h3>
+        <pre><code>import numpy as np
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Sample document
+document = """
+Artificial intelligence (AI) is intelligence demonstrated by machines, 
+as opposed to natural intelligence displayed by animals including humans. 
+AI research has been defined as the field of study of intelligent agents, 
+which refers to any system that perceives its environment and takes actions 
+that maximize its chance of achieving its goals. The term "artificial 
+intelligence" had previously been used to describe machines that mimic 
+and display "human" cognitive skills that are associated with the human 
+mind, such as "learning" and "problem-solving". This definition has since 
+been rejected by major AI researchers who now describe AI in terms of 
+rationality and acting rationally, which does not limit how intelligence 
+can be articulated.
+"""
+
+# Step 1: Split document into chunks (simple character-based splitting)
+def split_into_chunks(text, chunk_size=100, overlap=20):
+    """Split text into overlapping chunks"""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        start += chunk_size - overlap  # Move with overlap
+    return chunks
+
+chunks = split_into_chunks(document, chunk_size=150, overlap=30)
+print(f"Created {len(chunks)} chunks:\n")
+for i, chunk in enumerate(chunks):
+    print(f"Chunk {i+1}: {chunk[:80]}...")
+    print()
+
+# Step 2: Create embeddings for each chunk
+def create_embeddings(texts):
+    """Create embeddings using OpenAI API"""
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=texts
+    )
+    return [item.embedding for item in response.data]
+
+# For demo, let's create mock embeddings (in real app, use API above)
+def mock_embeddings(texts):
+    """Create random embeddings for demonstration"""
+    return [np.random.randn(1536).tolist() for _ in texts]
+
+chunk_embeddings = mock_embeddings(chunks)
+print(f"Embedding dimension: {len(chunk_embeddings[0])}")
+print(f"Total embeddings created: {len(chunk_embeddings)}")</code></pre>
+
+        <div class="info-box warning">
+            <strong data-i18n="l2_warn_title">⚠️ Правила чанкинга</strong>
+            <span data-i18n="l2_warn_text">
+                1. <strong>Размер чанка</strong>: 200-500 токенов — оптимально для большинства задач<br>
+                2. <strong>Перекрытие (overlap)</strong>: 10-20% размера чанка, чтобы не терять контекст на границах<br>
+                3. <strong>Границы</strong>: лучше резать по предложениям или абзацам, а не по символам<br>
+                4. <strong>Метаданные</strong>: сохраняй источник каждого чанка (файл, страница) для цитирования
+            </span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">✂️</span>
+            <h3 data-i18n="ach2_name">Ачивка: Мастер чанкинга</h3>
+            <p class="ach-desc" data-i18n="ach2_desc">Разбил документ на чанки и создал эмбеддинги</p>
+            <div class="ach-reward" data-i18n="ach2_reward">+250 XP · +80 💰 · 🔵 Редкая</div>
+            <a href="achievements.html?unlock=lesson5_4_chunking_master" class="ach-btn" data-i18n="ach2_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach2_hint">Нажми, если понял принцип overlap!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: Vector Database -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">3</div>
+            <div class="level-info">
+                <h2 data-i18n="l3_title">🗄️ Векторная база данных</h2>
+                <div class="level-subtitle" data-i18n="l3_sub">FAISS и семантический поиск</div>
+            </div>
+            <div class="level-xp" data-i18n="l3_xp">+300 XP</div>
+        </div>
+
+        <p data-i18n="l3_p1">Векторная БД хранит эмбеддинги и позволяет быстро находить <strong>семантически похожие</strong> чанки. В отличие от обычного поиска по ключевым словам, семантический поиск понимает смысл: "собака" и "пёс" будут рядом, даже если слова разные!</p>
+
+        <h3 data-i18n="l3_code_title">📝 Поиск с FAISS</h3>
+        <pre><code>import numpy as np
+
+# FAISS - Facebook AI Similarity Search
+# Install: pip install faiss-cpu
+try:
+    import faiss
+    FAISS_AVAILABLE = True
+except ImportError:
+    FAISS_AVAILABLE = False
+    print("FAISS not installed. Using numpy fallback for demo.")
+
+class VectorStore:
+    """Simple vector store with similarity search"""
+    
+    def __init__(self, dimension=1536):
+        self.dimension = dimension
+        self.chunks = []
+        self.embeddings = []
+        
+        if FAISS_AVAILABLE:
+            # Use FAISS for fast search
+            self.index = faiss.IndexFlatIP(dimension)  # Inner product (cosine similarity)
+        else:
+            # Fallback to numpy
+            self.index = None
+    
+    def add(self, chunks, embeddings):
+        """Add chunks and their embeddings to the store"""
+        self.chunks.extend(chunks)
+        embeddings_array = np.array(embeddings, dtype='float32')
+        
+        # Normalize for cosine similarity
+        norms = np.linalg.norm(embeddings_array, axis=1, keepdims=True)
+        embeddings_array = embeddings_array / norms
+        
+        if self.index:
+            self.index.add(embeddings_array)
+        else:
+            self.embeddings = embeddings_array.tolist()
+        
+        print(f"Added {len(chunks)} chunks to vector store")
+    
+    def search(self, query_embedding, top_k=3):
+        """Find most similar chunks to query"""
+        query_array = np.array([query_embedding], dtype='float32')
+        norms = np.linalg.norm(query_array, axis=1, keepdims=True)
+        query_array = query_array / norms
+        
+        if self.index:
+            scores, indices = self.index.search(query_array, top_k)
+            results = [(self.chunks[idx], scores[0][i]) 
+                      for i, idx in enumerate(indices[0]) if idx != -1]
+        else:
+            # Numpy fallback: compute cosine similarity
+            scores = []
+            for i, emb in enumerate(self.embeddings):
+                emb_array = np.array(emb, dtype='float32')
+                similarity = np.dot(query_array[0], emb_array)
+                scores.append((i, similarity))
+            
+            scores.sort(key=lambda x: x[1], reverse=True)
+            results = [(self.chunks[idx], score) for idx, score in scores[:top_k]]
+        
+        return results
+
+# Demo: Create vector store and search
+store = VectorStore(dimension=1536)
+
+# Add our chunks from previous level
+store.add(chunks, chunk_embeddings)
+
+# Search for relevant chunks
+query = "What is artificial intelligence?"
+query_embedding = np.random.randn(1536).tolist()  # Mock embedding
+
+results = store.search(query_embedding, top_k=2)
+print(f"\nQuery: '{query}'")
+print(f"\nTop {len(results)} relevant chunks:")
+for i, (chunk, score) in enumerate(results, 1):
+    print(f"{i}. (Score: {score:.3f}) {chunk[:100]}...")</code></pre>
+
+        <div class="info-box lore">
+            <strong data-i18n="l3_lore_title">📚 Популярные векторные БД</strong>
+            <span data-i18n="l3_lore_text">
+                <strong>FAISS</strong> (Meta) — быстрый, локальный, для небольших проектов<br>
+                <strong>ChromaDB</strong> — простой, с метаданными, хорош для старта<br>
+                <strong>Pinecone</strong> — облачный, масштабируемый, для продакшена<br>
+                <strong>Qdrant</strong> — российский, с фильтрами, open-source<br>
+                <strong>Weaviate</strong> — с встроенными эмбеддингами, GraphQL API
+            </span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">🗄️</span>
+            <h3 data-i18n="ach3_name">Ачивка: Хранитель векторов</h3>
+            <p class="ach-desc" data-i18n="ach3_desc">Создал векторную базу данных и выполнил семантический поиск</p>
+            <div class="ach-reward" data-i18n="ach3_reward">+300 XP · +100 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_4_vector_keeper" class="ach-btn" data-i18n="ach3_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach3_hint">Нажми, если понял cosine similarity!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 4: Full RAG Pipeline -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">4</div>
+            <div class="level-info">
+                <h2 data-i18n="l4_title">⚙️ Полный RAG-пайплайн</h2>
+                <div class="level-subtitle" data-i18n="l4_sub">Собираем всё вместе</div>
+            </div>
+            <div class="level-xp" data-i18n="l4_xp">+350 XP</div>
+        </div>
+
+        <p data-i18n="l4_p1">Теперь соединим все части: загрузку документов, чанкинг, эмбеддинги, векторный поиск и генерацию ответа через LLM. Получится полноценный RAG-пайплайн!</p>
+
+        <h3 data-i18n="l4_code_title">📝 Класс RAGPipeline</h3>
+        <pre><code>import os
+from openai import OpenAI
+
+class RAGPipeline:
+    """Complete RAG pipeline implementation"""
+    
+    def __init__(self, openai_api_key=None):
+        self.client = OpenAI(api_key=openai_api_key or os.getenv('OPENAI_API_KEY'))
+        self.vector_store = VectorStore(dimension=1536)
+        self.chunks = []
+    
+    def load_documents(self, texts):
+        """Load and index documents"""
+        print("📄 Loading documents...")
+        all_chunks = []
+        for text in texts:
+            chunks = split_into_chunks(text, chunk_size=200, overlap=40)
+            all_chunks.extend(chunks)
+        
+        print(f"✂️ Created {len(all_chunks)} chunks")
+        
+        # Create embeddings (use mock for demo)
+        embeddings = mock_embeddings(all_chunks)
+        
+        # Add to vector store
+        self.vector_store.add(all_chunks, embeddings)
+        self.chunks = all_chunks
+        
+        print(f"✅ Indexed {len(all_chunks)} chunks")
+    
+    def retrieve(self, query, top_k=3):
+        """Retrieve relevant chunks for query"""
+        # Create query embedding
+        query_embedding = mock_embeddings([query])[0]
+        
+        # Search vector store
+        results = self.vector_store.search(query_embedding, top_k=top_k)
+        
+        # Extract chunks and scores
+        retrieved_chunks = [chunk for chunk, score in results]
+        return retrieved_chunks
+    
+    def generate_answer(self, query, retrieved_chunks):
+        """Generate answer using LLM with retrieved context"""
+        # Build context from retrieved chunks
+        context = "\n\n".join([f"--- Chunk {i+1} ---\n{chunk}" 
+                              for i, chunk in enumerate(retrieved_chunks)])
+        
+        # Create prompt with context
+        prompt = f"""Answer the question based ONLY on the provided context. 
+If the answer is not in the context, say "I don't know based on the provided information."
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+        
+        # Call LLM (mock for demo)
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,  # Low temperature for factual answers
+            max_tokens=300
+        )
+        
+        return response.choices[0].message.content
+    
+    def ask(self, query):
+        """Full RAG pipeline: retrieve + generate"""
+        print(f"\n❓ Question: {query}")
+        
+        # Step 1: Retrieve relevant chunks
+        print("🔍 Searching knowledge base...")
+        retrieved_chunks = self.retrieve(query, top_k=3)
+        
+        print(f"📚 Found {len(retrieved_chunks)} relevant chunks")
+        
+        # Step 2: Generate answer
+        print("🤖 Generating answer...")
+        answer = self.generate_answer(query, retrieved_chunks)
+        
+        print(f"\n💡 Answer: {answer}")
+        return answer
+
+# Demo usage
+rag = RAGPipeline()
+
+# Load documents
+documents = [
+    "Python is a high-level programming language known for its simplicity and readability.",
+    "JavaScript is primarily used for web development and runs in browsers.",
+    "Machine learning is a subset of AI that learns from data without explicit programming."
+]
+
+rag.load_documents(documents)
+
+# Ask questions
+rag.ask("What is Python?")
+rag.ask("Tell me about web development languages")</code></pre>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🎯</span>
+            <span data-i18n="l4_meme">RAG превращает LLM из "болтуна" в "эксперта с доступом к базе знаний". Модель больше не выдумывает — она опирается на факты из твоих документов!</span>
+        </div>
+
+        <div class="achievement-unlock">
+            <span class="ach-icon">⚙️</span>
+            <h3 data-i18n="ach4_name">Ачивка: Инженер RAG</h3>
+            <p class="ach-desc" data-i18n="ach4_desc">Собрал полный RAG-пайплайн с нуля</p>
+            <div class="ach-reward" data-i18n="ach4_reward">+350 XP · +120 💰 · 🟣 Эпическая</div>
+            <a href="achievements.html?unlock=lesson5_4_rag_engineer" class="ach-btn" data-i18n="ach4_btn">🏆 Получить ачивку</a>
+            <p class="ach-hint" data-i18n="ach4_hint">Нажми, если пайплайн работает!</p>
+        </div>
+    </div>
+
+    <!-- LEVEL 5: BOSS - RAG App -->
+    <div class="level boss">
+        <div class="level-header">
+            <div class="level-number">🔥</div>
+            <div class="level-info">
+                <h2 data-i18n="l5_title">БОСС-ФАЙТ: RAG-приложение для документов</h2>
+                <div class="level-subtitle" data-i18n="l5_sub">Чат-бот по твоим PDF</div>
+            </div>
+            <div class="level-xp" data-i18n="l5_xp">+600 XP</div>
+        </div>
+
+        <div class="meme-box">
+            <span class="meme-emoji">📄🤖</span>
+            <span data-i18n="l5_meme">Создадим реальное приложение, которое позволяет загружать PDF-документы и задавать по ним вопросы! Это именно то, что делают корпоративные AI-ассистенты в крупных компаниях.</span>
+        </div>
+
+        <h3 data-i18n="l5_code_title">📝 RAG-приложение с загрузкой PDF</h3>
+        <pre><code>import os
+import PyPDF2
+from openai import OpenAI
+
+class DocumentRAGApp:
+    """Production-ready RAG application for PDF documents"""
+    
+    def __init__(self):
+        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        self.rag = RAGPipeline()
+        self.documents = []
+    
+    def load_pdf(self, pdf_path):
+        """Extract text from PDF file"""
+        print(f"📄 Loading PDF: {pdf_path}")
+        
+        with open(pdf_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+        
+        self.documents.append({
+            'path': pdf_path,
+            'text': text,
+            'pages': len(pdf_reader.pages)
+        })
+        
+        print(f"✅ Extracted {len(text)} characters from {len(pdf_reader.pages)} pages")
+        return text
+    
+    def load_multiple_pdfs(self, pdf_paths):
+        """Load multiple PDF documents"""
+        all_texts = []
+        for path in pdf_paths:
+            text = self.load_pdf(path)
+            all_texts.append(text)
+        
+        # Index all documents
+        self.rag.load_documents(all_texts)
+        print(f"\n📚 Indexed {len(pdf_paths)} documents")
+    
+    def ask_with_sources(self, query):
+        """Ask question and get answer with source citations"""
+        # Retrieve chunks
+        retrieved_chunks = self.rag.retrieve(query, top_k=3)
+        
+        # Build context with sources
+        context_parts = []
+        for i, chunk in enumerate(retrieved_chunks):
+            context_parts.append(f"[Source {i+1}]: {chunk}")
+        
+        context = "\n\n".join(context_parts)
+        
+        # Generate answer with citation requirement
+        prompt = f"""You are a helpful assistant that answers questions based on provided sources.
+Always cite which source you're using with [Source N] notation.
+If the answer is not in the sources, say "I cannot find this information in the provided documents."
+
+Sources:
+{context}
+
+Question: {query}
+
+Answer with citations:"""
+        
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+        
+        return response.choices[0].message.content
+    
+    def interactive_chat(self):
+        """Interactive chat loop"""
+        print("\n" + "="*60)
+        print("🤖 RAG Document Assistant")
+        print("="*60)
+        print("Commands: 'quit' to exit, 'docs' to list documents")
+        print("="*60 + "\n")
+        
+        while True:
+            query = input("You: ").strip()
+            
+            if query.lower() == 'quit':
+                print("Goodbye! 👋")
+                break
+            elif query.lower() == 'docs':
+                print(f"\n📚 Loaded documents ({len(self.documents)}):")
+                for i, doc in enumerate(self.documents, 1):
+                    print(f"  {i}. {doc['path']} ({doc['pages']} pages)")
+                continue
+            elif not query:
+                continue
+            
+            print("\n🤖 Thinking...")
+            answer = self.ask_with_sources(query)
+            print(f"\n{answer}\n")
+
+# Run the application
+if __name__ == "__main__":
+    app = DocumentRAGApp()
+    
+    # Load sample PDFs (replace with your files)
+    pdf_files = ["document1.pdf", "document2.pdf"]
+    
+    # Check if files exist
+    existing_files = [f for f in pdf_files if os.path.exists(f)]
+    
+    if existing_files:
+        app.load_multiple_pdfs(existing_files)
+        app.interactive_chat()
+    else:
+        print("📝 No PDF files found. Create sample PDFs or update pdf_files list.")
+        print("\nDemo mode: Using sample text documents")
+        app.rag.load_documents([
+            "Python is a versatile programming language used in AI, web development, and data science.",
+            "Machine learning models require training data to learn patterns and make predictions.",
+            "Neural networks are inspired by biological brains and consist of layers of neurons."
+        ])
+        app.interactive_chat()</code></pre>
+
+        <h3 data-i18n="l5_github_title">🚀 Инструкция по публикации проекта</h3>
+        <pre><code># 1. Create repository structure
+mkdir rag-document-assistant
+cd rag-document-assistant
+
+mkdir src docs
+touch src/app.py
+touch src/rag_pipeline.py
+touch src/vector_store.py
+touch requirements.txt
+touch README.md
+touch .gitignore
+touch .env.example
+
+# 2. requirements.txt
+openai>=1.0.0
+PyPDF2>=3.0.0
+faiss-cpu>=1.7.0
+numpy>=1.24.0
+python-dotenv>=1.0.0
+
+# 3. .gitignore
+.env
+*.pdf
+__pycache__/
+*.pyc
+.venv/
+vector_store.index
+
+# 4. .env.example
+OPENAI_API_KEY=sk-your-key-here
+
+# 5. Add sample PDFs to docs/ folder
+# (Don't commit sensitive documents!)
+
+# 6. Run the app
+python src/app.py
+
+# 7. Commit and push
+git init
+git add .
+git commit -m "Add RAG document assistant with PDF support"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/rag-document-assistant.git
+git push -u origin main</code></pre>
+
+        <div class="info-box github">
+            <strong data-i18n="l5_github_tip_title">💡 Советы для README.md</strong>
+            <span data-i18n="l5_github_tip_text">
+                1. Добавь GIF-демонстрацию работы приложения<br>
+                2. Объясни архитектуру RAG с диаграммой<br>
+                3. Покажи пример вопроса и ответа с источниками<br>
+                4. Опиши, как добавить поддержку новых форматов (DOCX, HTML)<br>
+                5. Укажи метрики качества: точность поиска, время ответа<br>
+                6. Добавь раздел "Limitations" — что RAG не может сделать
+            </span>
+        </div>
+
+        <div class="achievement-unlock" style="border-color: rgba(255, 180, 0, 0.6); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1));">
+            <span class="ach-icon">👑</span>
+            <h3 style="color: #ffb400;" data-i18n="ach5_name">ЛЕГЕНДАРНАЯ АЧИВКА: RAG Master</h3>
+            <p class="ach-desc" data-i18n="ach5_desc">Создал RAG-приложение для документов и опубликовал на GitHub</p>
+            <div class="ach-reward" data-i18n="ach5_reward">+600 XP · +250 💰 · 🟡 Легендарная</div>
+            <a href="achievements.html?unlock=lesson5_4_rag_master" class="ach-btn" style="background: linear-gradient(135deg, #3b82f6, #ec4899);" data-i18n="ach5_btn">👑 Получить легендарную ачивку</a>
+            <p class="ach-hint" data-i18n="ach5_hint">Только 3% студентов создают работающие RAG-приложения. Ты — элита AI!</p>
+        </div>
+    </div>
+
+    <!-- Side Quests -->
+    <div class="side-quests">
+        <h2 data-i18n="sq_title">📜 Побочные квесты (дополнительные задания)</h2>
+
+        <div class="quest-card easy">
+            <span class="quest-difficulty" data-i18n="sq_easy">🟢 ЛЁГКИЙ</span>
+            <h3 data-i18n="sq1_title">🧮 Квест «Сравнение чанкинга»</h3>
+            <p data-i18n="sq1_text">Попробуй разные стратегии чанкинга: по символам, по предложениям, по абзацам. Замерь, как меняется качество поиска для одного и того же вопроса.</p>
+            <div class="quest-reward" data-i18n="sq1_reward">💰 Награда: 150 AI-коинов</div>
+        </div>
+
+        <div class="quest-card medium">
+            <span class="quest-difficulty" data-i18n="sq_medium">🟡 СРЕДНИЙ</span>
+            <h3 data-i18n="sq2_title">⚡ Квест «Hybrid Search»</h3>
+            <p data-i18n="sq2_text">Добавь к семантическому поиску (vector search) обычный keyword search (BM25). Объедини результаты — это называется hybrid search и даёт лучшую точность.</p>
+            <div class="quest-reward" data-i18n="sq2_reward">💰 Награда: 300 AI-коинов</div>
+        </div>
+
+        <div class="quest-card hard">
+            <span class="quest-difficulty" data-i18n="sq_hard">🔴 СЛОЖНЫЙ</span>
+            <h3 data-i18n="sq3_title">🎨 Квест «Advanced RAG»</h3>
+            <p data-i18n="sq3_text">Реализуй продвинутые техники: query rewriting (переформулирование вопроса), re-ranking результатов, и citation verification (проверка, что ответ действительно основан на источниках).</p>
+            <div class="quest-reward" data-i18n="sq3_reward">💰 Награда: 500 AI-коинов + титул «RAG Architect»</div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="level">
+        <div class="level-header">
+            <div class="level-number">🏁</div>
+            <div class="level-info">
+                <h2 data-i18n="sum_title">Финишная прямая</h2>
+                <div class="level-subtitle" data-i18n="sum_sub">Что ты прокачал в этом квесте</div>
+            </div>
+        </div>
+
+        <ul>
+            <li data-i18n="sum1">✅ Понял проблему галлюцинаций LLM</li>
+            <li data-i18n="sum2">✅ Освоил архитектуру RAG-пайплайна</li>
+            <li data-i18n="sum3">✅ Научился делать чанкинг и эмбеддинги</li>
+            <li data-i18n="sum4">✅ Создал векторную базу данных с FAISS</li>
+            <li data-i18n="sum5">✅ Собрал полный RAG-пайплайн</li>
+            <li data-i18n="sum6">🏆 Финальный босс — RAG-приложение для PDF опубликовано!</li>
+        </ul>
+
+        <div class="meme-box">
+            <span class="meme-emoji">🚀</span>
+            <span data-i18n="sum_meme">Поздравляю, RAG Master! Ты освоил один из самых востребованных навыков в AI-индустрии 2024-2025. Компании платят большие деньги за такие решения! В следующем уроке 5.5 мы изучим агенты — ИИ, которые могут использовать инструменты и выполнять сложные задачи автономно! 🤖</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="lesson-5-3.html" class="nav-btn">
+            <span class="nav-btn-label" data-i18n="nav_back">← Предыдущий квест</span>
+            <span class="nav-btn-title" data-i18n="nav_back_title">5.3 Работа с API</span>
+        </a>
+        <a href="lesson-5-5.html" class="nav-btn next">
+            <span class="nav-btn-label" data-i18n="nav_next">Следующий квест →</span>
+            <span class="nav-btn-title" data-i18n="nav_next_title">5.5 AI Агенты</span>
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 AI Creator. <span data-i18n="footer">Курс по ИИ для школьников 10 класса.</span></p>
+</footer>
+
+<script>
+    const translations = {
+        ru: {
+            badge: "🎮 КВЕСТ 5.4 • МОДУЛЬ 5", title: "RAG: ИИ без галлюцинаций",
+            subtitle: "Добро пожаловать на Уровень 5.4! 📚 Сегодня ты освоишь самый востребованный паттерн в индустрии — Retrieval-Augmented Generation. Научишь ИИ отвечать по твоим документам, не выдумывая факты!",
+            duration: "⏱ 4 часа", level: "📕 Экспертный", xp: "⭐ +1500 XP", loot: "💰 +600 AI-коинов", ach: "🏆 6 ачивок",
+            progress_title: "📊 Прогресс квеста", progress_counter: "Уровень 0 / 6",
+            l0_title: "🎭 Проблема галлюцинаций LLM", l0_sub: "Почему ИИ выдумывает факты?", l0_xp: "+100 XP",
+            l0_p1: "Большие языковые модели — это генераторы текста, а не базы знаний. Они предсказывают следующее слово на основе вероятностей. Когда модель не знает ответа, она всё равно генерирует текст — и часто выдумывает факты. Это называется галлюцинация.",
+            l0_analogy_title: "Игровая аналогия", l0_analogy_text: "LLM — это как очень начитанный, но ленивый студент на экзамене. Он может красиво ответить на любой вопрос, но если не знает точного факта — начнёт выдумывать, чтобы звучать убедительно. RAG — это как дать ему шпаргалку с правильными фактами перед экзаменом!",
+            ach0_name: "Ачивка: Детектор галлюцинаций", ach0_desc: "Понял проблему галлюцинаций LLM и зачем нужен RAG", ach0_reward: "+100 XP · +40 💰 · ⚪ Обычная", ach0_btn: "🏆 Получить ачивку", ach0_hint: "Нажми, если понял аналогию со студентом!",
+            l1_title: "🔍 Что такое RAG?", l1_sub: "Retrieval-Augmented Generation", l1_xp: "+200 XP",
+            l1_p1: "RAG (Retrieval-Augmented Generation) — это паттерн, где перед генерацией ответа модель сначала ищет релевантную информацию в базе знаний, а потом использует её как контекст для ответа. Это как поиск в Google + ChatGPT в одном флаконе!",
+            l1_code_title: "📝 Как работает RAG: схема",
+            l1_tip_title: "💡 Ключевое преимущество", l1_tip_text: "RAG позволяет обновлять знания ИИ без переобучения модели! Просто добавь новые документы в базу — и модель сразу сможет отвечать по ним. Это дешевле и быстрее, чем fine-tuning.",
+            ach1_name: "Ачивка: Архитектор RAG", ach1_desc: "Понял архитектуру RAG-пайплайна", ach1_reward: "+200 XP · +60 💰 · 🔵 Редкая", ach1_btn: "🏆 Получить ачивку", ach1_hint: "Нажми, если понял схему пайплайна!",
+            l2_title: "✂️ Чанкинг и эмбеддинги", l2_sub: "Подготовка документов", l2_xp: "+250 XP",
+            l2_p1: "Прежде чем искать по документам, их нужно разбить на чанки (кусочки) и превратить в эмбеддинги (векторы). Размер чанка критичен: слишком маленький — потеря контекста, слишком большой — шум в поиске.",
+            l2_code_title: "📝 Чанкинг и создание эмбеддингов",
+            l2_warn_title: "⚠️ Правила чанкинга", l2_warn_text: "1. Размер чанка: 200-500 токенов — оптимально для большинства задач<br>2. Перекрытие (overlap): 10-20% размера чанка, чтобы не терять контекст на границах<br>3. Границы: лучше резать по предложениям или абзацам, а не по символам<br>4. Метаданные: сохраняй источник каждого чанка (файл, страница) для цитирования",
+            ach2_name: "Ачивка: Мастер чанкинга", ach2_desc: "Разбил документ на чанки и создал эмбеддинги", ach2_reward: "+250 XP · +80 💰 · 🔵 Редкая", ach2_btn: "🏆 Получить ачивку", ach2_hint: "Нажми, если понял принцип overlap!",
+            l3_title: "🗄️ Векторная база данных", l3_sub: "FAISS и семантический поиск", l3_xp: "+300 XP",
+            l3_p1: "Векторная БД хранит эмбеддинги и позволяет быстро находить семантически похожие чанки. В отличие от обычного поиска по ключевым словам, семантический поиск понимает смысл: 'собака' и 'пёс' будут рядом, даже если слова разные!",
+            l3_code_title: "📝 Поиск с FAISS",
+            l3_lore_title: "📚 Популярные векторные БД", l3_lore_text: "FAISS (Meta) — быстрый, локальный, для небольших проектов<br>ChromaDB — простой, с метаданными, хорош для старта<br>Pinecone — облачный, масштабируемый, для продакшена<br>Qdrant — российский, с фильтрами, open-source<br>Weaviate — с встроенными эмбеддингами, GraphQL API",
+            ach3_name: "Ачивка: Хранитель векторов", ach3_desc: "Создал векторную базу данных и выполнил семантический поиск", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпическая", ach3_btn: "🏆 Получить ачивку", ach3_hint: "Нажми, если понял cosine similarity!",
+            l4_title: "⚙️ Полный RAG-пайплайн", l4_sub: "Собираем всё вместе", l4_xp: "+350 XP",
+            l4_p1: "Теперь соединим все части: загрузку документов, чанкинг, эмбеддинги, векторный поиск и генерацию ответа через LLM. Получится полноценный RAG-пайплайн!",
+            l4_code_title: "📝 Класс RAGPipeline",
+            l4_meme: "RAG превращает LLM из 'болтуна' в 'эксперта с доступом к базе знаний'. Модель больше не выдумывает — она опирается на факты из твоих документов!",
+            ach4_name: "Ачивка: Инженер RAG", ach4_desc: "Собрал полный RAG-пайплайн с нуля", ach4_reward: "+350 XP · +120 💰 · 🟣 Эпическая", ach4_btn: "🏆 Получить ачивку", ach4_hint: "Нажми, если пайплайн работает!",
+            l5_title: "БОСС-ФАЙТ: RAG-приложение для документов", l5_sub: "Чат-бот по твоим PDF", l5_xp: "+600 XP",
+            l5_meme: "Создадим реальное приложение, которое позволяет загружать PDF-документы и задавать по ним вопросы! Это именно то, что делают корпоративные AI-ассистенты в крупных компаниях.",
+            l5_code_title: "📝 RAG-приложение с загрузкой PDF",
+            l5_github_title: "🚀 Инструкция по публикации проекта",
+            l5_github_tip_title: "💡 Советы для README.md",
+            l5_github_tip_text: "1. Добавь GIF-демонстрацию работы приложения<br>2. Объясни архитектуру RAG с диаграммой<br>3. Покажи пример вопроса и ответа с источниками<br>4. Опиши, как добавить поддержку новых форматов (DOCX, HTML)<br>5. Укажи метрики качества: точность поиска, время ответа<br>6. Добавь раздел 'Limitations' — что RAG не может сделать",
+            ach5_name: "ЛЕГЕНДАРНАЯ АЧИВКА: RAG Master", ach5_desc: "Создал RAG-приложение для документов и опубликовал на GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Легендарная", ach5_btn: "👑 Получить легендарную ачивку", ach5_hint: "Только 3% студентов создают работающие RAG-приложения. Ты — элита AI!",
+            sq_title: "📜 Побочные квесты (дополнительные задания)", sq_easy: "🟢 ЛЁГКИЙ", sq_medium: "🟡 СРЕДНИЙ", sq_hard: "🔴 СЛОЖНЫЙ",
+            sq1_title: "🧮 Квест «Сравнение чанкинга»", sq1_text: "Попробуй разные стратегии чанкинга: по символам, по предложениям, по абзацам. Замерь, как меняется качество поиска.", sq1_reward: "💰 Награда: 150 AI-коинов",
+            sq2_title: "⚡ Квест «Hybrid Search»", sq2_text: "Добавь к семантическому поиску обычный keyword search (BM25). Объедини результаты — это называется hybrid search.", sq2_reward: "💰 Награда: 300 AI-коинов",
+            sq3_title: "🎨 Квест «Advanced RAG»", sq3_text: "Реализуй продвинутые техники: query rewriting, re-ranking результатов, и citation verification.", sq3_reward: "💰 Награда: 500 AI-коинов + титул «RAG Architect»",
+            sum_title: "Финишная прямая", sum_sub: "Что ты прокачал в этом квесте",
+            sum1: "✅ Понял проблему галлюцинаций LLM", sum2: "✅ Освоил архитектуру RAG-пайплайна",
+            sum3: "✅ Научился делать чанкинг и эмбеддинги", sum4: "✅ Создал векторную базу данных с FAISS",
+            sum5: "✅ Собрал полный RAG-пайплайн", sum6: "🏆 Финальный босс — RAG-приложение для PDF опубликовано!",
+            sum_meme: "Поздравляю, RAG Master! Ты освоил один из самых востребованных навыков в AI-индустрии 2024-2025. В следующем уроке 5.5 мы изучим агенты — ИИ, которые могут использовать инструменты и выполнять сложные задачи автономно! 🤖",
+            nav_back: "← Предыдущий квест", nav_back_title: "5.3 Работа с API",
+            nav_next: "Следующий квест →", nav_next_title: "5.5 AI Агенты",
+            footer: "Курс по ИИ для школьников 10 класса."
+        },
+        en: {
+            badge: "🎮 QUEST 5.4 • MODULE 5", title: "RAG: AI Without Hallucinations",
+            subtitle: "Welcome to Level 5.4! 📚 Today you'll master the most in-demand pattern in the industry — Retrieval-Augmented Generation. Teach AI to answer based on your documents without making up facts!",
+            duration: "⏱ 4 hours", level: "📕 Expert", xp: "⭐ +1500 XP", loot: "💰 +600 AI-coins", ach: "🏆 6 achievements",
+            progress_title: "📊 Quest progress", progress_counter: "Level 0 / 6",
+            l0_title: "🎭 The Hallucination Problem", l0_sub: "Why does AI make up facts?", l0_xp: "+100 XP",
+            l0_p1: "Large language models are text generators, not knowledge bases. They predict the next word based on probabilities. When the model doesn't know the answer, it still generates text — and often makes up facts. This is called hallucination.",
+            l0_analogy_title: "Game analogy", l0_analogy_text: "LLM is like a very well-read but lazy student at an exam. They can beautifully answer any question, but if they don't know the exact fact — they'll make it up to sound convincing. RAG is like giving them a cheat sheet with correct facts before the exam!",
+            ach0_name: "Achievement: Hallucination Detector", ach0_desc: "Understood LLM hallucination problem and why RAG is needed", ach0_reward: "+100 XP · +40 💰 · ⚪ Common", ach0_btn: "🏆 Get achievement", ach0_hint: "Click if you understood the student analogy!",
+            l1_title: "🔍 What is RAG?", l1_sub: "Retrieval-Augmented Generation", l1_xp: "+200 XP",
+            l1_p1: "RAG (Retrieval-Augmented Generation) is a pattern where before generating an answer, the model first searches for relevant information in a knowledge base, then uses it as context for the answer. It's like Google search + ChatGPT in one!",
+            l1_code_title: "📝 How RAG works: diagram",
+            l1_tip_title: "💡 Key advantage", l1_tip_text: "RAG allows updating AI knowledge without retraining the model! Just add new documents to the database — and the model can immediately answer about them. It's cheaper and faster than fine-tuning.",
+            ach1_name: "Achievement: RAG Architect", ach1_desc: "Understood RAG pipeline architecture", ach1_reward: "+200 XP · +60 💰 · 🔵 Rare", ach1_btn: "🏆 Get achievement", ach1_hint: "Click if you understood the pipeline diagram!",
+            l2_title: "✂️ Chunking and Embeddings", l2_sub: "Document preparation", l2_xp: "+250 XP",
+            l2_p1: "Before searching documents, they need to be split into chunks and converted to embeddings (vectors). Chunk size is critical: too small — loss of context, too large — noise in search.",
+            l2_code_title: "📝 Chunking and creating embeddings",
+            l2_warn_title: "⚠️ Chunking rules", l2_warn_text: "1. Chunk size: 200-500 tokens — optimal for most tasks<br>2. Overlap: 10-20% of chunk size to avoid losing context at boundaries<br>3. Boundaries: better to split by sentences or paragraphs, not characters<br>4. Metadata: save source of each chunk (file, page) for citation",
+            ach2_name: "Achievement: Chunking Master", ach2_desc: "Split document into chunks and created embeddings", ach2_reward: "+250 XP · +80 💰 · 🔵 Rare", ach2_btn: "🏆 Get achievement", ach2_hint: "Click if you understood overlap principle!",
+            l3_title: "🗄️ Vector Database", l3_sub: "FAISS and semantic search", l3_xp: "+300 XP",
+            l3_p1: "Vector DB stores embeddings and allows quickly finding semantically similar chunks. Unlike regular keyword search, semantic search understands meaning: 'dog' and 'puppy' will be close, even if words are different!",
+            l3_code_title: "📝 Search with FAISS",
+            l3_lore_title: "📚 Popular vector databases", l3_lore_text: "FAISS (Meta) — fast, local, for small projects<br>ChromaDB — simple, with metadata, good for starting<br>Pinecone — cloud, scalable, for production<br>Qdrant — Russian, with filters, open-source<br>Weaviate — with built-in embeddings, GraphQL API",
+            ach3_name: "Achievement: Vector Keeper", ach3_desc: "Created vector database and performed semantic search", ach3_reward: "+300 XP · +100 💰 · 🟣 Epic", ach3_btn: "🏆 Get achievement", ach3_hint: "Click if you understood cosine similarity!",
+            l4_title: "⚙️ Full RAG Pipeline", l4_sub: "Putting it all together", l4_xp: "+350 XP",
+            l4_p1: "Now let's connect all parts: document loading, chunking, embeddings, vector search, and answer generation via LLM. We'll get a full RAG pipeline!",
+            l4_code_title: "📝 RAGPipeline class",
+            l4_meme: "RAG turns LLM from 'chatterbox' into 'expert with access to knowledge base'. The model no longer makes things up — it relies on facts from your documents!",
+            ach4_name: "Achievement: RAG Engineer", ach4_desc: "Built full RAG pipeline from scratch", ach4_reward: "+350 XP · +120 💰 · 🟣 Epic", ach4_btn: "🏆 Get achievement", ach4_hint: "Click if the pipeline works!",
+            l5_title: "BOSS FIGHT: RAG Document App", l5_sub: "Chatbot for your PDFs", l5_xp: "+600 XP",
+            l5_meme: "Let's create a real application that allows uploading PDF documents and asking questions about them! This is exactly what corporate AI assistants do in large companies.",
+            l5_code_title: "📝 RAG app with PDF loading",
+            l5_github_title: "🚀 Project publication instructions",
+            l5_github_tip_title: "💡 README.md tips",
+            l5_github_tip_text: "1. Add GIF demo of app working<br>2. Explain RAG architecture with diagram<br>3. Show example question and answer with sources<br>4. Describe how to add support for new formats (DOCX, HTML)<br>5. Specify quality metrics: search accuracy, response time<br>6. Add 'Limitations' section — what RAG cannot do",
+            ach5_name: "LEGENDARY: RAG Master", ach5_desc: "Created RAG document app and published on GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendary", ach5_btn: "👑 Get legendary achievement", ach5_hint: "Only 3% of students create working RAG apps. You're AI elite!",
+            sq_title: "📜 Side quests (additional tasks)", sq_easy: "🟢 EASY", sq_medium: "🟡 MEDIUM", sq_hard: "🔴 HARD",
+            sq1_title: "🧮 Quest «Chunking Comparison»", sq1_text: "Try different chunking strategies: by characters, sentences, paragraphs. Measure how search quality changes.", sq1_reward: "💰 Reward: 150 AI-coins",
+            sq2_title: "⚡ Quest «Hybrid Search»", sq2_text: "Add regular keyword search (BM25) to semantic search. Combine results — this is called hybrid search.", sq2_reward: "💰 Reward: 300 AI-coins",
+            sq3_title: "🎨 Quest «Advanced RAG»", sq3_text: "Implement advanced techniques: query rewriting, result re-ranking, and citation verification.", sq3_reward: "💰 Reward: 500 AI-coins + title «RAG Architect»",
+            sum_title: "Final stretch", sum_sub: "What you leveled up in this quest",
+            sum1: "✅ Understood LLM hallucination problem", sum2: "✅ Mastered RAG pipeline architecture",
+            sum3: "✅ Learned chunking and embeddings", sum4: "✅ Created vector database with FAISS",
+            sum5: "✅ Built full RAG pipeline", sum6: "🏆 Final boss — RAG PDF app published!",
+            sum_meme: "Congrats, RAG Master! You've mastered one of the most in-demand skills in AI industry 2024-2025. In next lesson 5.5, we'll study agents — AI that can use tools and perform complex tasks autonomously! 🤖",
+            nav_back: "← Previous quest", nav_back_title: "5.3 Working with APIs",
+            nav_next: "Next quest →", nav_next_title: "5.5 AI Agents",
+            footer: "AI course for 10th grade students."
+        },
+        es: { badge: "🎮 MISIÓN 5.4 • MÓDULO 5", title: "RAG: IA sin Alucinaciones", subtitle: "¡Bienvenido al Nivel 5.4! 📚 Hoy dominarás el patrón más demandado en la industria — RAG.", duration: "⏱ 4 horas", level: "📕 Experto", xp: "⭐ +1500 XP", loot: "💰 +600 AI-monedas", ach: "🏆 6 logros", progress_title: "📊 Progreso", progress_counter: "Nivel 0 / 6", l0_title: "🎭 El Problema de las Alucinaciones", l0_sub: "¿Por qué la IA inventa hechos?", l0_xp: "+100 XP", l0_p1: "Los LLM son generadores de texto, no bases de conocimiento. Predicen la siguiente palabra basada en probabilidades. Cuando no saben la respuesta, igual generan texto — y a menudo inventan hechos.", l0_analogy_title: "Analogía de juego", l0_analogy_text: "LLM es como un estudiante muy leído pero perezoso. Puede responder bellamente cualquier pregunta, pero si no sabe el hecho exacto — lo inventará para sonar convincente. ¡RAG es como darle una chuleta con hechos correctos!", ach0_name: "Logro: Detector de Alucinaciones", ach0_desc: "Entendió el problema de alucinaciones y por qué se necesita RAG", ach0_reward: "+100 XP · +40 💰 · ⚪ Común", ach0_btn: "🏆 Obtener logro", ach0_hint: "¡Haz clic si entendiste la analogía del estudiante!", l1_title: "🔍 ¿Qué es RAG?", l1_sub: "Retrieval-Augmented Generation", l1_xp: "+200 XP", l1_p1: "RAG es un patrón donde antes de generar respuesta, el modelo busca información relevante en base de conocimiento, luego la usa como contexto. ¡Es como búsqueda Google + ChatGPT en uno!", l1_code_title: "📝 Cómo funciona RAG: diagrama", l1_tip_title: "💡 Ventaja clave", l1_tip_text: "¡RAG permite actualizar conocimiento de IA sin reentrenar el modelo! Solo añade nuevos documentos a la base.", ach1_name: "Logro: Arquitecto RAG", ach1_desc: "Entendió arquitectura de pipeline RAG", ach1_reward: "+200 XP · +60 💰 · 🔵 Raro", ach1_btn: "🏆 Obtener logro", ach1_hint: "¡Haz clic si entendiste el diagrama!", l2_title: "✂️ Chunking y Embeddings", l2_sub: "Preparación de documentos", l2_xp: "+250 XP", l2_p1: "Antes de buscar en documentos, hay que dividirlos en chunks y convertirlos a embeddings (vectores). El tamaño del chunk es crítico.", l2_code_title: "📝 Chunking y creación de embeddings", l2_warn_title: "⚠️ Reglas de chunking", l2_warn_text: "1. Tamaño: 200-500 tokens<br>2. Overlap: 10-20%<br>3. Límites: por oraciones o párrafos<br>4. Metadatos: guardar fuente", ach2_name: "Logro: Maestro de Chunking", ach2_desc: "Dividió documento en chunks y creó embeddings", ach2_reward: "+250 XP · +80 💰 · 🔵 Raro", ach2_btn: "🏆 Obtener logro", ach2_hint: "¡Haz clic si entendiste el principio de overlap!", l3_title: "🗄️ Base de Datos Vectorial", l3_sub: "FAISS y búsqueda semántica", l3_xp: "+300 XP", l3_p1: "Vector DB almacena embeddings y permite encontrar rápidamente chunks semánticamente similares. ¡La búsqueda semántica entiende el significado!", l3_code_title: "📝 Búsqueda con FAISS", l3_lore_title: "📚 Bases de datos vectoriales populares", l3_lore_text: "FAISS (Meta), ChromaDB, Pinecone, Qdrant, Weaviate", ach3_name: "Logro: Guardián de Vectores", ach3_desc: "Creó base de datos vectorial y realizó búsqueda semántica", ach3_reward: "+300 XP · +100 💰 · 🟣 Épico", ach3_btn: "🏆 Obtener logro", ach3_hint: "¡Haz clic si entendiste cosine similarity!", l4_title: "⚙️ Pipeline RAG Completo", l4_sub: "Uniendo todo", l4_xp: "+350 XP", l4_p1: "Ahora conectemos todas las partes: carga de documentos, chunking, embeddings, búsqueda vectorial y generación de respuesta. ¡Obtendremos un pipeline RAG completo!", l4_code_title: "📝 Clase RAGPipeline", l4_meme: "¡RAG convierte LLM de 'charlatán' en 'experto con acceso a base de conocimiento'!", ach4_name: "Logro: Ingeniero RAG", ach4_desc: "Construyó pipeline RAG completo desde cero", ach4_reward: "+350 XP · +120 💰 · 🟣 Épico", ach4_btn: "🏆 Obtener logro", ach4_hint: "¡Haz clic si el pipeline funciona!", l5_title: "¡PELEA JEFE: App RAG para Documentos!", l5_sub: "Chatbot para tus PDFs", l5_xp: "+600 XP", l5_meme: "¡Creemos una aplicación real que permita subir documentos PDF y hacer preguntas sobre ellos! Esto es exactamente lo que hacen los asistentes AI corporativos.", l5_code_title: "📝 App RAG con carga de PDF", l5_github_title: "🚀 Instrucciones de publicación", l5_github_tip_title: "💡 Consejos para README.md", l5_github_tip_text: "1. Añade GIF demo<br>2. Explica arquitectura RAG<br>3. Muestra ejemplo pregunta-respuesta<br>4. Describe cómo añadir nuevos formatos<br>5. Especifica métricas de calidad<br>6. Añade sección 'Limitaciones'", ach5_name: "LEGENDARIO: RAG Master", ach5_desc: "Creó app RAG para documentos y publicó en GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendario", ach5_btn: "👑 Obtener logro legendario", ach5_hint: "¡Solo 3% crea apps RAG funcionales!", sq_title: "📜 Misiones secundarias", sq_easy: "🟢 FÁCIL", sq_medium: "🟡 MEDIO", sq_hard: "🔴 DIFÍCIL", sq1_title: "🧮 Misión «Comparación de Chunking»", sq1_text: "Prueba diferentes estrategias de chunking.", sq1_reward: "💰 Recompensa: 150 AI-monedas", sq2_title: "⚡ Misión «Búsqueda Híbrida»", sq2_text: "Añade búsqueda por palabras clave (BM25) a la búsqueda semántica.", sq2_reward: "💰 Recompensa: 300 AI-monedas", sq3_title: "🎨 Misión «RAG Avanzado»", sq3_text: "Implementa técnicas avanzadas: query rewriting, re-ranking, citation verification.", sq3_reward: "💰 Recompensa: 500 AI-monedas + título «RAG Architect»", sum_title: "Recta final", sum_sub: "Lo que subiste de nivel", sum1: "✅ Entendiste problema de alucinaciones", sum2: "✅ Dominaste arquitectura RAG", sum3: "✅ Aprendiste chunking y embeddings", sum4: "✅ Creaste base de datos vectorial", sum5: "✅ Construiste pipeline RAG completo", sum6: "🏆 ¡Jefe final: app RAG para PDF publicada!", sum_meme: "¡Felicidades, RAG Master! Dominaste una de las habilidades más demandadas en la industria AI. En la próxima lección 5.5 estudiaremos agentes.", nav_back: "← Misión anterior", nav_back_title: "5.3 Trabajando con APIs", nav_next: "Siguiente misión →", nav_next_title: "5.5 AI Agents", footer: "Curso de IA para estudiantes de 10º grado." },
+        de: { badge: "🎮 QUEST 5.4 • MODUL 5", title: "RAG: KI ohne Halluzinationen", subtitle: "Willkommen auf Level 5.4! 📚 Heute meisterst du das gefragteste Pattern in der Industrie — RAG.", duration: "⏱ 4 Stunden", level: "📕 Experte", xp: "⭐ +1500 XP", loot: "💰 +600 AI-Münzen", ach: "🏆 6 Erfolge", progress_title: "📊 Quest-Fortschritt", progress_counter: "Level 0 / 6", l0_title: "🎭 Das Halluzinationsproblem", l0_sub: "Warum erfindet KI Fakten?", l0_xp: "+100 XP", l0_p1: "LLMs sind Textgeneratoren, keine Wissensbasen. Sie sagen das nächste Wort basierend auf Wahrscheinlichkeiten voraus. Wenn sie die Antwort nicht wissen, generieren sie trotzdem Text — und erfinden oft Fakten.", l0_analogy_title: "Spiel-Analogie", l0_analogy_text: "LLM ist wie ein sehr belesener, aber fauler Student. Er kann beautifully auf jede Frage antworten, aber wenn er die genaue Tatsache nicht weiß — erfindet er sie. RAG ist wie ihm einen Spickzettel mit korrekten Fakten zu geben!", ach0_name: "Erfolg: Halluzinations-Detektor", ach0_desc: "Verstand Halluzinationsproblem und warum RAG benötigt wird", ach0_reward: "+100 XP · +40 💰 · ⚪ Gewöhnlich", ach0_btn: "🏆 Erfolg erhalten", ach0_hint: "Klicke, wenn du die Studenten-Analogie verstanden hast!", l1_title: "🔍 Was ist RAG?", l1_sub: "Retrieval-Augmented Generation", l1_xp: "+200 XP", l1_p1: "RAG ist ein Pattern, bei dem das Modell vor der Antwortgenerierung zuerst relevante Informationen in einer Wissensbasis sucht und sie dann als Kontext verwendet.", l1_code_title: "📝 Wie RAG funktioniert: Diagramm", l1_tip_title: "💡 Hauptvorteil", l1_tip_text: "RAG ermöglicht das Aktualisieren von KI-Wissen ohne Neutraining des Modells! Füge einfach neue Dokumente zur Datenbank hinzu.", ach1_name: "Erfolg: RAG-Architekt", ach1_desc: "Verstand RAG-Pipeline-Architektur", ach1_reward: "+200 XP · +60 💰 · 🔵 Selten", ach1_btn: "🏆 Erfolg erhalten", ach1_hint: "Klicke, wenn du das Pipeline-Diagramm verstanden hast!", l2_title: "✂️ Chunking und Embeddings", l2_sub: "Dokumentvorbereitung", l2_xp: "+250 XP", l2_p1: "Vor der Dokumentensuche müssen sie in Chunks aufgeteilt und in Embeddings umgewandelt werden. Die Chunk-Größe ist kritisch.", l2_code_title: "📝 Chunking und Embedding-Erstellung", l2_warn_title: "⚠️ Chunking-Regeln", l2_warn_text: "1. Größe: 200-500 Token<br>2. Overlap: 10-20%<br>3. Grenzen: nach Sätzen oder Absätzen<br>4. Metadaten: Quelle speichern", ach2_name: "Erfolg: Chunking-Meister", ach2_desc: "Teilte Dokument in Chunks und erstellte Embeddings", ach2_reward: "+250 XP · +80 💰 · 🔵 Selten", ach2_btn: "🏆 Erfolg erhalten", ach2_hint: "Klicke, wenn du Overlap-Prinzip verstanden hast!", l3_title: "🗄️ Vektor-Datenbank", l3_sub: "FAISS und semantische Suche", l3_xp: "+300 XP", l3_p1: "Vektor-DB speichert Embeddings und ermöglicht schnelles Finden semantisch ähnlicher Chunks. Semantische Suche versteht Bedeutung!", l3_code_title: "📝 Suche mit FAISS", l3_lore_title: "📚 Beliebte Vektor-Datenbanken", l3_lore_text: "FAISS (Meta), ChromaDB, Pinecone, Qdrant, Weaviate", ach3_name: "Erfolg: Vektor-Wächter", ach3_desc: "Erstellte Vektor-Datenbank und führte semantische Suche durch", ach3_reward: "+300 XP · +100 💰 · 🟣 Episch", ach3_btn: "🏆 Erfolg erhalten", ach3_hint: "Klicke, wenn du Cosine Similarity verstanden hast!", l4_title: "⚙️ Vollständige RAG-Pipeline", l4_sub: "Alles zusammenfügen", l4_xp: "+350 XP", l4_p1: "Jetzt verbinden wir alle Teile: Dokumentenladen, Chunking, Embeddings, Vektorsuche und Antwortgenerierung. Wir erhalten eine vollständige RAG-Pipeline!", l4_code_title: "📝 RAGPipeline-Klasse", l4_meme: "RAG verwandelt LLM von 'Schwätzer' in 'Experte mit Zugang zu Wissensbasis'!", ach4_name: "Erfolg: RAG-Ingenieur", ach4_desc: "Baute vollständige RAG-Pipeline von Grund auf", ach4_reward: "+350 XP · +120 💰 · 🟣 Episch", ach4_btn: "🏆 Erfolg erhalten", ach4_hint: "Klicke, wenn die Pipeline funktioniert!", l5_title: "BOSSKAMPF: RAG-Dokumenten-App", l5_sub: "Chatbot für deine PDFs", l5_xp: "+600 XP", l5_meme: "Erstellen wir eine echte Anwendung zum Hochladen von PDF-Dokumenten und Stellen von Fragen! Das machen corporate AI-Assistenten in großen Unternehmen.", l5_code_title: "📝 RAG-App mit PDF-Laden", l5_github_title: "🚀 Veröffentlichungsanweisungen", l5_github_tip_title: "💡 README.md Tipps", l5_github_tip_text: "1. Füge GIF-Demo hinzu<br>2. Erkläre RAG-Architektur<br>3. Zeige Beispiel Frage-Antwort<br>4. Beschreibe neue Formate<br>5. Spezifiziere Qualitätsmetriken<br>6. Füge 'Limitationen' hinzu", ach5_name: "LEGENDÄR: RAG Master", ach5_desc: "Erstellte RAG-Dokumenten-App und veröffentlichte auf GitHub", ach5_reward: "+600 XP · +250 💰 · 🟡 Legendär", ach5_btn: "👑 Legendären Erfolg erhalten", ach5_hint: "Nur 3% erstellen funktionierende RAG-Apps!", sq_title: "📜 Nebenquests", sq_easy: "🟢 LEICHT", sq_medium: "🟡 MITTEL", sq_hard: "🔴 SCHWER", sq1_title: "🧮 Quest «Chunking-Vergleich»", sq1_text: "Teste verschiedene Chunking-Strategien.", sq1_reward: "💰 Belohnung: 150 AI-Münzen", sq2_title: "⚡ Quest «Hybride Suche»", sq2_text: "Füge Keyword-Suche (BM25) zur semantischen Suche hinzu.", sq2_reward: "💰 Belohnung: 300 AI-Münzen", sq3_title: "🎨 Quest «Fortgeschrittenes RAG»", sq3_text: "Implementiere fortgeschrittene Techniken: Query Rewriting, Re-ranking, Citation Verification.", sq3_reward: "💰 Belohnung: 500 AI-Münzen + Titel «RAG Architect»", sum_title: "Zielgerade", sum_sub: "Was du hochgestuft hast", sum1: "✅ Halluzinationsproblem verstanden", sum2: "✅ RAG-Architektur gemeistert", sum3: "✅ Chunking und Embeddings gelernt", sum4: "✅ Vektor-Datenbank erstellt", sum5: "✅ Vollständige RAG-Pipeline gebaut", sum6: "🏆 Endboss: RAG-PDF-App veröffentlicht!", sum_meme: "Glückwunsch, RAG Master! Du hast eine der gefragtesten Fähigkeiten in der KI-Industrie gemeistert. In Lektion 5.5 studieren wir Agenten.", nav_back: "← Vorheriger Quest", nav_back_title: "5.3 API-Arbeit", nav_next: "Nächster Quest →", nav_next_title: "5.5 AI-Agenten", footer: "KI-Kurs für Schüler der 10. Klasse." },
+        kk: { badge: "🎮 КВЕСТ 5.4 • 5-МОДУЛЬ", title: "RAG: Галлюцинациясыз ЖИ", subtitle: "5.4 деңгейге қош келдің! 📚 Бүгін индустриядағы ең сұранысқа ие паттернді — RAG-ты игересің.", duration: "⏱ 4 сағат", level: "📕 Сарапшы", xp: "⭐ +1500 XP", loot: "💰 +600 ЖИ-теңге", ach: "🏆 6 жетістік", progress_title: "📊 Квест прогрессі", progress_counter: "0-деңгей / 6", l0_title: "🎭 Галлюцинация мәселесі", l0_sub: "ЖИ неге фактілерді ойлап табады?", l0_xp: "+100 XP", l0_p1: "LLM — мәтін генераторлары, білім базалары емес. Олар ықтималдықтарға негізделген келесі сөзді болжайды. Жауапты білмесе де, мәтін жасайды — және жиі фактілерді ойлап табады.", l0_analogy_title: "Ойын аналогиясы", l0_analogy_text: "LLM — өте оқыған, бірақ жалқау студент сияқты. Кез келген сұраққа әдемі жауап бере алады, бірақ нақты фактіні білмесе — сенімді естілу үшін ойлап табады. RAG — емтихан алдында дұрыс фактілері бар шпаргалка беру!", ach0_name: "Жетістік: Галлюцинация детекторы", ach0_desc: "LLM галлюцинация мәселесін және RAG неге керектігін түсінді", ach0_reward: "+100 XP · +40 💰 · ⚪ Кәдімгі", ach0_btn: "🏆 Жетістікті алу", ach0_hint: "Студент аналогиясын түсінсең — бас!", l1_title: "🔍 RAG деген не?", l1_sub: "Retrieval-Augmented Generation", l1_xp: "+200 XP", l1_p1: "RAG — жауап жасамас бұрын модель алдымен білім базасынан қажетті ақпаратты іздейтін, содан кейін оны контекст ретінде қолданатын паттерн.", l1_code_title: "📝 RAG қалай жұмыс істейді: диаграмма", l1_tip_title: "💡 Негізгі артықшылық", l1_tip_text: "RAG модельді қайта оқытпай-ақ ЖИ білімін жаңартуға мүмкіндік береді! Деректер қорына жаңа құжаттар қосу жеткілікті.", ach1_name: "Жетістік: RAG сәулетшісі", ach1_desc: "RAG пайплайн архитектурасын түсінді", ach1_reward: "+200 XP · +60 💰 · 🔵 Сирек", ach1_btn: "🏆 Жетістікті алу", ach1_hint: "Пайплайн диаграммасын түсінсең — бас!", l2_title: "✂️ Чанкинг және эмбеддингтер", l2_sub: "Құжаттарды дайындау", l2_xp: "+250 XP", l2_p1: "Құжаттарды іздеуден бұрын, оларды чанктарға бөліп, эмбеддингтерге (векторларға) айналдыру керек. Чанк өлшемі сыни маңызды.", l2_code_title: "📝 Чанкинг және эмбеддингтер жасау", l2_warn_title: "⚠️ Чанкинг ережелері", l2_warn_text: "1. Өлшемі: 200-500 токен<br>2. Overlap: 10-20%<br>3. Шекаралар: сөйлемдер немесе абзацтар бойынша<br>4. Метадеректер: көзді сақтау", ach2_name: "Жетістік: Чанкинг шебері", ach2_desc: "Құжатты чанктарға бөлді және эмбеддингтер жасады", ach2_reward: "+250 XP · +80 💰 · 🔵 Сирек", ach2_btn: "🏆 Жетістікті алу", ach2_hint: "Overlap принципін түсінсең — бас!", l3_title: "🗄️ Векторлық деректер қоры", l3_sub: "FAISS және семантикалық іздеу", l3_xp: "+300 XP", l3_p1: "Векторлық ДҚ эмбеддингтерді сақтайды және семантикалық ұқсас чанктарды жылдам табуға мүмкіндік береді. Семантикалық іздеу мағынаны түсінеді!", l3_code_title: "📝 FAISS-пен іздеу", l3_lore_title: "📚 Танымал векторлық деректер қорлары", l3_lore_text: "FAISS (Meta), ChromaDB, Pinecone, Qdrant, Weaviate", ach3_name: "Жетістік: Вектор сақтаушысы", ach3_desc: "Векторлық деректер қорын жасады және семантикалық іздеу орындады", ach3_reward: "+300 XP · +100 💰 · 🟣 Эпикалық", ach3_btn: "🏆 Жетістікті алу", ach3_hint: "Cosine similarity түсінсең — бас!", l4_title: "⚙️ Толық RAG пайплайны", l4_sub: "Барлығын біріктіру", l4_xp: "+350 XP", l4_p1: "Енді барлық бөліктерді қосайық: құжаттарды жүктеу, чанкинг, эмбеддингтер, векторлық іздеу және LLM арқылы жауап жасау. Толық RAG пайплайны аламыз!", l4_code_title: "📝 RAGPipeline класы", l4_meme: "RAG LLM-ді 'әңгімешілден' 'білім қорына қол жетімді сарапшыға' айналдырады!", ach4_name: "Жетістік: RAG инженері", ach4_desc: "Толық RAG пайплайнын нөлден құрды", ach4_reward: "+350 XP · +120 💰 · 🟣 Эпикалық", ach4_btn: "🏆 Жетістікті алу", ach4_hint: "Пайплайн жұмыс істесе — бас!", l5_title: "БОСС-ФАЙТ: Құжаттарға арналған RAG қосымшасы", l5_sub: "PDF-дарыңа арналған чат-бот", l5_xp: "+600 XP", l5_meme: "PDF құжаттарын жүктеуге және олар туралы сұрақтар қоюға мүмкіндік беретін нақты қосымша жасайық! Бұл ірі компаниялардағы корпоративті AI көмекшілерінің дәл жасайтыны.", l5_code_title: "📝 PDF жүктеумен RAG қосымшасы", l5_github_title: "🚀 Жариялау нұсқаулары", l5_github_tip_title: "💡 README.md кеңестері", l5_github_tip_text: "1. GIF демо қос<br>2. RAG архитектурасын түсіндір<br>3. Сұрақ-жауап мысалын көрсет<br>4. Жаңа форматтарды қосу жолын сипатта<br>5. Сапа метрикаларын көрсет<br>6. 'Шектеулер' бөлімін қос", ach5_name: "АҢЫЗДЫҚ: RAG Master", ach5_desc: "Құжаттарға арналған RAG қосымшасын жасады және GitHub-та жариялады", ach5_reward: "+600 XP · +250 💰 · 🟡 Аңыздық", ach5_btn: "👑 Аңыздық жетістікті алу", ach5_hint: "Тек 3% студенттер жұмыс істейтін RAG қосымшаларын жасайды!", sq_title: "📜 Қосалқы квесттер", sq_easy: "🟢 ЖЕҢІЛ", sq_medium: "🟡 ОРТАША", sq_hard: "🔴 ҚИЫН", sq1_title: "🧮 Квест «Чанкинг салыстыруы»", sq1_text: "Әртүрлі чанкинг стратегияларын сына.", sq1_reward: "💰 Сыйлық: 150 ЖИ-теңге", sq2_title: "⚡ Квест «Гибридті іздеу»", sq2_text: "Семантикалық іздеуге кілт сөз іздеуді (BM25) қос.", sq2_reward: "💰 Сыйлық: 300 ЖИ-теңге", sq3_title: "🎨 Квест «Кеңейтілген RAG»", sq3_text: "Кеңейтілген техникаларды іске асыр: query rewriting, re-ranking, citation verification.", sq3_reward: "💰 Сыйлық: 500 ЖИ-теңге + «RAG Architect» титулы", sum_title: "Мәре сызығы", sum_sub: "Бұл квестте нені деңгейіңді көтердің", sum1: "✅ Галлюцинация мәселесін түсіндің", sum2: "✅ RAG архитектурасын игердің", sum3: "✅ Чанкинг және эмбеддингтерді үйрендің", sum4: "✅ Векторлық деректер қорын жасадың", sum5: "✅ Толық RAG пайплайнын құрдың", sum6: "🏆 Финалды босс — RAG PDF қосымшасы жарияланды!", sum_meme: "Құттықтаймын, RAG Master! 2024-2025 ЖИ индустриясындағы ең сұранысқа ие дағдылардың бірін игердің. Келесі 5.5 сабақта агенттерді зерттейміз.", nav_back: "← Алдыңғы квест", nav_back_title: "5.3 API-мен жұмыс", nav_next: "Келесі квест →", nav_next_title: "5.5 AI Агенттер", footer: "10-сынып оқушыларына арналған ЖИ курсы." }
+    };
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
